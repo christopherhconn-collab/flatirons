@@ -57,8 +57,83 @@ export function LogoMark({
 /**
  * The full lockup: mark beside the stacked wordmark.
  *
- * `scale` is a multiplier on the reference size (the 34px FLATIRONS of the
- * refinement sheet's large treatment); the header uses roughly 0.55.
+ * The mark and the type are sized independently because the marketing chrome
+ * specifies them independently — a 40×19 mark beside a 19px FLATIRONS, which
+ * is a heavier wordmark relative to the mark than the refinement sheet's large
+ * treatment. `Logo` below keeps the sheet's proportions for reference use.
+ */
+export function LogoLockup({
+  markWidth = 40,
+  wordSize = 19,
+  subSize = 9.5,
+  gap = 11,
+  tone = "light",
+  rule = false,
+  className,
+}: {
+  markWidth?: number;
+  wordSize?: number;
+  subSize?: number;
+  gap?: number;
+  tone?: Tone;
+  /** The hairline that ties FLATIRONS to MOVERS. Drop it below ~17px type. */
+  rule?: boolean;
+  className?: string;
+}) {
+  const onDark = tone === "dark";
+  const wordColor = onDark ? "#f7f6f2" : tone === "mono" ? "currentColor" : "#16283f";
+  const subColor = onDark ? "#a3b689" : tone === "mono" ? "currentColor" : "#5d7340";
+  const ruleColor = onDark ? "rgb(223 231 210 / 0.35)" : "rgb(22 40 63 / 0.35)";
+
+  return (
+    <span className={`inline-flex items-center ${className ?? ""}`} style={{ gap }}>
+      <LogoMark width={markWidth} tone={tone} />
+      <span className="leading-none">
+        <span
+          className="block font-condensed uppercase"
+          style={{
+            fontSize: wordSize,
+            fontWeight: 600,
+            letterSpacing: "0.14em",
+            lineHeight: 1,
+            color: wordColor,
+          }}
+        >
+          Flatirons
+        </span>
+        <span
+          className="flex items-center"
+          style={{ gap: gap * 0.8, marginTop: wordSize * 0.2 }}
+        >
+          {rule && (
+            <span
+              aria-hidden="true"
+              className="flex-1"
+              style={{ height: 1, background: ruleColor }}
+            />
+          )}
+          <span
+            className="font-body uppercase"
+            style={{
+              fontSize: subSize,
+              fontWeight: 500,
+              letterSpacing: "0.42em",
+              lineHeight: 1,
+              color: subColor,
+            }}
+          >
+            Movers
+          </span>
+        </span>
+      </span>
+      <span className="sr-only">Flatirons Movers</span>
+    </span>
+  );
+}
+
+/**
+ * The refinement sheet's proportions, driven by one multiplier. `scale` is
+ * against the 34px FLATIRONS of the large treatment.
  */
 export function Logo({
   scale = 1,
