@@ -1,0 +1,51 @@
+name: CI
+
+# Two PRs are in flight against main and the test suite runs nowhere. This is
+# the smallest thing that fixes that: lint, tests and a real production build
+# on every pull request.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A new push supersedes the run it interrupted — except on main, where every
+# commit's result is worth keeping.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` over `npm install`: it installs exactly what the lockfile
+      # pins and fails if the lockfile and package.json disagree, so CI can
+      # never quietly pass against a different dependency tree than a
+      # developer has.
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Runs before the build. The pricing engine is the business-critical
+      # code here, and a failing test should be the first thing reported, not
+      # something waiting behind a slower step.
+      - name: Test
+        run: npm run test
+
+      # Typechecks the tests as well as the app, and catches anything that
+      # only breaks when prerendering — the token page calls the pricing
+      # engine at build time.
+      - name: Build
+        run: npm run build
