@@ -42,6 +42,7 @@ third-party service.
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest, once |
 | `npm run test:watch` | Vitest, watching |
+| `npm run tune -- jobs.csv` | Score the engine against real completed jobs |
 
 ## Layout
 
@@ -87,13 +88,41 @@ The published "typical move" bands are computed from the room presets by
 `typicalBands()` so the advertised numbers cannot drift from the quotes. Do not
 hard-code them into the pricing page.
 
+## Tuning the engine
+
+The constants came from the prototype, not from data. Step 2's real exit test is
+that 85–90% of your completed jobs price inside the quoted range, and until that
+passes these numbers are a designer's estimate.
+
+Export your last 60 completed jobs in the shape of `jobs.example.csv`, then:
+
+```bash
+npm run tune -- jobs.csv
+```
+
+The report gives you the current hit rate, the throughput implied directly by
+recorded hours, a ranked sweep of every tunable, and the ten worst misses.
+Apply one change, re-run, repeat. Re-run it quarterly — drifting throughput is
+how movers quietly lose money.
+
+**Two things to know before you act on it.**
+
+The sweep optimises the share of jobs landing inside the range, and that measure
+cannot pin throughput down: a job whose true throughput is `T` prices inside the
+range for every candidate from `0.9T` to `1.15T`, because the range is 0.9×–1.15×
+of the point estimate. That is a plateau about 28% wide. Where the crew's real
+hours were recorded, `impliedThroughput()` reads throughput straight off them
+with no such ambiguity — trust that number, and use the sweep as the sanity
+check. Include an `actual_hours` column and you get both.
+
+The sweeps are also one-at-a-time. Each row is the best single move from where
+you stand, not the best combination, which is why the workflow is apply-one-then-
+re-run rather than apply-everything.
+
 ### Still to do on the engine
 
-- **Tune it against real jobs.** The constants came from the prototype, not from
-  data. Step 2 of the build plan calls for running 60 completed jobs through the
-  engine and adjusting `CONFIG.throughput` and the range multipliers until 85–90%
-  of them land inside the quoted range. Until that is done, these prices are a
-  designer's estimate.
+- **Run the tuning pass.** The harness is built and tested; it needs your
+  `jobs.csv`.
 - **Move `CONFIG` into the database.** The handoff is explicit that these values
   must be changeable without a deploy, and that they will be re-tuned quarterly.
 - **Decide the surcharge discrepancy.** `typicalBand()` reproduces the
