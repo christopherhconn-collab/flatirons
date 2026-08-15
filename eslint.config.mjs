@@ -18,6 +18,8 @@ const eslintConfig = defineConfig([
     "design_handoff_flatirons_movers/**",
     // The routing map is the handoff's Leaflet document, kept whole on purpose.
     "public/dispatch-map.html",
+    // Prisma client output. Regenerated on install; not ours to fix.
+    "src/generated/**",
   ]),
 ]);
 

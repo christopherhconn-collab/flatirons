@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the template, which is the documentation of what to set
+!.env.example
 
 # vercel
 .vercel
@@ -40,9 +42,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local data store (stands in for Postgres until step 3)
+# the JSON store Postgres replaced at step 3 — left ignored so an old
+# working copy does not suddenly want to commit one
 /.data/
 
 # historical job exports — customer data, never commit
 /jobs.csv
 /jobs.*.csv
+
+/src/generated/prisma
+
+# Prisma installs agent skill packs (.agents, .claude, .windsurf and a lock
+# file) on `prisma init`. Useful locally, not project source — re-run
+# `npx prisma init` in a scratch directory if you want them back.
+/.agents/
+/.claude/
+/.windsurf/
+skills-lock.json

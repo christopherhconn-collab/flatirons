@@ -21,6 +21,28 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    # The build prerenders the home page, and that page reads real crew
+    # capacity, so a build without a database is not a build. Running one here
+    # also means every pull request applies the migrations from scratch — a
+    # migration that does not apply cleanly fails CI rather than a deploy.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: flatirons
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/flatirons
+
     steps:
       - uses: actions/checkout@v4
 
@@ -44,8 +66,17 @@ jobs:
       - name: Test
         run: npm run test
 
+      # `migrate deploy` applies committed migrations only — it never
+      # generates one, so a schema edited without a matching migration shows
+      # up here as a drifted database rather than passing quietly.
+      - name: Migrate
+        run: npm run db:deploy
+
+      - name: Seed
+        run: npm run db:seed
+
       # Typechecks the tests as well as the app, and catches anything that
       # only breaks when prerendering — the token page calls the pricing
-      # engine at build time.
+      # engine at build time, and the home page reads crew capacity.
       - name: Build
         run: npm run build
