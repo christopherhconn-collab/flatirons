@@ -17,7 +17,7 @@ import {
   firstOpenDate,
   LEAD_DAYS,
 } from "./estimate";
-import { PRESETS, quote } from "./pricing";
+import { CONFIG, PRESETS, quote } from "./pricing";
 
 const TODAY = "2026-08-15";
 
@@ -194,6 +194,74 @@ describe("buildView", () => {
         month: { year: 2026, month: 9 },
       }).calendar.canGoBack,
     ).toBe(true);
+  });
+});
+
+describe("the travel exclusion", () => {
+  // The engine prices labour plus item surcharges; travel is billed on top and
+  // cannot be quoted until step 6 resolves real mileage. Every place the range
+  // is shown has to say so, or the customer commits to a number that is not
+  // the bill.
+  it("names travel in the rail, quoting the published rates", () => {
+    const v = view();
+    expect(v.travelNote).toBe(
+      `Crew and truck only. Travel is added on the day — $${CONFIG.travel.flat} metro, or $${CONFIG.travel.perLoadedMile}/loaded mile.`,
+    );
+  });
+
+  it("lists travel among the rail's line items", () => {
+    const line = view().priceLines.find((l) => l.label === "Travel");
+    expect(line).toBeDefined();
+    expect(line!.value).toBe("Added on the day");
+  });
+
+  it("names travel on the confirm table, between the estimate and the total due", () => {
+    const labels = view().confirmRows.map((r) => r.label);
+    expect(labels).toEqual([
+      "Move date",
+      "Route",
+      "Access",
+      "Crew",
+      "Inventory",
+      "Estimate",
+      "Travel",
+      "Due today",
+    ]);
+    const travel = view().confirmRows.find((r) => r.label === "Travel")!;
+    expect(travel.value).toContain(`$${CONFIG.travel.flat}`);
+    expect(travel.value).toContain(`$${CONFIG.travel.perLoadedMile}`);
+  });
+
+  it("says it even when there is nothing to price yet", () => {
+    const empty = draft();
+    empty.counts = {};
+    const v = buildView(empty, { bookedOut: [], today: TODAY });
+    expect(v.travelNote).toContain("Travel is added");
+  });
+
+  it("still leaves travel out of the range the estimator shows", () => {
+    // `quote()` can price travel, but only when it is handed `miles`. The
+    // estimator has no mileage source until Distance Matrix lands at step 6,
+    // so it never supplies one and the range stays labour-only — which is what
+    // makes the disclosure true.
+    const withoutMiles = quote({ counts: PRESETS["2 bed"], movers: 3 });
+    expect(withoutMiles.extras.some((e) => e.label === "Travel")).toBe(false);
+
+    // The tripwire: once miles start flowing, travel lands in the range and
+    // this fails, forcing the copy out rather than leaving it quietly false.
+    const withMiles = quote({ counts: PRESETS["2 bed"], movers: 3, miles: 40 });
+    expect(withMiles.extras.some((e) => e.label === "Travel")).toBe(true);
+    expect(withMiles.low).toBeGreaterThan(withoutMiles.low);
+  });
+
+  it("does not hand the engine any mileage", () => {
+    // The guarantee above only holds while nothing in the estimator's path
+    // supplies `miles`. If that changes, the disclosure has to change with it.
+    const v = view();
+    expect(v.priceLines.find((l) => l.label === "Travel")!.value).toBe(
+      "Added on the day",
+    );
+    expect(v.priceLines.filter((l) => /travel/i.test(l.label))).toHaveLength(1);
   });
 });
 

@@ -236,6 +236,8 @@ export type EstimateView = {
   hasItems: boolean;
   priceRange: string;
   priceBasis: string;
+  /** What the range leaves out. Shown wherever the range is. */
+  travelNote: string;
   priceLines: PriceLine[];
   inventorySummary: string;
   itemRows: ItemRow[];
@@ -256,6 +258,15 @@ export type ViewContext = {
   /** Which month the calendar is showing. */
   month?: { year: number; month: number };
 };
+
+/**
+ * The range is labour plus item surcharges; travel is billed on top of it and
+ * the engine cannot price it until step 6 resolves real mileage. Say so
+ * wherever the range appears — the confirm step especially, because that is
+ * the screen the customer commits on.
+ */
+const TRAVEL_SUMMARY = `$${CONFIG.travel.flat} metro, or $${CONFIG.travel.perLoadedMile}/loaded mile`;
+const TRAVEL_NOTE = `Crew and truck only. Travel is added on the day — ${TRAVEL_SUMMARY}.`;
 
 const MOVER_NOTE: Record<CrewSize, string> = {
   2: "Studios and one-bedrooms",
@@ -350,6 +361,9 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
           ? "None"
           : "Included",
     },
+    // Billed, but not in the range above it — see CONFIG.travel. Listed here
+    // so the rail does not read as a complete account of the bill.
+    { label: "Travel", value: "Added on the day" },
     { label: "Deposit", value: "$0", accent: true },
   ];
 
@@ -437,6 +451,7 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     priceBasis: hasItems
       ? `Based on ${priced.hours.toFixed(1)} hrs, ${draft.movers} movers, one truck.`
       : "Pick a home size or count a few rooms and the range appears here.",
+    travelNote: TRAVEL_NOTE,
     priceLines,
     inventorySummary: priced.itemCount
       ? `${priced.itemCount} items · ${priced.units} volume units · ${dateLabel(date)}`
@@ -455,6 +470,7 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
       { label: "Crew", value: `${draft.movers} movers · $${priced.rate}/hr` },
       { label: "Inventory", value: `${priced.itemCount} items` },
       { label: "Estimate", value: hasItems ? range : "—" },
+      { label: "Travel", value: TRAVEL_SUMMARY },
       { label: "Due today", value: "$0" },
     ],
     bookNote: hasItems

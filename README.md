@@ -267,14 +267,16 @@ Each of these is a decision, not an oversight.
 
 ## Known gaps worth a decision
 
-- **The quoted range excludes travel.** `CONFIG` has no travel component: the
-  engine prices labour plus item surcharges, while the business bills $45 flat
-  inside the metro and $1.15 per loaded mile beyond. `/pricing` now says so
-  plainly in both places a range appears. **The estimator does not** — its price
-  rail and confirm table show the same labour-only range with no mention of
-  travel, and that is the screen a customer commits on. Either fold travel into
-  the engine once Distance Matrix lands at step 6, or carry the same disclosure
-  into the rail.
+- **The quoted range excludes travel.** `quote()` prices labour plus item
+  surcharges. Travel — `CONFIG.travel`, $45 flat inside the metro and $1.15 per
+  loaded mile beyond — is billed on top and the engine cannot compute it,
+  because it has no address and no mileage until Google Distance Matrix lands
+  at step 6. Every place a range is shown says so: both blocks on `/pricing`,
+  the estimator's price rail, and a `Travel` row in the confirm table directly
+  above `Due today`. **That disclosure is a stopgap, not the fix.** When step 6
+  resolves real coordinates, fold travel into `quote()` as a real line and take
+  the wording back out. `estimate.test.ts` has a test that fails if travel ever
+  enters the range while the copy still says it does not.
 - **There is no published hit-rate claim.** The prototype's "nine out of ten
   moves land inside the range we quote" was removed: measured against 60 real
   jobs it was 45%, and every miss was over the top. Reinstate a figure only from
