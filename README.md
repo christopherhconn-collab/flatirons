@@ -58,7 +58,9 @@ src/
     logo.tsx          Logo, refinement direction 2a
   lib/
     pricing.ts        The pricing engine — server only
-    pricing.test.ts   45 tests
+    pricing.test.ts   Engine tests
+    tuning.ts         Accuracy harness — server only
+    tuning.test.ts    Harness tests
 ```
 
 ## The pricing engine
@@ -94,7 +96,7 @@ The constants came from the prototype, not from data. Step 2's real exit test is
 that 85–90% of your completed jobs price inside the quoted range, and until that
 passes these numbers are a designer's estimate.
 
-Export your last 60 completed jobs in the shape of `jobs.example.csv`, then:
+Export your last 60 completed jobs in the shape of `jobs-template.xlsx` (or `jobs.example.csv`), then:
 
 ```bash
 npm run tune -- jobs.csv
@@ -119,10 +121,43 @@ The sweeps are also one-at-a-time. Each row is the best single move from where
 you stand, not the best combination, which is why the workflow is apply-one-then-
 re-run rather than apply-everything.
 
+### What the first tuning pass found
+
+60 real Denver jobs, run through the engine:
+
+- **Throughput is right.** Recorded hours imply 9.17 units per mover per hour
+  against a configured 9. The labour model needs no change — a genuine result,
+  and the thing most likely to have been wrong.
+- **Only 45% of jobs priced inside the range, and every single miss was an
+  under-quote.** Not one of the 60 invoices came in below the bottom of its
+  range. A one-sided error is not a range that needs widening; it is a missing
+  charge.
+- **The engine never modelled travel.** The pricing page specifies "$45 flat
+  metro travel, $1.15/loaded mile beyond" and the prototype's `quote()` omits it
+  entirely. Measured against billed hours, every invoice exceeded labour plus
+  item surcharges — by $101 at the very least, $180 at the median, 17% of the
+  bill. Nothing in the data explained it (best fit R² 0.48), because the driver
+  was a column the export never carried.
+
+`CONFIG.travel` now models it, and `quote()` accepts `miles`. Travel is only
+charged when miles are supplied, so the published bands stay labour-only and
+nothing customer-facing moved.
+
+**The harness recommended widening `range.high` from 1.15 to 1.50, and that
+recommendation should be ignored.** It would lift the hit rate to 92% by making
+the range so wide that nothing could fall outside it — ±25% on every quote —
+while leaving the systematic under-quote untouched. Given the pricing page
+promises to absorb overage above the top of the range, hiding a one-sided error
+inside a wider band is the expensive way to be wrong.
+
 ### Still to do on the engine
 
-- **Run the tuning pass.** The harness is built and tested; it needs your
-  `jobs.csv`.
+- **Re-run with mileage.** The template now has a `miles` column. That one
+  column should close most of the gap; re-run and re-check.
+- **Decide whether the quote should include travel.** Today the range is a
+  labour estimate and the invoice includes travel, so customers exceed the range
+  on essentially every job. Either the range should carry travel, or the page
+  should say plainly that it does not. This is a product decision.
 - **Move `CONFIG` into the database.** The handoff is explicit that these values
   must be changeable without a deploy, and that they will be re-tuned quarterly.
 - **Decide the surcharge discrepancy.** `typicalBand()` reproduces the
