@@ -9,6 +9,7 @@ import {
   inventoryFor,
   invoiceFor,
   quote,
+  travelCharge,
   typicalBand,
   typicalBands,
   unitsOf,
@@ -248,6 +249,57 @@ describe("packing crew", () => {
     const amountOf = (q: typeof flat) =>
       q.extras.find((e) => e.label === "Packing crew")!.amount;
     expect(amountOf(upstairs)).toBeGreaterThan(amountOf(flat));
+  });
+});
+
+describe("travel", () => {
+  const counts = PRESETS["2 bed"];
+
+  it("adds nothing at all when miles are unknown", () => {
+    // The prototype omitted travel, and the published bands stay labour-only.
+    const q = quote({ counts, movers: 3 });
+    expect(q.extras.some((e) => e.label === "Travel")).toBe(false);
+  });
+
+  it("charges the flat metro rate inside the metro radius", () => {
+    expect(travelCharge(0)).toBe(CONFIG.travel.flat);
+    expect(travelCharge(CONFIG.travel.metroMiles)).toBe(CONFIG.travel.flat);
+  });
+
+  it("charges per loaded mile beyond the metro radius", () => {
+    const beyond = 100;
+    expect(travelCharge(CONFIG.travel.metroMiles + beyond)).toBe(
+      Math.round(CONFIG.travel.flat + CONFIG.travel.perLoadedMile * beyond),
+    );
+  });
+
+  it("never charges less than the flat rate", () => {
+    for (const m of [0, 1, 10, 25, 26, 500]) {
+      expect(travelCharge(m)).toBeGreaterThanOrEqual(CONFIG.travel.flat);
+    }
+  });
+
+  it("puts travel on the quote as its own line once miles are known", () => {
+    const q = quote({ counts, movers: 3, miles: 12 });
+    expect(q.extras.find((e) => e.label === "Travel")?.amount).toBe(45);
+  });
+
+  it("raises both ends of the range by the travel charge", () => {
+    const without = quote({ counts, movers: 3 });
+    const withTravel = quote({ counts, movers: 3, miles: 12 });
+    expect(withTravel.low).toBeGreaterThan(without.low);
+    expect(withTravel.extrasTotal - without.extrasTotal).toBe(45);
+  });
+
+  it("charges no travel on an empty inventory", () => {
+    const q = quote({ counts: {}, movers: 3, miles: 500 });
+    expect(q.extrasTotal).toBe(0);
+    expect(q.low).toBe(0);
+  });
+
+  it("treats zero miles as known, not missing", () => {
+    const q = quote({ counts, movers: 3, miles: 0 });
+    expect(q.extras.find((e) => e.label === "Travel")?.amount).toBe(45);
   });
 });
 

@@ -46,6 +46,8 @@ export type HistoricalJob = {
   toFloor?: Floor;
   elevator?: boolean;
   packing?: boolean;
+  /** Loaded miles. Without it the quote carries no travel charge at all. */
+  miles?: number;
 };
 
 const HOME_SIZE_ALIASES: Record<string, HomeSize> = {
@@ -153,6 +155,9 @@ export function parseItems(cell: string): {
  *   tofloor       optional
  *   elevator      optional, y/yes/true/1
  *   packing       optional, y/yes/true/1
+ *   miles         optional, loaded miles pickup to drop-off. Without it the
+ *                 quote carries no travel charge, and every invoice that
+ *                 includes one will read as an under-quote.
  *
  * A row needs an inventory (from `size`, `items`, or both) and an invoice.
  * Anything short of that is reported as an issue and skipped, so a partly
@@ -185,6 +190,7 @@ export function parseJobsCsv(csv: string): ParseResult {
   const iTo = col("tofloor", "dropofffloor");
   const iElev = col("elevator");
   const iPack = col("packing", "packingcrew");
+  const iMiles = col("miles", "loadedmiles", "distance", "mileage");
 
   if (iInvoice === -1) {
     issues.push({
@@ -251,6 +257,7 @@ export function parseJobsCsv(csv: string): ParseResult {
     }
 
     const hoursRaw = Number(at(iHours));
+    const milesRaw = Number(at(iMiles));
 
     jobs.push({
       id,
@@ -263,6 +270,10 @@ export function parseJobsCsv(csv: string): ParseResult {
       toFloor: (at(iTo) || undefined) as Floor | undefined,
       elevator: iElev === -1 ? undefined : truthy(at(iElev)),
       packing: iPack === -1 ? undefined : truthy(at(iPack)),
+      miles:
+        Number.isFinite(milesRaw) && milesRaw >= 0 && at(iMiles) !== ""
+          ? milesRaw
+          : undefined,
     });
   }
 
@@ -332,6 +343,7 @@ export function scoreJobs(
         toFloor: job.toFloor,
         elevator: job.elevator,
         packing: job.packing,
+        miles: job.miles,
       },
       { config },
     );
@@ -495,6 +507,27 @@ export const KNOBS: Knob[] = [
     current: (c) => c.range.high,
     apply: (c, v) => ({ ...c, range: { ...c.range, high: v } }),
     candidates: () => range(1, 1.5, 0.01),
+  },
+  {
+    key: "travel.flat",
+    label: "CONFIG.travel.flat (flat metro travel charge)",
+    current: (c) => c.travel.flat,
+    apply: (c, v) => ({ ...c, travel: { ...c.travel, flat: v } }),
+    candidates: () => range(0, 200, 5),
+  },
+  {
+    key: "travel.perLoadedMile",
+    label: "CONFIG.travel.perLoadedMile (per loaded mile beyond metro)",
+    current: (c) => c.travel.perLoadedMile,
+    apply: (c, v) => ({ ...c, travel: { ...c.travel, perLoadedMile: v } }),
+    candidates: () => range(0, 4, 0.05),
+  },
+  {
+    key: "travel.metroMiles",
+    label: "CONFIG.travel.metroMiles (where \"beyond metro\" starts)",
+    current: (c) => c.travel.metroMiles,
+    apply: (c, v) => ({ ...c, travel: { ...c.travel, metroMiles: v } }),
+    candidates: () => range(0, 60, 1),
   },
   {
     key: "minHours",

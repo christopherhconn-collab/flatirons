@@ -35,6 +35,8 @@ export type PricingConfig = {
   stairsPickup: number;
   stairsDropoff: number;
   packing: { hoursFactor: number; ratePerHour: number };
+  /** Travel, per the pricing page's rules. Only applied when miles are known. */
+  travel: { flat: number; perLoadedMile: number; metroMiles: number };
   range: { low: number; high: number };
   roundTo: number;
   materials: number;
@@ -60,6 +62,17 @@ export const CONFIG: PricingConfig = {
 
   /** Packing crew the day before: hours × factor × rate, rounded to a dollar. */
   packing: { hoursFactor: 0.6, ratePerHour: 65 },
+
+  /**
+   * "$45 flat metro travel, $1.15/loaded mile beyond" — the pricing page's
+   * rule. The prototype's `quote()` omitted travel entirely, which is why
+   * every historical invoice exceeds its labour estimate.
+   *
+   * `metroMiles` is where "beyond" starts. It is not stated anywhere in the
+   * handoff, so 25 is a placeholder for the Denver metro radius — fit it
+   * against real mileage before trusting it.
+   */
+  travel: { flat: 45, perLoadedMile: 1.15, metroMiles: 25 },
 
   /** The quoted range as multipliers on the point estimate. */
   range: { low: 0.9, high: 1.15 },
@@ -110,6 +123,14 @@ export type QuoteInput = {
   elevator?: boolean;
   /** Packing crew the day before. */
   packing?: boolean;
+  /**
+   * Loaded miles between the two addresses.
+   *
+   * Omit and no travel charge is added at all — which is what the prototype
+   * did, and what keeps the published bands labour-only. Supply it and the
+   * quote carries the travel line the customer will actually be billed.
+   */
+  miles?: number;
 };
 
 export type QuoteExtra = { label: string; amount: number };
@@ -281,6 +302,19 @@ function roundToIncrement(value: number, increment: number): number {
 }
 
 /**
+ * Travel: a flat metro charge, plus a per-mile rate on every loaded mile
+ * beyond the metro radius. Rounded to the dollar, as it appears on the bill.
+ */
+export function travelCharge(
+  miles: number,
+  config: PricingConfig = CONFIG,
+): number {
+  const { flat, perLoadedMile, metroMiles } = config.travel;
+  const beyond = Math.max(0, miles - metroMiles);
+  return Math.round(flat + perLoadedMile * beyond);
+}
+
+/**
  * Price a move.
  *
  *   units   = Σ (volumeUnits × quantity)
@@ -305,6 +339,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     toFloor = "Ground",
     elevator = false,
     packing = false,
+    miles,
   } = input;
   const includeSurcharges = options?.includeSurcharges ?? true;
   const cfg = options?.config ?? CONFIG;
@@ -338,6 +373,10 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
         hours * cfg.packing.hoursFactor * cfg.packing.ratePerHour,
       ),
     });
+  }
+
+  if (units && miles !== undefined) {
+    extras.push({ label: "Travel", amount: travelCharge(miles, cfg) });
   }
 
   const extrasTotal = extras.reduce((sum, e) => sum + e.amount, 0);
