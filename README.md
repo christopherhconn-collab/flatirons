@@ -224,10 +224,14 @@ inside a wider band is the expensive way to be wrong.
 
 - **Re-run with mileage.** The template now has a `miles` column. That one
   column should close most of the gap; re-run and re-check.
-- **Decide whether the quote should include travel.** Today the range is a
-  labour estimate and the invoice includes travel, so customers exceed the range
-  on essentially every job. Either the range should carry travel, or the page
-  should say plainly that it does not. This is a product decision.
+- **Whether the quote should include travel — decided, for now.** The range is
+  a labour estimate and the bill includes travel, so of the two options open
+  here (carry travel in the range, or say plainly that it does not) the second
+  was taken: `/pricing`, the estimator's price rail and the confirm table all
+  state the exclusion. That is a stopgap. `quote()` already accepts `miles` and
+  will price travel when given them; the estimator has no mileage source until
+  step 6, and when it does, travel becomes a real quoted line and the wording
+  comes back out. See "Known gaps worth a decision" below.
 - **Move `CONFIG` into the database.** The handoff is explicit that these values
   must be changeable without a deploy, and that they will be re-tuned quarterly.
 - **Decide the surcharge discrepancy.** `typicalBand()` reproduces the
@@ -267,16 +271,22 @@ Each of these is a decision, not an oversight.
 
 ## Known gaps worth a decision
 
-- **The quoted range excludes travel.** `quote()` prices labour plus item
-  surcharges. Travel — `CONFIG.travel`, $45 flat inside the metro and $1.15 per
-  loaded mile beyond — is billed on top and the engine cannot compute it,
-  because it has no address and no mileage until Google Distance Matrix lands
-  at step 6. Every place a range is shown says so: both blocks on `/pricing`,
-  the estimator's price rail, and a `Travel` row in the confirm table directly
-  above `Due today`. **That disclosure is a stopgap, not the fix.** When step 6
-  resolves real coordinates, fold travel into `quote()` as a real line and take
-  the wording back out. `estimate.test.ts` has a test that fails if travel ever
-  enters the range while the copy still says it does not.
+- **The quoted range excludes travel — because nothing can measure it yet.**
+  `quote()` *can* price travel: pass `miles` and it adds a Travel line from
+  `CONFIG.travel` ($45 flat, then $1.15 per loaded mile beyond a 25-mile metro
+  radius). Nothing passes it. The estimator has two free-text address fields
+  and no geocoding until Google Places and Distance Matrix land at step 6, so
+  the range it shows is labour plus item surcharges, and travel arrives on the
+  bill afterwards — $180 at the median across the 60 tuned jobs. Every place a
+  range appears says so: both blocks on `/pricing`, the estimator's price rail,
+  and a `Travel` row in the confirm table directly above `Due today`.
+  **That disclosure is a stopgap, not the fix.** When step 6 resolves real
+  coordinates, pass `miles` into `quote()` and take the wording back out —
+  `estimate.test.ts` has a test that fails the moment travel enters the range,
+  so the copy cannot be left behind to become false.
+  Note that `CONFIG.travel.metroMiles` is a placeholder: 25 miles is a guess at
+  the metro radius, not something the handoff states. Fit it against real
+  mileage on the next tuning run.
 - **There is no published hit-rate claim.** The prototype's "nine out of ten
   moves land inside the range we quote" was removed: measured against 60 real
   jobs it was 45%, and every miss was over the top. Reinstate a figure only from
