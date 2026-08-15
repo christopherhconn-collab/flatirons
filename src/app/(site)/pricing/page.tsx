@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SHELL } from "@/lib/site";
 import { startEstimate } from "@/app/estimate/actions";
 import { money } from "@/lib/format";
-import { typicalBands } from "@/lib/pricing";
+import { CONFIG, typicalBands } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Pricing — Flatirons Movers",
@@ -47,7 +47,9 @@ const ADD_ONS = [
 
 const RULES = [
   "Three-hour minimum, then billed to the quarter hour — the clock starts when we arrive, not when we leave the yard.",
-  "$45 flat travel inside the Denver metro. Anywhere else in Colorado, $1.15 per loaded mile.",
+  // Read from CONFIG so this and the estimator's travel note cannot drift
+  // apart — they are the two places a customer is told what travel costs.
+  `$${CONFIG.travel.flat} flat travel inside the Denver metro. Anywhere else in Colorado, $${CONFIG.travel.perLoadedMile} per loaded mile.`,
   "No deposit, no card required to hold a date. Cancel up to 48 hours out for free.",
   "Stairs, long carries and elevator waits are never an upcharge. Weekend rates are the same as weekday.",
 ];

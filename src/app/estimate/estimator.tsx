@@ -236,8 +236,15 @@ function PriceRail({ view, pending }: { view: EstimateView; pending: boolean }) 
       >
         {view.priceRange}
       </div>
-      <p className="text-cream-muted mt-2 mb-[22px] text-[13px] leading-[1.5]">
+      <p className="text-cream-muted mt-2 text-[13px] leading-[1.5]">
         {view.priceBasis}
+      </p>
+      {/* The range is labour plus item surcharges. Travel is billed on top and
+          the engine cannot price it until step 6 resolves real mileage, so the
+          rail says what the number leaves out rather than letting it read as
+          the whole bill. */}
+      <p className="text-olive-pale mt-2 mb-[22px] text-[12px] leading-[1.5]">
+        {view.travelNote}
       </p>
 
       <dl className="grid gap-[11px] text-[13.5px] leading-[1.3]">
