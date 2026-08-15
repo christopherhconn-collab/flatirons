@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flatirons dispatch map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600&display=swap">
+<style>
+  html,body{margin:0;height:100%;background:#0b1624;font-family:"Barlow",system-ui,sans-serif}
+  #map{position:absolute;inset:0}
+  .leaflet-container{background:#0b1624}
+  .leaflet-tile-pane{filter:saturate(.3) brightness(.92) contrast(1.06)}
+  .leaflet-control-attribution{background:rgba(11,22,36,.8)!important;color:rgba(247,246,242,.7)!important;font:400 10px/1.4 "Barlow",sans-serif!important}
+  .leaflet-control-attribution a{color:#a3b689!important}
+  .leaflet-bar a{background:#16283f!important;color:#dfe7d2!important;border-color:rgba(223,231,210,.25)!important}
+  .leaflet-bar a:hover{background:#5d7340!important}
+  .pin{display:grid;place-items:center;font:600 10px/1 "Barlow",sans-serif;letter-spacing:.04em}
+  .pin-o{width:16px;height:16px;background:#16283f;border:1.5px solid #dfe7d2;color:#dfe7d2}
+  .pin-d{width:14px;height:14px;background:transparent;border:1.5px solid #dfe7d2}
+  .pin-t{width:16px;height:16px;background:#5d7340;border:1.5px solid #f7f6f2;box-shadow:0 0 0 5px rgba(93,115,64,.28);animation:p 1.8s ease-in-out infinite}
+  .pin-late{background:#a3b689;box-shadow:0 0 0 5px rgba(163,182,137,.3)}
+  .pin-done{background:transparent;border:1.5px solid rgba(223,231,210,.5);box-shadow:none;animation:none}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+  .leaflet-tooltip.fm{background:#16283f;border:1px solid rgba(223,231,210,.35);color:#f7f6f2;border-radius:0;box-shadow:none;font:500 12px/1.45 "Barlow",sans-serif;padding:8px 10px}
+  .leaflet-tooltip.fm::before{display:none}
+  .fm-t-kick{font:600 9.5px/1 "Barlow",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#a3b689;margin-bottom:5px}
+  .fm-t-sub{color:rgba(247,246,242,.7);font-weight:400}
+  .legend{position:absolute;left:12px;bottom:26px;z-index:500;background:rgba(16,30,48,.92);border:1px solid rgba(223,231,210,.28);padding:11px 13px;display:grid;gap:8px}
+  .legend div{display:flex;align-items:center;gap:9px;font:500 10px/1 "Barlow",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(247,246,242,.75)}
+  .sw{width:12px;height:12px;flex:none}
+  .hdr{position:absolute;right:12px;top:12px;z-index:500;background:rgba(16,30,48,.92);border:1px solid rgba(223,231,210,.28);padding:11px 13px;min-width:186px}
+  .hdr-k{font:600 9.5px/1 "Barlow",sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#a3b689;margin-bottom:8px}
+  .hdr-r{display:flex;justify-content:space-between;gap:14px;font:400 12px/1.5 "Barlow",sans-serif;color:rgba(247,246,242,.82)}
+  .hdr-r b{font-weight:600;color:#f7f6f2}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="hdr">
+  <div class="hdr-k">Today&rsquo;s routing</div>
+  <div class="hdr-r"><span>Stops</span><b id="s-stops">—</b></div>
+  <div class="hdr-r"><span>Loaded miles</span><b id="s-miles">—</b></div>
+  <div class="hdr-r"><span>Drive time</span><b id="s-drive">—</b></div>
+</div>
+<div class="legend">
+  <div><span class="sw" style="background:#16283f;border:1.5px solid #dfe7d2"></span>Pickup</div>
+  <div><span class="sw" style="border:1.5px solid #dfe7d2"></span>Drop-off</div>
+  <div><span class="sw" style="background:#5d7340"></span>Crew on the move</div>
+  <div><span class="sw" style="background:#a3b689"></span>Behind schedule</div>
+</div>
+<script>
+const PLACES = {
+  '1420 Tennyson St':        [39.7726, -105.0447],
+  'Tennyson St':             [39.7726, -105.0447],
+  'RiNo':                    [39.7659, -104.9797],
+  'Wash Park':               [39.7005, -104.9700],
+  'Commerce City storage':   [39.8083, -104.9339],
+  'Commerce City':           [39.8083, -104.9339],
+  'Golden':                  [39.7555, -105.2211],
+  'Littleton':               [39.6133, -105.0166],
+  'Highlands Ranch':         [39.5539, -104.9689],
+  'Parker':                  [39.5186, -104.7614],
+  'Aurora':                  [39.7294, -104.8319],
+  'Arvada':                  [39.8028, -105.0875],
+  'Centennial':              [39.5807, -104.8772],
+  'Westminster':             [39.8367, -105.0372],
+  'Thornton':                [39.8681, -104.9719],
+  'Lakewood':                [39.7047, -105.0814],
+  'Colorado Springs':        [38.8339, -104.8214],
+  'Fort Collins':            [40.5853, -105.0844],
+  'Grand Junction':          [39.0639, -108.5506],
+  'Denver':                  [39.7392, -104.9903]
+};
+const DEFAULT_JOBS = [
+  { id:'FM-8841', customer:'Doyle, D.',    from:'1420 Tennyson St', to:'Golden',                crew:'Crew A', status:'onsite'     },
+  { id:'FM-8842', customer:'Whitfield, R.',from:'Wash Park',        to:'Commerce City storage', crew:'Crew C', status:'onsite', late:45 },
+  { id:'FM-8843', customer:'Reyes Design', from:'Commerce City',    to:'RiNo',                  crew:'Crew B', status:'enroute'    },
+  { id:'FM-8844', customer:'Kaplan, D.',   from:'Littleton',        to:'Parker',                crew:null,     status:'unassigned' },
+  { id:'FM-8845', customer:'Okonjo, A.',   from:'Denver',           to:'Denver',                crew:null,     status:'unassigned' },
+  { id:'FM-8839', customer:'Brenner, D.',  from:'Denver',           to:'Arvada',                crew:'Crew D', status:'complete'   }
+];
+const STATUS = { unassigned:'Unassigned', scheduled:'Scheduled', enroute:'En route', onsite:'Loading', complete:'Complete' };
+
+const map = L.map('map', { zoomControl:true, attributionControl:true, scrollWheelZoom:true })
+  .setView([39.73, -104.98], 10);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© OpenStreetMap contributors', maxZoom:18
+}).addTo(map);
+
+function coord(name){
+  if (!name) return null;
+  const key = Object.keys(PLACES).find(k => name.toLowerCase().indexOf(k.toLowerCase()) > -1);
+  return key ? PLACES[key] : null;
+}
+function miles(a, b){
+  const R = 3958.8, dLat = (b[0]-a[0])*Math.PI/180, dLon = (b[1]-a[1])*Math.PI/180;
+  const la = a[0]*Math.PI/180, lb = b[0]*Math.PI/180;
+  const h = Math.sin(dLat/2)**2 + Math.cos(la)*Math.cos(lb)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h)) * 1.32; // straight line → road factor
+}
+function driveMin(mi){ return Math.max(6, Math.round(mi / 32 * 60)); }
+function icon(cls, label){
+  return L.divIcon({ className:'', html:'<div class="pin '+cls+'">'+(label||'')+'</div>', iconSize:[16,16], iconAnchor:[8,8] });
+}
+function tip(job, kind, mi, mins){
+  return '<div class="fm-t-kick">'+job.id+' · '+STATUS[job.status]+'</div>'+
+    '<div>'+job.customer+'</div>'+
+    '<div class="fm-t-sub">'+kind+' · '+(job.crew || 'no crew assigned')+'</div>'+
+    '<div class="fm-t-sub">'+mi.toFixed(1)+' mi · '+mins+' min drive</div>';
+}
+
+let layer = L.layerGroup().addTo(map);
+function render(jobs){
+  layer.clearLayers();
+  let totalMi = 0, totalMin = 0, stops = 0;
+  const pts = [];
+  jobs.forEach(j => {
+    const a = coord(j.from), b = coord(j.to);
+    if (!a || !b) return;
+    const sameSpot = Math.abs(a[0]-b[0]) < 0.004 && Math.abs(a[1]-b[1]) < 0.004;
+    const bb = sameSpot ? [b[0]+0.012, b[1]+0.016] : b;
+    const mi = Math.max(1.2, miles(a, bb)), mins = driveMin(mi);
+    const active = j.status !== 'complete';
+    if (active) { totalMi += mi; totalMin += mins; }
+    stops += 2;
+    pts.push(a, bb);
+
+    const color = j.status === 'complete' ? 'rgba(223,231,210,.35)' : j.late ? '#a3b689' : j.status === 'unassigned' ? 'rgba(223,231,210,.55)' : '#5d7340';
+    const line = L.polyline([a, bb], {
+      color, weight: j.status === 'complete' ? 1.5 : 2.5,
+      dashArray: j.status === 'unassigned' ? '3 6' : '7 5', opacity: active ? .95 : .5
+    }).addTo(layer);
+    line.bindTooltip(tip(j,'Route', mi, mins), { className:'fm', sticky:true });
+
+    L.marker(a, { icon: icon('pin-o') }).addTo(layer)
+      .bindTooltip(tip(j,'Pickup', mi, mins), { className:'fm', direction:'top', offset:[0,-8] });
+    L.marker(bb, { icon: icon('pin-d') }).addTo(layer)
+      .bindTooltip(tip(j,'Drop-off', mi, mins), { className:'fm', direction:'top', offset:[0,-8] });
+
+    if (j.status === 'enroute' || j.status === 'onsite' || j.status === 'complete') {
+      const t = j.status === 'enroute' ? 0.45 : j.status === 'onsite' ? 0.04 : 1;
+      const truck = [a[0] + (bb[0]-a[0])*t, a[1] + (bb[1]-a[1])*t];
+      const cls = 'pin-t' + (j.late ? ' pin-late' : '') + (j.status === 'complete' ? ' pin-done' : '');
+      L.marker(truck, { icon: icon(cls), zIndexOffset: 400 }).addTo(layer)
+        .bindTooltip(tip(j, j.status === 'complete' ? 'Delivered' : (j.crew || 'Crew') + ' ' + STATUS[j.status].toLowerCase(), mi, mins),
+          { className:'fm', direction:'top', offset:[0,-10] });
+    }
+  });
+  document.getElementById('s-stops').textContent = stops;
+  document.getElementById('s-miles').textContent = totalMi.toFixed(1) + ' mi';
+  document.getElementById('s-drive').textContent = Math.floor(totalMin/60) + 'h ' + (totalMin%60) + 'm';
+  if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.22), { animate:false });
+}
+render(DEFAULT_JOBS);
+
+window.addEventListener('message', e => {
+  const d = e.data;
+  if (d && d.type === 'fm-jobs' && Array.isArray(d.jobs) && d.jobs.length) render(d.jobs);
+});
+if (window.parent !== window) window.parent.postMessage({ type:'fm-map-ready' }, '*');
+</script>
+</body>
+</html>

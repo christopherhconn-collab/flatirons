@@ -1,0 +1,353 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Flatirons Movers — design tokens
+   Source of truth: design_handoff_flatirons_movers/README.md ("Design tokens").
+   Every value here is lifted from that document. Do not introduce a third hue.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* `static` emits every variable whether or not a utility references it. The
+   token reference page paints swatches with `var(--color-*)` directly, and
+   without this Tailwind tree-shakes the unused ones away. */
+@theme static {
+  /* — Color ————————————————————————————————————————————————————————————— */
+  --color-ink: #16283f; /* primary text, dark surfaces, header bars, primary buttons on light */
+  --color-ink-deep: #101e30; /* dispatch board ground, app chrome */
+  --color-ink-deepest: #0b1624; /* map ground, deepest surface */
+
+  --color-olive: #5d7340; /* primary CTA fill, active/checked states, progress */
+  --color-olive-dark: #41522d; /* olive text on light tinted fills (accessible at body size) */
+  --color-olive-pale: #a3b689; /* accent text on dark surfaces, "behind schedule" */
+  --color-olive-mist: #dfe7d2; /* light text on navy, subtle chips on dark */
+  --color-olive-wash: #eef1e8; /* selected / complete row fill on light */
+  --color-olive-tint: #f1f4ea; /* lightest accent fill */
+
+  --color-paper: #fbfaf7; /* card surface */
+  --color-bg: #f7f6f2; /* page ground */
+  --color-surface: #efece4; /* table headers, secondary panels */
+  --color-desk: #e8e6e0; /* outermost app background */
+
+  /* Derived values. Used as literal rgba() in the prototype; named here so a
+     tuning pass happens in one place. */
+  --color-line: rgb(22 40 63 / 0.16); /* hairline border on light */
+  --color-line-strong: rgb(22 40 63 / 0.24); /* inputs */
+  --color-line-seg: rgb(22 40 63 / 0.22); /* segmented controls */
+  --color-grid: rgb(22 40 63 / 0.14); /* grid-gap fill behind 1px dividers */
+
+  /* Text opacities carry an `ink-`/`cream-` prefix because `text-*` addresses
+     both the colour and the font-size namespace: a bare `--color-body` would
+     collide with `--text-body` and `text-body` would become ambiguous. */
+  --color-ink-lede: rgb(22 40 63 / 0.75); /* lede paragraph */
+  --color-ink-body: rgb(22 40 63 / 0.68); /* body text, secondary */
+  --color-ink-muted: rgb(22 40 63 / 0.6); /* muted label text */
+  --color-ink-quiet: rgb(22 40 63 / 0.55); /* quietest */
+  --color-ink-disabled: rgb(22 40 63 / 0.45); /* disabled / inactive */
+
+  --color-line-dark: rgb(223 231 210 / 0.16); /* hairline border on dark */
+  --color-line-dark-strong: rgb(223 231 210 / 0.28);
+  --color-line-dark-strongest: rgb(223 231 210 / 0.4); /* .35 also in use */
+  --color-cream-body: rgb(247 246 242 / 0.82); /* body text on dark */
+  --color-cream-muted: rgb(247 246 242 / 0.6);
+  --color-cream-quiet: rgb(247 246 242 / 0.55);
+
+  /* — Typography ———————————————————————————————————————————————————————
+     Two families only. Condensed is always 600 and always uppercase. */
+  --font-condensed: var(--font-barlow-condensed), "Barlow Condensed", system-ui,
+    sans-serif;
+  --font-body: var(--font-barlow), "Barlow", system-ui, sans-serif;
+  --font-sans: var(--font-barlow), "Barlow", system-ui, sans-serif;
+
+  /* Display / headings — Barlow Condensed 600, uppercase.
+     Ranges in the spec are expressed as discrete steps. */
+  --text-hero: 92px; /* hero h1, navy variant */
+  --text-hero--line-height: 0.92;
+  --text-hero--font-weight: 600;
+
+  --text-h1: 76px; /* marketing page h1, top of range */
+  --text-h1--line-height: 0.94;
+  --text-h1--font-weight: 600;
+
+  --text-h1-sm: 60px; /* marketing page h1, bottom of range */
+  --text-h1-sm--line-height: 0.98;
+  --text-h1-sm--font-weight: 600;
+
+  --text-h2: 34px; /* section h2, top of range */
+  --text-h2--line-height: 1;
+  --text-h2--font-weight: 600;
+
+  --text-h2-sm: 30px; /* section h2, bottom of range */
+  --text-h2-sm--line-height: 1;
+  --text-h2-sm--font-weight: 600;
+
+  --text-card-title: 27px; /* card title, top of range */
+  --text-card-title--line-height: 1.05;
+  --text-card-title--font-weight: 600;
+
+  --text-card-title-sm: 22px; /* card title, bottom of range */
+  --text-card-title-sm--line-height: 1.15;
+  --text-card-title-sm--font-weight: 600;
+
+  --text-stat: 52px; /* display statistic, top of range */
+  --text-stat--line-height: 1;
+  --text-stat--font-weight: 600;
+
+  --text-stat-md: 38px; /* portal header date */
+  --text-stat-md--line-height: 1;
+  --text-stat-md--font-weight: 600;
+
+  --text-stat-sm: 30px; /* display statistic, bottom of range */
+  --text-stat-sm--line-height: 1;
+  --text-stat-sm--font-weight: 600;
+
+  /* Labels and controls — Barlow, uppercase, letterspaced. */
+  --text-kicker: 11px; /* kicker / eyebrow, olive */
+  --text-kicker--line-height: 1;
+  --text-kicker--letter-spacing: 0.18em;
+  --text-kicker--font-weight: 500;
+
+  --text-kicker-sm: 10px; /* kicker, tight variant — spec allows to .24em */
+  --text-kicker-sm--line-height: 1;
+  --text-kicker-sm--letter-spacing: 0.24em;
+  --text-kicker-sm--font-weight: 500;
+
+  --text-label: 10.5px; /* field label */
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.15em;
+  --text-label--font-weight: 500;
+
+  --text-th: 10.5px; /* table header */
+  --text-th--line-height: 1;
+  --text-th--letter-spacing: 0.16em;
+  --text-th--font-weight: 500;
+
+  --text-btn: 15px; /* button, top of range */
+  --text-btn--line-height: 1.2;
+  --text-btn--letter-spacing: 0.1em;
+  --text-btn--font-weight: 600;
+
+  --text-btn-sm: 11px; /* button, bottom of range */
+  --text-btn-sm--line-height: 1.2;
+  --text-btn-sm--letter-spacing: 0.1em;
+  --text-btn-sm--font-weight: 600;
+
+  /* Body — Barlow 400/500. Minimum body size anywhere is 12.5px. */
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 1.65;
+  --text-body: 15px;
+  --text-body--line-height: 1.6;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 1.55;
+
+  --text-dense: 15px; /* tables, list rows */
+  --text-dense--line-height: 1.5;
+  --text-dense-sm: 13px;
+  --text-dense-sm--line-height: 1.3;
+
+  --text-meta: 13px; /* meta / caption, muted */
+  --text-meta--line-height: 1.5;
+  --text-meta-sm: 11.5px;
+  --text-meta-sm--line-height: 1.4;
+
+  /* Wordmark */
+  --text-wordmark: 34px;
+  --text-wordmark--line-height: 1;
+  --text-wordmark--letter-spacing: 0.14em;
+  --text-wordmark--font-weight: 700;
+
+  --text-wordmark-sub: 11px;
+  --text-wordmark-sub--line-height: 1;
+  --text-wordmark-sub--letter-spacing: 0.42em;
+  --text-wordmark-sub--font-weight: 500;
+
+  /* — Geometry ——————————————————————————————————————————————————————————
+     border-radius: 0 everywhere. This is the single most important visual
+     rule, so every radius scale step resolves to zero. */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* Elevation — used sparingly, on floating mobile frames only. */
+  --shadow-frame: 0 4px 22px rgb(22 40 63 / 0.12);
+
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Base
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  /* No rounded corners on any element — buttons, inputs, cards, chips,
+     avatars, badges. Belt and braces alongside the zeroed radius scale, so a
+     third-party stylesheet cannot reintroduce a curve. */
+  *,
+  *::before,
+  *::after {
+    border-radius: 0;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-condensed);
+    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Never leave the browser default. */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-olive);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgb(93 115 64 / 0.3);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design-system patterns
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Barlow Condensed is always 600 and always uppercase, so the family, the
+     weight and the transform travel together. Headings get this from the base
+     layer; pair `.display` with a text-* size on anything that is not an
+     h1–h6 — a stat, a wordmark, a button-sized card title. */
+  .display {
+    font-family: var(--font-condensed);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* Registration marks — a hairline frame wearing four `+` crosshairs.
+     Used on the estimate form, "next action" cards, and callouts. Drawn with
+     pseudo-elements so markup stays clean; the prototype's four
+     <i class="corner"> children are not needed. */
+  .blueprint {
+    position: relative;
+    border: 1px solid var(--color-line);
+  }
+  .blueprint::before,
+  .blueprint::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    pointer-events: none;
+    color: rgb(22 40 63 / 0.55);
+  }
+  /* Two 11px crosshairs per pseudo-element, one pair per diagonal, painted as
+     background gradients: a 1px vertical bar and a 1px horizontal bar meeting
+     at the corner of the frame. */
+  .blueprint::before {
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-size:
+      1px 11px,
+      11px 1px,
+      1px 11px,
+      11px 1px;
+    background-position:
+      left 5px top 0,
+      left 0 top 5px,
+      right 5px bottom 0,
+      right 0 bottom 5px;
+  }
+  .blueprint::after {
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-size:
+      1px 11px,
+      11px 1px,
+      1px 11px,
+      11px 1px;
+    background-position:
+      right 5px top 0,
+      right 0 top 5px,
+      left 5px bottom 0,
+      left 0 bottom 5px;
+  }
+  /* Reversed: crosshairs and frame in mist on a navy ground. */
+  .blueprint-dark {
+    border-color: var(--color-line-dark-strong);
+  }
+  .blueprint-dark::before,
+  .blueprint-dark::after {
+    color: rgb(223 231 210 / 0.55);
+  }
+
+  /* 1px dividers are produced by grid gaps, not borders. Children must carry
+     an opaque background of their own. */
+  .gridlines {
+    display: grid;
+    gap: 1px;
+    background: var(--color-grid);
+  }
+
+  /* Home hero ground: 1px topographic lines at 34px intervals. */
+  .topo {
+    background-image:
+      linear-gradient(rgb(22 40 63 / 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(22 40 63 / 0.055) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+}
+
+@layer utilities {
+  /* Hover treatment for interactive elements. */
+  .interactive {
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      color 0.12s,
+      border-color 0.12s;
+  }
+  .interactive:hover {
+    filter: brightness(1.04);
+  }
+}

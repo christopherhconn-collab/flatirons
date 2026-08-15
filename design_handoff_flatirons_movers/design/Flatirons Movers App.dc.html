@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="stylesheet" href="_ds/industry-5daa45b7-f3ba-478b-9f03-3acdec467a94/styles.css">
+<script src="_ds/industry-5daa45b7-f3ba-478b-9f03-3acdec467a94/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --color-bg:#f7f6f2;--color-surface:#efece4;--color-text:#16283f;--color-accent:#5d7340;--color-accent-2:#16283f;
+  --color-accent-100:#f1f4ea;--color-accent-200:#dfe7d2;--color-accent-300:#c5d2b0;--color-accent-400:#a3b689;
+  --color-accent-500:#7d9560;--color-accent-600:#4f6337;--color-accent-700:#41522d;--color-accent-800:#354325;--color-accent-900:#26301b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#e8e6e0;font-family:"Barlow",system-ui,sans-serif;color:#16283f;-webkit-font-smoothing:antialiased}
+input,button,textarea{font-family:"Barlow",sans-serif}
+input:focus-visible,button:focus-visible{outline:2px solid #5d7340;outline-offset:2px}
+a{color:#4f6337;text-underline-offset:3px}
+a:hover{color:#16283f}
+.topo{background-image:linear-gradient(rgba(22,40,63,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(22,40,63,.055) 1px,transparent 1px);background-size:34px 34px}
+.hit{cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+.hit:hover{filter:brightness(1.04)}
+input::placeholder{color:rgba(22,40,63,.42)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+</style></helmet>
+
+<div style="background:#e8e6e0">
+
+<div style="position:sticky;top:0;z-index:40;background:#101e30;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;border-bottom:1px solid rgba(223,231,210,.2)">
+  <div style="display:flex;align-items:center;gap:10px">
+    <svg viewBox="0 0 64 30" width="30" height="14"><path d="M2 30 L18 6 L26 30 Z" fill="#dfe7d2"></path><path d="M20 30 L34 2 L44 30 Z" fill="#dfe7d2"></path><path d="M38 30 L50 9 L62 30 Z" fill="#5d7340"></path></svg>
+    <span style="font:600 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.2em;color:#f7f6f2">FLATIRONS</span>
+  </div>
+  <div style="display:flex;align-items:stretch;height:48px">
+    <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+      <div class="hit" onClick="{{ item.onClick }}" style="display:flex;align-items:center;padding:0 15px;font:600 11px/1 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:{{ item.fg }};border-bottom:2px solid {{ item.line }};background:{{ item.bg }}">{{ item.label }}</div>
+    </sc-for>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#a3b689">
+    <span>{{ clockLabel }}</span>
+    <span style="color:rgba(247,246,242,.55)">Prototype &middot; live data</span>
+  </div>
+</div>
+
+<sc-if value="{{ isSite }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2">
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#16283f;color:#dfe7d2;padding:0 34px;height:34px;font:500 11px/1 'Barlow',sans-serif;letter-spacing:.09em;text-transform:uppercase">
+    <span>Serving the Front Range since 2024 &middot; Licensed &amp; insured &middot; PUC 00412</span>
+    <span style="display:flex;gap:24px;align-items:center"><span>Mon&ndash;Sat 7a&ndash;7p</span><span class="hit" onClick="{{ goPortal }}" style="color:#a3b689">Track my move</span><span style="color:#f7f6f2">303.555.0150</span></span>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px 32px;padding:18px 34px;border-bottom:1px solid rgba(22,40,63,.14)">
+    <div style="display:flex;align-items:center;gap:11px;flex:0 0 auto">
+      <svg viewBox="0 0 64 30" width="40" height="19"><path d="M2 30 L18 6 L26 30 Z" fill="#16283f"></path><path d="M20 30 L34 2 L44 30 Z" fill="#16283f"></path><path d="M38 30 L50 9 L62 30 Z" fill="#5d7340"></path></svg>
+      <div style="line-height:1">
+        <div style="font:600 19px/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#16283f">FLATIRONS</div>
+        <div style="font:500 9.5px/1.4 'Barlow',sans-serif;letter-spacing:.42em;color:#5d7340">MOVERS</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;flex:0 0 auto;font:500 12px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#16283f">
+      <sc-for list="{{ siteNav }}" as="item" hint-placeholder-count="5">
+        <span class="hit" onClick="{{ item.onClick }}" style="color:{{ item.fg }};font-weight:{{ item.weight }};border-bottom:2px solid {{ item.line }};padding-bottom:4px;white-space:nowrap">{{ item.label }}</span>
+      </sc-for>
+      <button class="hit" onClick="{{ startEstimate }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:11px 18px;font:600 12px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;flex:0 0 auto">Free estimate</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ siteHome }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2">
+  <div class="topo" style="display:grid;grid-template-columns:1.12fr .88fr;gap:44px;padding:52px 34px 46px;align-items:start">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <span style="width:26px;height:1px;background:#5d7340"></span>
+        <span style="font:500 11px/1 'Barlow',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#5d7340">Front Range &middot; Since 2024</span>
+      </div>
+      <h1 style="font:600 76px/.94 'Barlow Condensed',sans-serif;color:#16283f;margin:0 0 8px;text-transform:uppercase">Strong hands.<br>Careful moves.</h1>
+      <div style="font:500 15px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:22px">Local. Reliable. Professional.</div>
+      <p style="font:400 17px/1.65 'Barlow',sans-serif;color:rgba(22,40,63,.78);max-width:44ch;margin:0 0 30px;text-wrap:pretty">Flat hourly rates, no surprise fees, no deposit to book. We wrap the furniture, pad the doorframes, and get your Saturday back.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14);max-width:560px">
+        <div style="background:#f7f6f2;padding:16px 18px"><div style="font:600 30px/1 'Barlow Condensed',sans-serif">4,100+</div><div style="font:500 10.5px/1.4 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(22,40,63,.6);margin-top:5px">Moves completed</div></div>
+        <div style="background:#f7f6f2;padding:16px 18px"><div style="font:600 30px/1 'Barlow Condensed',sans-serif">4.9<span style="font-size:18px;color:#5d7340">/5</span></div><div style="font:500 10.5px/1.4 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(22,40,63,.6);margin-top:5px">612 reviews</div></div>
+        <div style="background:#f7f6f2;padding:16px 18px"><div style="font:600 30px/1 'Barlow Condensed',sans-serif">$0</div><div style="font:500 10.5px/1.4 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(22,40,63,.6);margin-top:5px">Deposit to book</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14);margin-top:34px;max-width:560px">
+        <div style="background:#f7f6f2;padding:18px"><div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#5d7340;margin-bottom:8px">2 movers + truck</div><div style="font:600 26px/1 'Barlow Condensed',sans-serif">$149<span style="font-size:15px;color:rgba(22,40,63,.55)">/hr</span></div></div>
+        <div style="background:#f7f6f2;padding:18px"><div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#5d7340;margin-bottom:8px">3 movers + truck</div><div style="font:600 26px/1 'Barlow Condensed',sans-serif">$199<span style="font-size:15px;color:rgba(22,40,63,.55)">/hr</span></div></div>
+      </div>
+    </div>
+
+    <div class="blueprint" style="background:#fbfaf7;padding:26px 24px 24px">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="font:600 22px/1 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Free estimate</div>
+      <div style="font:400 13px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-bottom:22px">Two minutes. No phone tag.</div>
+      <div style="display:grid;gap:14px">
+        <div>
+          <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Moving from</label>
+          <input class="input" value="{{ q.from }}" onChange="{{ onFrom }}" placeholder="ZIP or address" style="border-radius:0;width:100%;padding:11px 12px;font-size:14px;border:1px solid rgba(22,40,63,.24);background:#f7f6f2">
+        </div>
+        <div>
+          <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Moving to</label>
+          <input class="input" value="{{ q.to }}" onChange="{{ onTo }}" placeholder="ZIP or address" style="border-radius:0;width:100%;padding:11px 12px;font-size:14px;border:1px solid rgba(22,40,63,.24);background:#f7f6f2">
+        </div>
+        <div>
+          <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Home size</label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(22,40,63,.22);border:1px solid rgba(22,40,63,.22)">
+            <sc-for list="{{ sizeOpts }}" as="item" hint-placeholder-count="4">
+              <div class="hit" onClick="{{ item.onClick }}" style="text-align:center;padding:11px 0;font:{{ item.weight }} 13px/1 'Barlow',sans-serif;background:{{ item.bg }};color:{{ item.fg }}">{{ item.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Target date</label>
+          <div style="border:1px solid rgba(22,40,63,.24);background:#f7f6f2;padding:11px 12px;font:500 14px/1 'Barlow',sans-serif">{{ q.date }}</div>
+        </div>
+        <button class="hit" onClick="{{ startEstimate }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:15px 0;width:100%;font:600 15px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Build my estimate</button>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center;font:400 11.5px/1 'Barlow',sans-serif;color:rgba(22,40,63,.5)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#5d7340" stroke-width="1.5"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          Licensed, bonded, insured
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(22,40,63,.14);border-top:1px solid rgba(22,40,63,.14)">
+    <div class="blueprint" style="background:#f7f6f2;padding:30px 26px;border:0">
+      <i class="corner tl"></i><i class="corner br"></i>
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:12px">01 &middot; Residential</div>
+      <div style="font:600 27px/1.05 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Apartments to<br>four-bedrooms</div>
+      <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0">Stairs, tight Denver alleys and Capitol Hill walk-ups and third-floor walk-ups included at no upcharge.</p>
+    </div>
+    <div class="blueprint" style="background:#f7f6f2;padding:30px 26px;border:0">
+      <i class="corner tl"></i><i class="corner br"></i>
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:12px">02 &middot; Commercial</div>
+      <div style="font:600 27px/1.05 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Offices moved<br>over a weekend</div>
+      <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0">Labeled crates, floor plans honored, desks reassembled before Monday.</p>
+    </div>
+    <div class="blueprint" style="background:#f7f6f2;padding:30px 26px;border:0">
+      <i class="corner tl"></i><i class="corner br"></i>
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:12px">03 &middot; Packing &amp; storage</div>
+      <div style="font:600 27px/1.05 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Boxed by us,<br>held by us</div>
+      <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0">Climate-controlled units in Commerce City when the closing date slips.</p>
+    </div>
+  </div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ sitePricing }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2">
+  <div style="padding:46px 34px 40px">
+    <div style="max-width:70ch;margin-bottom:34px">
+      <div style="font:500 11px/1 'Barlow',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#5d7340;margin-bottom:16px">Pricing</div>
+      <h1 style="font:600 60px/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 14px">What it costs,<br>before you call</h1>
+      <p style="font:400 17px/1.65 'Barlow',sans-serif;color:rgba(22,40,63,.75);margin:0;text-wrap:pretty">One hourly rate per crew size. Three-hour minimum, then billed to the quarter hour. Travel inside the Denver metro is $45 flat, and we run statewide.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14);margin-bottom:36px">
+      <div class="blueprint" style="background:#fbfaf7;padding:26px;border:0">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:14px">2 movers + truck</div>
+        <div style="font:600 46px/1 'Barlow Condensed',sans-serif">$149<span style="font-size:20px;color:rgba(22,40,63,.55)">/hr</span></div>
+        <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:14px 0 0">Studios and one-bedrooms. Typically 3&ndash;5 hours door to door.</p>
+      </div>
+      <div class="blueprint" style="background:#eef1e8;padding:26px;border:0">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#41522d;margin-bottom:14px">3 movers + truck &middot; most booked</div>
+        <div style="font:600 46px/1 'Barlow Condensed',sans-serif">$199<span style="font-size:20px;color:rgba(22,40,63,.55)">/hr</span></div>
+        <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:14px 0 0">Two and three-bedrooms, stairs on either end, one truck load.</p>
+      </div>
+      <div class="blueprint" style="background:#fbfaf7;padding:26px;border:0">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:14px">4 movers + truck</div>
+        <div style="font:600 46px/1 'Barlow Condensed',sans-serif">$249<span style="font-size:20px;color:rgba(22,40,63,.55)">/hr</span></div>
+        <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:14px 0 0">Four bedrooms, offices, or a hard deadline. Fewer hours, same care.</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:34px">
+      <div>
+        <div style="font:600 26px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:16px">Add-ons, at cost of labor</div>
+        <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7">
+          <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>Packing crew, day before</span><span style="font-weight:600">$65/hr</span></div>
+          <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>TV crate, per set</span><span style="font-weight:600">$40</span></div>
+          <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>Upright piano handling</span><span style="font-weight:600">$180</span></div>
+          <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>Gun safe, under 600 lb</span><span style="font-weight:600">$220</span></div>
+          <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>Storage, climate controlled</span><span style="font-weight:600">from $95/mo</span></div>
+          <div style="display:flex;justify-content:space-between;padding:13px 18px;font:400 15px/1.3 'Barlow',sans-serif"><span>Wrap, pads, tape, wardrobe boxes</span><span style="font-weight:600;color:#41522d">Included</span></div>
+        </div>
+        <div style="font:600 26px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:32px 0 16px">What a typical move runs</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14)">
+          <sc-for list="{{ typicalBands }}" as="item" hint-placeholder-count="4">
+            <div style="background:#fbfaf7;padding:18px">
+              <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:8px">{{ item.label }}</div>
+              <div style="font:600 24px/1 'Barlow Condensed',sans-serif">{{ item.range }}</div>
+              <div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:6px">{{ item.crew }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div class="blueprint" style="background:#fbfaf7;padding:22px;margin-bottom:20px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font:600 22px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:14px">The rules, plainly</div>
+          <div style="display:grid;gap:12px;font:400 14.5px/1.55 'Barlow',sans-serif;color:rgba(22,40,63,.75)">
+            <div>Three-hour minimum, then billed to the quarter hour &mdash; the clock starts when we arrive, not when we leave the yard.</div>
+            <div>$45 flat travel inside the Denver metro. Anywhere else in Colorado, $1.15 per loaded mile.</div>
+            <div>No deposit, no card required to hold a date. Cancel up to 48 hours out for free.</div>
+            <div>Stairs, long carries and elevator waits are never an upcharge. Weekend rates are the same as weekday.</div>
+          </div>
+        </div>
+        <div style="border:1px dashed rgba(22,40,63,.3);padding:20px">
+          <div style="font:600 19px/1.15 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:8px">Your estimate is a range, not a bid</div>
+          <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.7);margin:0 0 16px">You pay the hours we work. Nine out of ten moves land inside the range we quote &mdash; when we go over, we eat the difference above the top of the range.</p>
+          <button class="hit" onClick="{{ startEstimate }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:13px 20px;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Build my estimate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ siteArea }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2">
+  <div style="padding:46px 34px 40px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-bottom:34px">
+      <div>
+        <div style="font:500 11px/1 'Barlow',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#5d7340;margin-bottom:16px">Service area</div>
+        <h1 style="font:600 60px/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 14px">Denver metro,<br>and all of Colorado</h1>
+        <p style="font:400 17px/1.65 'Barlow',sans-serif;color:rgba(22,40,63,.75);margin:0 0 22px;text-wrap:pretty">Four trucks out of a Commerce City yard. Anywhere inside the metro we can usually be there the same week &mdash; and we run statewide, from Colorado Springs to the Western Slope, at a flat loaded-mile rate.</p>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14)">
+          <div style="background:#fbfaf7;padding:14px 16px"><div style="font:600 15px/1.2 'Barlow',sans-serif">Denver &amp; RiNo</div><div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:3px">Same-week openings &middot; street permits handled</div></div>
+          <div style="background:#fbfaf7;padding:14px 16px"><div style="font:600 15px/1.2 'Barlow',sans-serif">Aurora &amp; Centennial</div><div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:3px">25 min from the yard</div></div>
+          <div style="background:#fbfaf7;padding:14px 16px"><div style="font:600 15px/1.2 'Barlow',sans-serif">Littleton &amp; Highlands Ranch</div><div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:3px">Two crews staged daily</div></div>
+          <div style="background:#fbfaf7;padding:14px 16px"><div style="font:600 15px/1.2 'Barlow',sans-serif">Golden, Arvada &amp; Lakewood</div><div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:3px">HOA windows booked for you</div></div>
+          <div style="background:#fbfaf7;padding:14px 16px"><div style="font:600 15px/1.2 'Barlow',sans-serif">Westminster &amp; Thornton</div><div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:3px">$45 travel, no mileage</div></div>
+          <div style="background:#fbfaf7;padding:14px 16px"><div style="font:600 15px/1.2 'Barlow',sans-serif">Statewide long-haul</div><div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:3px">Springs, Fort Collins, mountain towns &middot; $1.15/mi</div></div></div></div>
+        </div>
+      </div>
+      <div>
+        <div style="border:1px solid rgba(22,40,63,.2)">
+          <iframe src="./dispatch-map.html" title="Flatirons service area" style="display:block;width:100%;height:430px;border:0"></iframe>
+        </div>
+        <div style="font:400 12px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.55);margin-top:10px">Live board: today&rsquo;s pickups, drop-offs and crews. Hover a route for distance and drive time.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ siteCommercial }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2">
+  <div style="padding:46px 34px 40px">
+    <div style="max-width:70ch;margin-bottom:34px">
+      <div style="font:500 11px/1 'Barlow',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#5d7340;margin-bottom:16px">Commercial</div>
+      <h1 style="font:600 60px/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 14px">Closed Friday.<br>Open Monday.</h1>
+      <p style="font:400 17px/1.65 'Barlow',sans-serif;color:rgba(22,40,63,.75);margin:0;text-wrap:pretty">Offices, clinics and labs across the metro and up the Front Range. We work the weekend so your team never loses a day, and we hand building management the paperwork before they ask for it.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14);margin-bottom:34px">
+      <div class="blueprint" style="background:#fbfaf7;padding:26px;border:0">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:12px">01 &middot; Planning</div>
+        <div style="font:600 24px/1.1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Walkthrough<br>and floor plan</div>
+        <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0">We label to your new seating chart. Every crate gets a room number, every desk gets a photo of its cable run.</p>
+      </div>
+      <div class="blueprint" style="background:#fbfaf7;padding:26px;border:0">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:12px">02 &middot; Paperwork</div>
+        <div style="font:600 24px/1.1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">COI in your<br>manager&rsquo;s inbox</div>
+        <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0">$2M general liability, additional insured on request, same day. Loading dock and elevator windows booked by us.</p>
+      </div>
+      <div class="blueprint" style="background:#fbfaf7;padding:26px;border:0">
+        <i class="corner tl"></i><i class="corner br"></i>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:12px">03 &middot; Cutover</div>
+        <div style="font:600 24px/1.1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Desks built<br>before standup</div>
+        <p style="font:400 14px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0">Monitors mounted, chairs at the right desks, crates collected the following Tuesday at no charge.</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start">
+      <div>
+        <div style="font:600 26px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:16px">How commercial is priced</div>
+        <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7">
+          <div style="display:flex;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>Under 2,000 sq ft</span><span style="font-weight:600">Hourly, 4 movers</span></div>
+          <div style="display:flex;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>2,000&ndash;6,000 sq ft</span><span style="font-weight:600">Flat bid after walkthrough</span></div>
+          <div style="display:flex;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 15px/1.3 'Barlow',sans-serif"><span>Crate rental, per crate / week</span><span style="font-weight:600">$4</span></div>
+          <div style="display:flex;justify-content:space-between;padding:14px 18px;font:400 15px/1.3 'Barlow',sans-serif"><span>After-hours &amp; weekend</span><span style="font-weight:600;color:#41522d">No premium</span></div>
+        </div>
+        <div style="font:400 13px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.6);margin-top:12px">Recent: Baumann Dental (4,200 sq ft, two ops rooms, weekend), Reyes Design (studio of 11), Meadow Labs (cold storage, chain of custody).</div>
+      </div>
+      <div class="blueprint" style="background:#eef1e8;padding:24px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font:600 24px/1.05 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:10px">Book a walkthrough</div>
+        <p style="font:400 14.5px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.72);margin:0 0 18px">Thirty minutes on site, a flat bid in two business days, and a named project lead who answers their phone on move day.</p>
+        <div style="display:flex;gap:10px">
+          <button class="hit" onClick="{{ startEstimate }}" style="background:#16283f;color:#f7f6f2;border:0;padding:14px 20px;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Request a bid</button>
+          <span style="display:grid;place-items:center;font:500 13px/1 'Barlow',sans-serif;color:#41522d">or call 303.555.0150</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ siteReviews }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2">
+  <div style="padding:46px 34px 40px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:34px;margin-bottom:30px;flex-wrap:wrap">
+      <div style="max-width:60ch">
+        <div style="font:500 11px/1 'Barlow',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#5d7340;margin-bottom:16px">Reviews</div>
+        <h1 style="font:600 60px/.98 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 14px">Every review,<br>including the 4s</h1>
+        <p style="font:400 17px/1.65 'Barlow',sans-serif;color:rgba(22,40,63,.75);margin:0;text-wrap:pretty">We ask every customer the day after their move and publish what comes back. When something goes wrong we post the fix next to the complaint.</p>
+      </div>
+      <div class="blueprint" style="background:#fbfaf7;padding:22px 26px;min-width:230px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font:600 54px/1 'Barlow Condensed',sans-serif">{{ avgStars }}</div>
+        <div style="font:400 20px/1 'Barlow',sans-serif;color:#5d7340;letter-spacing:.1em;margin:8px 0 8px">{{ avgStarsText }}</div>
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.6)">{{ reviewCount }} reviews &middot; Colorado</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14)">
+      <sc-for list="{{ reviewsList }}" as="item" hint-placeholder-count="4">
+        <div style="background:#fbfaf7;padding:24px 26px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:10px">
+            <span style="font:600 17px/1.2 'Barlow',sans-serif">{{ item.who }}</span>
+            <span style="font:400 15px/1 'Barlow',sans-serif;color:#5d7340;letter-spacing:.08em">{{ item.starsText }}</span>
+          </div>
+          <p style="font:400 15.5px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.78);margin:0 0 12px;text-wrap:pretty">{{ item.text }}</p>
+          <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(22,40,63,.5)">{{ item.where }} &middot; {{ item.when }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSite }}" hint-placeholder-val="{{ true }}">
+  <div style="background:#16283f;padding:34px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="width:34px;height:1px;background:#5d7340"></span>
+      <span style="font:600 30px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#dfe7d2">We move. You settle in.</span>
+      <span style="width:34px;height:1px;background:#5d7340"></span>
+    </div>
+    <button class="hit" onClick="{{ startEstimate }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:14px 22px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Start an estimate</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isEst }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2;min-height:calc(100vh - 48px)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:1px solid rgba(22,40,63,.14)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg viewBox="0 0 64 30" width="32" height="15"><path d="M2 30 L18 6 L26 30 Z" fill="#16283f"></path><path d="M20 30 L34 2 L44 30 Z" fill="#16283f"></path><path d="M38 30 L50 9 L62 30 Z" fill="#5d7340"></path></svg>
+      <span style="font:600 15px/1 'Barlow Condensed',sans-serif;letter-spacing:.14em">FLATIRONS MOVERS</span>
+    </div>
+    <span style="font:400 12.5px/1 'Barlow',sans-serif;color:rgba(22,40,63,.6)">Saved automatically &middot; quote {{ quoteRef }}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(22,40,63,.14);border-bottom:1px solid rgba(22,40,63,.14)">
+    <sc-for list="{{ steps }}" as="item" hint-placeholder-count="4">
+      <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:14px 20px">
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:{{ item.kickerFg }}">{{ item.kicker }}</div>
+        <div style="font:600 17px/1 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:{{ item.fg }};margin-top:6px">{{ item.label }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 350px;min-height:640px">
+    <div style="padding:28px 30px 36px">
+
+      <sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <h2 style="font:600 34px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 6px">Where to where</h2>
+        <p style="font:400 14.5px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.65);margin:0 0 26px;max-width:60ch">Stairs and long carries change the clock more than distance does, so tell us about the doors on both ends.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:720px">
+          <div>
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Moving from</label>
+            <input value="{{ q.from }}" onChange="{{ onFrom }}" placeholder="1420 Tennyson St, Denver" style="border-radius:0;width:100%;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+          </div>
+          <div>
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Moving to</label>
+            <input value="{{ q.to }}" onChange="{{ onTo }}" placeholder="Golden, CO 80401" style="border-radius:0;width:100%;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+          </div>
+          <div>
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Pickup access</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(22,40,63,.22);border:1px solid rgba(22,40,63,.22)">
+              <sc-for list="{{ fromFloorOpts }}" as="item" hint-placeholder-count="4">
+                <div class="hit" onClick="{{ item.onClick }}" style="text-align:center;padding:11px 0;font:{{ item.weight }} 13px/1 'Barlow',sans-serif;background:{{ item.bg }};color:{{ item.fg }}">{{ item.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Drop-off access</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(22,40,63,.22);border:1px solid rgba(22,40,63,.22)">
+              <sc-for list="{{ toFloorOpts }}" as="item" hint-placeholder-count="4">
+                <div class="hit" onClick="{{ item.onClick }}" style="text-align:center;padding:11px 0;font:{{ item.weight }} 13px/1 'Barlow',sans-serif;background:{{ item.bg }};color:{{ item.fg }}">{{ item.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div class="hit" onClick="{{ toggleElevator }}" style="display:flex;align-items:center;gap:12px;margin-top:24px;padding:16px;border:1px solid rgba(22,40,63,.18);background:#fbfaf7;max-width:720px">
+          <span style="width:22px;height:22px;flex:none;border:1px solid {{ elevatorBorder }};background:{{ elevatorBg }};display:grid;place-items:center">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="{{ elevatorTick }}" stroke-width="2.5"><path d="M5 12l5 5L19 7"></path></svg>
+          </span>
+          <div>
+            <div style="font:600 15px/1.2 'Barlow',sans-serif">There&rsquo;s a service elevator we can reserve</div>
+            <div style="font:400 13px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.6)">Cuts the stair premium out of the estimate.</div>
+          </div>
+        </div>
+        <button class="hit" onClick="{{ nextStep }}" style="margin-top:28px;background:#5d7340;color:#f7f6f2;border:0;padding:14px 26px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Next &mdash; what we&rsquo;re moving</button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ step2 }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <h2 style="font:600 34px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 6px">Room by room</h2>
+        <p style="font:400 14.5px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.65);margin:0 0 22px;max-width:60ch">Rough counts are fine &mdash; the crew confirms on arrival. The estimate on the right moves as you count.</p>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+          <sc-for list="{{ roomTabs }}" as="item" hint-placeholder-count="5">
+            <div class="hit" onClick="{{ item.onClick }}" style="padding:9px 14px;font:600 11.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;background:{{ item.bg }};color:{{ item.fg }};border:1px solid {{ item.border }}">{{ item.label }}</div>
+          </sc-for>
+        </div>
+        <div style="border:1px solid rgba(22,40,63,.16)">
+          <div style="display:grid;grid-template-columns:1fr 150px 140px;gap:1px;background:rgba(22,40,63,.12)">
+            <div style="background:#efece4;padding:10px 16px;font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.6)">Item</div>
+            <div style="background:#efece4;padding:10px 16px;font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.6)">Handling</div>
+            <div style="background:#efece4;padding:10px 16px;font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.6);text-align:right">Count</div>
+            <sc-for list="{{ itemRows }}" as="item" hint-placeholder-count="6">
+              <div style="background:{{ item.rowBg }};padding:13px 16px;font:500 15px/1 'Barlow',sans-serif">{{ item.name }}</div>
+              <div style="background:{{ item.rowBg }};padding:13px 16px;font:400 13px/1 'Barlow',sans-serif;color:{{ item.handlingFg }}">{{ item.handling }}</div>
+              <div style="background:{{ item.rowBg }};padding:9px 12px;display:flex;justify-content:flex-end;gap:1px">
+                <button class="hit" onClick="{{ item.dec }}" style="width:32px;height:30px;border:1px solid rgba(22,40,63,.22);background:transparent;font:500 16px/1 'Barlow',sans-serif;color:rgba(22,40,63,.6)">&minus;</button>
+                <span style="width:36px;height:30px;border:1px solid rgba(22,40,63,.22);display:grid;place-items:center;font:600 15px/1 'Barlow',sans-serif;color:{{ item.qtyFg }}">{{ item.qty }}</span>
+                <button class="hit" onClick="{{ item.inc }}" style="width:32px;height:30px;border:1px solid #5d7340;background:#5d7340;font:500 16px/1 'Barlow',sans-serif;color:#fbfaf7">+</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div class="hit" onClick="{{ togglePacking }}" style="display:flex;align-items:center;gap:12px;margin-top:22px;padding:16px;border:1px solid rgba(22,40,63,.18);background:#fbfaf7">
+          <span style="width:22px;height:22px;flex:none;border:1px solid {{ packingBorder }};background:{{ packingBg }};display:grid;place-items:center">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="{{ packingTick }}" stroke-width="2.5"><path d="M5 12l5 5L19 7"></path></svg>
+          </span>
+          <div style="flex:1">
+            <div style="font:600 15px/1.2 'Barlow',sans-serif">Add a packing crew the day before &mdash; $65/hr</div>
+            <div style="font:400 13px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.6)">Boxes, paper and tape included. Kitchens go four times faster.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:26px">
+          <button class="hit" onClick="{{ prevStep }}" style="background:transparent;border:1px solid rgba(22,40,63,.3);padding:14px 22px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#16283f">Back</button>
+          <button class="hit" onClick="{{ nextStep }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:14px 26px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Next &mdash; date &amp; crew</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ step3 }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <h2 style="font:600 34px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 6px">Pick a day, pick a crew</h2>
+        <p style="font:400 14.5px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.65);margin:0 0 24px;max-width:60ch">Bigger crews cost more per hour and less in total. Greyed days are already booked out.</p>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:34px;align-items:start">
+          <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7;padding:18px;width:352px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+              <span style="font:600 20px/1 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase">September 2026</span>
+              <span style="font:400 11.5px/1 'Barlow',sans-serif;color:rgba(22,40,63,.55)">the Denver metro</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+              <sc-for list="{{ dowLabels }}" as="item" hint-placeholder-count="7">
+                <div style="text-align:center;font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:rgba(22,40,63,.45);padding-bottom:6px">{{ item.label }}</div>
+              </sc-for>
+              <sc-for list="{{ calendar }}" as="item" hint-placeholder-count="35">
+                <div class="hit" onClick="{{ item.onClick }}" style="height:40px;display:grid;place-items:center;font:{{ item.weight }} 14px/1 'Barlow',sans-serif;background:{{ item.bg }};color:{{ item.fg }};border:1px solid {{ item.border }}">{{ item.label }}</div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:14px;font:400 11px/1 'Barlow',sans-serif;color:rgba(22,40,63,.55)">
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#5d7340"></span>Selected</span>
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#efece4;border:1px solid rgba(22,40,63,.18)"></span>Open</span>
+              <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:rgba(22,40,63,.1)"></span>Booked out</span>
+            </div>
+          </div>
+          <div>
+            <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(22,40,63,.6);margin-bottom:10px">Crew size</div>
+            <div style="display:grid;gap:10px">
+              <sc-for list="{{ moverOpts }}" as="item" hint-placeholder-count="3">
+                <div class="hit" onClick="{{ item.onClick }}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border:1px solid {{ item.border }};background:{{ item.bg }}">
+                  <div>
+                    <div style="font:600 17px/1.1 'Barlow',sans-serif;color:{{ item.fg }}">{{ item.label }}</div>
+                    <div style="font:400 13px/1.4 'Barlow',sans-serif;color:{{ item.subFg }};margin-top:4px">{{ item.note }}</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font:600 22px/1 'Barlow Condensed',sans-serif;color:{{ item.fg }}">{{ item.rate }}</div>
+                    <div style="font:400 12px/1 'Barlow',sans-serif;color:{{ item.subFg }};margin-top:4px">{{ item.est }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:20px;padding:16px;border:1px dashed rgba(22,40,63,.3);font:400 13.5px/1.55 'Barlow',sans-serif;color:rgba(22,40,63,.7)">Arrival windows are 30 minutes wide. You&rsquo;ll get the crew&rsquo;s names and the truck number 48 hours out.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:28px">
+          <button class="hit" onClick="{{ prevStep }}" style="background:transparent;border:1px solid rgba(22,40,63,.3);padding:14px 22px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#16283f">Back</button>
+          <button class="hit" onClick="{{ nextStep }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:14px 26px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Next &mdash; confirm</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ step4 }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <h2 style="font:600 34px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 6px">Confirm and hold the day</h2>
+        <p style="font:400 14.5px/1.6 'Barlow',sans-serif;color:rgba(22,40,63,.65);margin:0 0 24px;max-width:60ch">No card, no deposit. We charge the hourly rate on the day, rounded to the quarter hour.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:720px;margin-bottom:24px">
+          <div>
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Name</label>
+            <input value="{{ q.name }}" onChange="{{ onName }}" placeholder="Dana Doyle" style="border-radius:0;width:100%;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+          </div>
+          <div>
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Mobile</label>
+            <input value="{{ q.phone }}" onChange="{{ onPhone }}" placeholder="303.555.0186" style="border-radius:0;width:100%;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(22,40,63,.6);display:block;margin-bottom:6px">Email</label>
+            <input value="{{ q.email }}" onChange="{{ onEmail }}" placeholder="dana@example.com" style="border-radius:0;width:100%;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+          </div>
+        </div>
+        <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7">
+          <sc-for list="{{ confirmRows }}" as="item" hint-placeholder-count="6">
+            <div style="display:flex;justify-content:space-between;padding:13px 18px;border-bottom:1px solid rgba(22,40,63,.1);font:400 14.5px/1.3 'Barlow',sans-serif">
+              <span style="color:rgba(22,40,63,.6)">{{ item.label }}</span>
+              <span style="font-weight:600">{{ item.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:24px;padding:20px;border:1px solid rgba(22,40,63,.18);background:#fbfaf7;max-width:720px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+            <span style="font:600 20px/1 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase">Card on file &mdash; optional</span>
+            <span style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#5d7340">$0 charged today</span>
+          </div>
+          <p style="font:400 13.5px/1.55 'Barlow',sans-serif;color:rgba(22,40,63,.65);margin:0 0 16px">Skip it and pay the crew by card or check on the day. Leave it and we bill the final hours automatically once you sign the bill of lading.</p>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px">
+            <input value="{{ card.num }}" onChange="{{ onCardNum }}" placeholder="Card number" style="border-radius:0;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#f7f6f2">
+            <input value="{{ card.exp }}" onChange="{{ onCardExp }}" placeholder="MM / YY" style="border-radius:0;padding:12px;font-size:14.5px;border:1px solid rgba(22,40,63,.24);background:#f7f6f2">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:26px;align-items:center">
+          <button class="hit" onClick="{{ prevStep }}" style="background:transparent;border:1px solid rgba(22,40,63,.3);padding:14px 22px;font:600 14px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#16283f">Back</button>
+          <button class="hit" onClick="{{ book }}" style="background:#16283f;color:#f7f6f2;border:0;padding:16px 30px;font:600 15px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Book this move</button>
+          <span style="font:400 13px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.55)">{{ bookNote }}</span>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <div style="border-left:1px solid rgba(22,40,63,.14);background:#16283f;padding:28px 26px;display:flex;flex-direction:column">
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689;margin-bottom:16px">Running estimate</div>
+      <div style="font:600 50px/1 'Barlow Condensed',sans-serif;color:#f7f6f2">{{ priceRange }}</div>
+      <div style="font:400 13px/1.5 'Barlow',sans-serif;color:rgba(247,246,242,.6);margin:8px 0 22px">{{ priceBasis }}</div>
+      <div style="display:grid;gap:11px;font:400 13.5px/1.3 'Barlow',sans-serif;color:rgba(247,246,242,.85)">
+        <sc-for list="{{ priceLines }}" as="item" hint-placeholder-count="4">
+          <div>
+            <div style="display:flex;justify-content:space-between;gap:12px;color:{{ item.fg }}"><span>{{ item.label }}</span><span>{{ item.value }}</span></div>
+            <div style="height:1px;background:rgba(223,231,210,.18);margin-top:11px"></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:22px;padding:14px;border:1px solid rgba(223,231,210,.28)">
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#a3b689;margin-bottom:8px">Inventory</div>
+        <div style="font:400 13px/1.6 'Barlow',sans-serif;color:rgba(247,246,242,.8)">{{ inventorySummary }}</div>
+      </div>
+      <div style="margin-top:auto;padding-top:24px;font:400 12px/1.5 'Barlow',sans-serif;color:rgba(247,246,242,.55)">Prefer to talk it through? Call 303.555.0150 &mdash; a dispatcher picks up, not a menu.</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPortal }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;justify-content:center;padding:26px 0 40px;background:#e8e6e0;min-height:calc(100vh - 48px)">
+  <div style="width:414px;background:#f7f6f2;border:1px solid rgba(22,40,63,.18);box-shadow:0 4px 22px rgba(22,40,63,.12)">
+    <div style="background:#16283f;padding:18px 20px 22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <svg viewBox="0 0 64 30" width="28" height="13"><path d="M2 30 L18 6 L26 30 Z" fill="#dfe7d2"></path><path d="M20 30 L34 2 L44 30 Z" fill="#dfe7d2"></path><path d="M38 30 L50 9 L62 30 Z" fill="#5d7340"></path></svg>
+          <span style="font:600 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;color:#f7f6f2">FLATIRONS</span>
+        </div>
+        <span style="width:30px;height:30px;border:1px solid rgba(223,231,210,.4);display:grid;place-items:center;font:500 12px/1 'Barlow',sans-serif;color:#dfe7d2">{{ my.initials }}</span>
+      </div>
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689;margin-bottom:10px">Your move &middot; {{ my.id }}</div>
+      <div style="font:600 38px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;color:#f7f6f2">{{ my.dateLong }}</div>
+      <div style="font:400 14px/1.5 'Barlow',sans-serif;color:rgba(247,246,242,.72);margin-top:6px">{{ my.crewLine }}</div>
+      <div style="font:400 13px/1.5 'Barlow',sans-serif;color:#a3b689;margin-top:2px">{{ my.route }}</div>
+    </div>
+
+    <sc-if value="{{ my.live }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#101e30;padding:16px 20px 18px;border-top:1px solid rgba(223,231,210,.18)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span class="pulse" style="width:8px;height:8px;background:#a3b689;border-radius:50%"></span>
+        <span style="font:600 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689">{{ my.liveLabel }}</span>
+      </div>
+      <div style="position:relative;height:132px;border:1px solid rgba(223,231,210,.28);background:#0b1624;background-image:linear-gradient(rgba(223,231,210,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(223,231,210,.07) 1px,transparent 1px);background-size:26px 26px">
+        <svg viewBox="0 0 340 132" width="100%" height="132" style="position:absolute;inset:0"><path d="M40 100 C110 92, 150 60, 300 34" fill="none" stroke="#5d7340" stroke-width="1.5" stroke-dasharray="5 4"></path></svg>
+        <span style="position:absolute;left:34px;top:92px;width:11px;height:11px;background:#dfe7d2"></span>
+        <span style="position:absolute;right:26px;top:28px;width:11px;height:11px;border:1px solid #dfe7d2"></span>
+        <span class="pulse" style="position:absolute;left:{{ my.truckLeft }};top:{{ my.truckTop }};width:13px;height:13px;background:#5d7340;box-shadow:0 0 0 5px rgba(93,115,64,.3)"></span>
+        <span style="position:absolute;left:10px;bottom:8px;font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(223,231,210,.55)">{{ my.mapNote }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:12px;font:400 13px/1 'Barlow',sans-serif;color:rgba(247,246,242,.8)">
+        <span>{{ my.loadLine }}</span><span style="color:#a3b689">{{ my.etaLine }}</span>
+      </div>
+      <div style="height:4px;background:rgba(223,231,210,.2);margin-top:10px"><div style="height:4px;background:#5d7340;width:{{ my.loadPct }}"></div></div>
+    </div>
+    </sc-if>
+
+    <div style="padding:20px 20px 8px;display:flex;gap:8px">
+      <button class="hit" onClick="{{ goCrew }}" style="flex:1;background:#5d7340;color:#f7f6f2;border:0;padding:13px 0;font:600 12px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">See crew view</button>
+      <button class="hit" onClick="{{ focusMsg }}" style="flex:1;background:transparent;border:1px solid rgba(22,40,63,.3);color:#16283f;padding:13px 0;font:600 12px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Message crew</button>
+    </div>
+
+    <div style="padding:14px 20px 22px">
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:16px">Where things stand</div>
+      <sc-for list="{{ my.timeline }}" as="item" hint-placeholder-count="5">
+        <div style="display:grid;grid-template-columns:22px 1fr;gap:14px">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <span style="width:12px;height:12px;margin-top:4px;background:{{ item.dotBg }};border:1px solid {{ item.dotBorder }}"></span>
+            <span style="flex:1;width:1px;background:{{ item.lineBg }}"></span>
+          </div>
+          <div style="padding-bottom:20px">
+            <div style="font:600 16px/1.2 'Barlow',sans-serif;color:{{ item.fg }}">{{ item.label }}</div>
+            <div style="font:400 13px/1.5 'Barlow',sans-serif;color:{{ item.subFg }}">{{ item.note }}</div>
+          </div>
+        </div>
+      </sc-for>
+
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin:6px 0 12px">Your checklist</div>
+      <div style="display:grid;gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14);margin-bottom:22px">
+        <sc-for list="{{ my.tasks }}" as="item" hint-placeholder-count="3">
+          <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:14px 15px;display:flex;align-items:flex-start;gap:12px;min-height:52px">
+            <span style="width:22px;height:22px;flex:none;border:1px solid {{ item.boxBorder }};background:{{ item.boxBg }};display:grid;place-items:center;margin-top:1px">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="{{ item.tick }}" stroke-width="2.5"><path d="M5 12l5 5L19 7"></path></svg>
+            </span>
+            <div>
+              <div style="font:600 15px/1.25 'Barlow',sans-serif;color:{{ item.fg }};text-decoration:{{ item.strike }}">{{ item.label }}</div>
+              <div style="font:400 12.5px/1.45 'Barlow',sans-serif;color:rgba(22,40,63,.58);margin-top:3px">{{ item.note }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:12px">Messages</div>
+      <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7;padding:14px;display:grid;gap:12px;margin-bottom:10px">
+        <sc-for list="{{ my.messages }}" as="item" hint-placeholder-count="2">
+          <div style="justify-self:{{ item.align }};max-width:84%;background:{{ item.bg }};color:{{ item.fg }};padding:10px 12px">
+            <div style="font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:{{ item.metaFg }};margin-bottom:5px">{{ item.who }}</div>
+            <div style="font:400 14px/1.45 'Barlow',sans-serif">{{ item.text }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:22px">
+        <input value="{{ msg }}" onChange="{{ onMsg }}" placeholder="Ask the crew something" style="flex:1;border-radius:0;padding:12px;font-size:14px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+        <button class="hit" onClick="{{ sendMsg }}" style="background:#16283f;color:#f7f6f2;border:0;padding:0 18px;font:600 12px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Send</button>
+      </div>
+
+      <sc-if value="{{ payment.show }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-bottom:22px">
+        <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:12px">Final bill of lading</div>
+        <div class="blueprint" style="background:#fbfaf7;padding:18px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+            <span style="font:600 30px/1 'Barlow Condensed',sans-serif">{{ payment.total }}</span>
+            <span style="font:600 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:{{ payment.statusFg }}">{{ payment.status }}</span>
+          </div>
+          <div style="display:grid;gap:9px;margin-bottom:14px">
+            <sc-for list="{{ payment.lines }}" as="item" hint-placeholder-count="3">
+              <div>
+                <div style="display:flex;justify-content:space-between;gap:12px;font:400 13.5px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.75)"><span>{{ item.label }}</span><span style="font-weight:600;white-space:nowrap">{{ item.value }}</span></div>
+                <div style="height:1px;background:rgba(22,40,63,.1);margin-top:9px"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;gap:8px;margin-bottom:16px">
+            <sc-for list="{{ payment.bolRows }}" as="item" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;gap:12px;font:400 12.5px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.6)"><span>{{ item.label }}</span><span style="color:#16283f">{{ item.value }}</span></div>
+            </sc-for>
+          </div>
+          <button class="hit" onClick="{{ payment.onPay }}" style="width:100%;background:{{ payment.ctaBg }};color:{{ payment.ctaFg }};border:1px solid {{ payment.ctaBorder }};padding:14px 0;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">{{ payment.cta }}</button>
+          <div style="font:400 11.5px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.5);text-align:center;margin-top:9px">{{ payment.cardLine }}</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ reviewCard.show }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-bottom:22px;border:1px solid #5d7340;background:#eef1e8;padding:18px">
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#41522d;margin-bottom:8px">How did we do</div>
+        <div style="font:600 20px/1.15 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:4px">Rate {{ reviewCard.crewLine }}</div>
+        <div style="display:flex;gap:6px;margin:12px 0 14px">
+          <sc-for list="{{ reviewCard.starOpts }}" as="item" hint-placeholder-count="5">
+            <span class="hit" onClick="{{ item.onClick }}" style="font:400 30px/1 'Barlow',sans-serif;color:{{ item.fg }}">{{ item.label }}</span>
+          </sc-for>
+        </div>
+        <input value="{{ reviewCard.text }}" onChange="{{ reviewCard.onText }}" placeholder="Anything worth telling the next customer?" style="width:100%;border-radius:0;padding:12px;font-size:14px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7;margin-bottom:12px">
+        <button class="hit" onClick="{{ reviewCard.submit }}" style="width:100%;background:#5d7340;color:#f7f6f2;border:0;padding:13px 0;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Post my review</button>
+      </div>
+      </sc-if>
+
+      <div style="margin-bottom:22px;border:1px dashed rgba(22,40,63,.3);padding:18px">
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:8px">Refer a neighbor</div>
+        <div style="font:600 19px/1.15 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:8px">{{ referral.credit }} for them, {{ referral.credit }} for you</div>
+        <p style="font:400 13.5px/1.55 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin:0 0 14px">{{ referral.note }}</p>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;border:1px solid rgba(22,40,63,.24);background:#fbfaf7;padding:12px;font:600 15px/1 'Barlow',sans-serif;letter-spacing:.1em">{{ referral.code }}</div>
+          <span class="hit" style="display:grid;place-items:center;background:#16283f;color:#f7f6f2;padding:0 16px;font:600 11.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Copy</span>
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7">
+        <sc-for list="{{ my.docs }}" as="item" hint-placeholder-count="3">
+          <div class="hit" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(22,40,63,.1)">
+            <span style="font:500 14px/1 'Barlow',sans-serif">{{ item.label }}</span>
+            <span style="font:400 12px/1 'Barlow',sans-serif;color:#5d7340">{{ item.kind }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);background:#fbfaf7;border-top:1px solid rgba(22,40,63,.14);padding:11px 0 16px;text-align:center;font:500 10px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">
+      <div style="color:#5d7340">Move</div><div style="color:rgba(22,40,63,.45)">Inventory</div><div style="color:rgba(22,40,63,.45)">Docs</div><div style="color:rgba(22,40,63,.45)">Help</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCrew }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;justify-content:center;gap:24px;padding:26px 24px 40px;background:#e8e6e0;min-height:calc(100vh - 48px)">
+  <div style="width:414px;background:#16283f;border:1px solid rgba(22,40,63,.3);box-shadow:0 4px 22px rgba(22,40,63,.16)">
+    <div style="padding:18px 20px 18px;border-bottom:1px solid rgba(223,231,210,.18)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689;margin-bottom:8px">{{ crew.jobIndexLabel }}</div>
+          <div style="font:600 26px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;color:#f7f6f2">{{ crew.route }}</div>
+        </div>
+        <span style="background:{{ crew.badgeBg }};color:{{ crew.badgeFg }};font:600 10px/1 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:7px 9px;white-space:nowrap">{{ crew.statusLabel }}</span>
+      </div>
+      <div style="display:flex;gap:18px;margin-top:14px;font:400 13px/1 'Barlow',sans-serif;color:rgba(247,246,242,.72)">
+        <span>{{ crew.customer }}</span><span style="color:#a3b689">{{ crew.estLine }}</span>
+      </div>
+    </div>
+
+    <div style="background:#f7f6f2;padding:20px 20px 0">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+        <span style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55)">Load checklist</span>
+        <span style="font:600 13px/1 'Barlow',sans-serif;color:#5d7340">{{ crew.progressLabel }}</span>
+      </div>
+      <div style="height:4px;background:rgba(22,40,63,.14);margin-bottom:18px"><div style="height:4px;background:#5d7340;width:{{ crew.progressPct }}"></div></div>
+      <div style="display:grid;gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14);max-height:330px;overflow:auto">
+        <sc-for list="{{ crew.items }}" as="item" hint-placeholder-count="6">
+          <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:14px 15px;display:flex;align-items:center;gap:13px;min-height:52px">
+            <span style="width:24px;height:24px;flex:none;border:1px solid {{ item.boxBorder }};background:{{ item.boxBg }};display:grid;place-items:center">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="{{ item.tick }}" stroke-width="2.5"><path d="M5 12l5 5L19 7"></path></svg>
+            </span>
+            <span style="flex:1;font:{{ item.weight }} 15px/1.25 'Barlow',sans-serif;color:{{ item.fg }};text-decoration:{{ item.strike }}">{{ item.name }}</span>
+            <span style="font:400 12px/1 'Barlow',sans-serif;color:#5d7340;white-space:nowrap">{{ item.handling }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:10px;margin:18px 0 18px">
+        <button class="hit" onClick="{{ crew.logDamage }}" style="flex:1;background:#16283f;color:#f7f6f2;border:0;padding:15px 0;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;min-height:48px">Log condition photo</button>
+        <button class="hit" onClick="{{ crew.markAll }}" style="flex:1;background:transparent;border:1px solid rgba(22,40,63,.3);color:#16283f;padding:15px 0;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;min-height:48px">Mark all loaded</button>
+      </div>
+      <div style="border:1px dashed rgba(22,40,63,.3);padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:18px">
+        <div class="duotone" style="width:56px;height:56px;flex:none"><image-slot id="fm-crew-photo" shape="rect" style="color:#5d7340" placeholder="Photo"></image-slot></div>
+        <div>
+          <div style="font:600 14px/1.2 'Barlow',sans-serif">Condition photos &middot; {{ crew.photos }}</div>
+          <div style="font:400 12.5px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.6)">{{ crew.photoNote }}</div>
+        </div>
+      </div>
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:12px">Customer thread</div>
+      <div style="display:grid;gap:10px;margin-bottom:10px">
+        <sc-for list="{{ crew.messages }}" as="item" hint-placeholder-count="2">
+          <div style="justify-self:{{ item.crewAlign }};max-width:84%;background:{{ item.bg }};color:{{ item.fg }};padding:10px 12px">
+            <div style="font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:{{ item.metaFg }};margin-bottom:5px">{{ item.who }}</div>
+            <div style="font:400 14px/1.45 'Barlow',sans-serif">{{ item.text }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:8px;padding-bottom:20px">
+        <input value="{{ crewMsg }}" onChange="{{ onCrewMsg }}" placeholder="Reply to customer" style="flex:1;border-radius:0;padding:12px;font-size:14px;border:1px solid rgba(22,40,63,.24);background:#fbfaf7">
+        <button class="hit" onClick="{{ sendCrewMsg }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:0 18px;font:600 12px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">Send</button>
+      </div>
+    </div>
+
+    <div style="background:#5d7340;padding:16px 20px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(251,250,247,.8)">{{ crew.clockLabel }}</div>
+        <div style="font:600 24px/1.1 'Barlow Condensed',sans-serif;color:#fbfaf7;margin-top:4px">{{ crew.clockValue }}</div>
+      </div>
+      <button class="hit" onClick="{{ crew.advance }}" style="background:transparent;border:1px solid rgba(251,250,247,.6);color:#fbfaf7;font:600 13px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:15px 18px;min-height:48px">{{ crew.advanceLabel }}</button>
+    </div>
+  </div>
+
+  <div style="width:300px">
+    <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:12px">Today&rsquo;s runs &middot; tap to switch</div>
+    <div style="display:grid;gap:10px">
+      <sc-for list="{{ crewJobList }}" as="item" hint-placeholder-count="4">
+        <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};border:1px solid {{ item.border }};padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+            <span style="font:600 15px/1.2 'Barlow',sans-serif;color:{{ item.fg }}">{{ item.customer }}</span>
+            <span style="font:600 9.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:{{ item.tagFg }};background:{{ item.tagBg }};padding:5px 6px;white-space:nowrap">{{ item.status }}</span>
+          </div>
+          <div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:{{ item.subFg }};margin-top:5px">{{ item.route }}<br>{{ item.meta }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDispatch }}" hint-placeholder-val="{{ true }}">
+<div style="background:#101e30;min-height:calc(100vh - 48px)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid rgba(223,231,210,.16)">
+    <div style="display:flex;align-items:center;gap:26px">
+      <span style="font:600 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.18em;color:#f7f6f2">DISPATCH BOARD</span>
+      <span style="font:400 12.5px/1 'Barlow',sans-serif;color:rgba(247,246,242,.6)">{{ dispatchDate }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font:500 11px/1 'Barlow',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#a3b689">{{ dispatchHint }}</span>
+      <button class="hit" onClick="{{ startEstimate }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:9px 15px;font:600 11px/1 'Barlow',sans-serif;letter-spacing:.12em;text-transform:uppercase">+ New job</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(223,231,210,.14);border-bottom:1px solid rgba(223,231,210,.14)">
+    <sc-for list="{{ dispatchStats }}" as="item" hint-placeholder-count="4">
+      <div style="background:#16283f;padding:16px 20px">
+        <div style="font:600 30px/1 'Barlow Condensed',sans-serif;color:#f7f6f2">{{ item.value }}</div>
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:{{ item.fg }};margin-top:5px">{{ item.label }}</div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 280px;gap:1px;background:rgba(223,231,210,.14);min-height:520px">
+    <sc-for list="{{ dispatchCols }}" as="col" hint-placeholder-count="4">
+      <div style="background:#101e30;padding:16px 14px">
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:{{ col.fg }};margin-bottom:14px">{{ col.label }}</div>
+        <div style="display:grid;gap:10px">
+          <sc-for list="{{ col.jobs }}" as="item" hint-placeholder-count="2">
+            <div style="border:1px solid {{ item.border }};padding:13px;opacity:{{ item.opacity }}">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+                <span style="font:600 15px/1.2 'Barlow',sans-serif;color:#f7f6f2">{{ item.customer }}</span>
+                <span style="font:600 9.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:{{ item.flagFg }};background:{{ item.flagBg }};padding:4px 6px;white-space:nowrap">{{ item.flag }}</span>
+              </div>
+              <div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(247,246,242,.62);margin-top:5px">{{ item.route }}<br>{{ item.meta }}</div>
+              <sc-if value="{{ item.hasBar }}" hint-placeholder-val="{{ true }}">
+                <div style="height:3px;background:rgba(223,231,210,.2);margin-top:11px"><div style="height:3px;background:#5d7340;width:{{ item.barPct }}"></div></div>
+              </sc-if>
+              <sc-if value="{{ item.needsCrew }}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <div style="font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#a3b689;margin:12px 0 7px">Assign a crew</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:5px">
+                    <sc-for list="{{ item.crewChips }}" as="chip" hint-placeholder-count="4">
+                      <div class="hit" onClick="{{ chip.onClick }}" style="font:600 10px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:7px 8px;border:1px solid {{ chip.border }};color:{{ chip.fg }};background:{{ chip.bg }}">{{ chip.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ item.hasAction }}" hint-placeholder-val="{{ true }}">
+                <button class="hit" onClick="{{ item.onAction }}" style="margin-top:12px;width:100%;background:transparent;border:1px solid #5d7340;color:#dfe7d2;padding:9px 0;font:600 10.5px/1 'Barlow',sans-serif;letter-spacing:.12em;text-transform:uppercase">{{ item.actionLabel }}</button>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ col.empty }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px dashed rgba(223,231,210,.25);padding:16px;font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(247,246,242,.4)">Nothing here right now.</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="background:#16283f;padding:16px">
+      <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689;margin-bottom:14px">Crews &amp; trucks</div>
+      <div style="display:grid;gap:1px;background:rgba(223,231,210,.14);border:1px solid rgba(223,231,210,.14);margin-bottom:18px">
+        <sc-for list="{{ crewsPanel }}" as="item" hint-placeholder-count="4">
+          <div style="background:#101e30;padding:11px 12px;display:flex;justify-content:space-between;gap:10px;font:400 12.5px/1.35 'Barlow',sans-serif;color:rgba(247,246,242,.85)">
+            <span>{{ item.label }}</span><span style="color:{{ item.fg }};white-space:nowrap">{{ item.status }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689;margin-bottom:10px">Invoices &middot; tap to settle</div>
+      <div style="display:grid;gap:1px;background:rgba(223,231,210,.14);border:1px solid rgba(223,231,210,.14)">
+        <sc-for list="{{ payables }}" as="item" hint-placeholder-count="2">
+          <div class="hit" onClick="{{ item.onClick }}" style="background:#101e30;padding:11px 12px;display:flex;justify-content:space-between;gap:10px;font:400 12.5px/1.35 'Barlow',sans-serif;color:rgba(247,246,242,.85)">
+            <span>{{ item.label }}</span>
+            <span style="white-space:nowrap"><span style="color:#f7f6f2;font-weight:600">{{ item.value }}</span> <span style="color:{{ item.fg }}">{{ item.status }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:18px;padding:14px;border:1px solid rgba(223,231,210,.28)">
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#a3b689;margin-bottom:8px">Billed today</div>
+        <div style="font:600 30px/1 'Barlow Condensed',sans-serif;color:#f7f6f2">{{ billedToday }}</div>
+        <div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(247,246,242,.6);margin-top:6px">{{ billedNote }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid rgba(223,231,210,.16);padding:18px 24px 22px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+      <span style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689">Schedule &middot; drag a job to another crew or hour</span>
+      <button class="hit" onClick="{{ autoFill }}" style="background:transparent;border:1px solid #5d7340;color:#dfe7d2;padding:8px 14px;font:600 10.5px/1 'Barlow',sans-serif;letter-spacing:.12em;text-transform:uppercase">Auto-fill open crews</button>
+    </div>
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:1px;background:rgba(223,231,210,.14);border:1px solid rgba(223,231,210,.14)">
+      <div style="background:#16283f;padding:9px 12px;font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(247,246,242,.5)">Crew</div>
+      <div style="background:#16283f;display:grid;grid-template-columns:repeat(11,1fr)">
+        <sc-for list="{{ scheduleHours }}" as="item" hint-placeholder-count="11">
+          <div style="padding:9px 0;text-align:center;font:500 9.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,246,242,.5)">{{ item.label }}</div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ scheduleRows }}" as="row" hint-placeholder-count="5">
+        <div style="background:#101e30;padding:12px;font:400 12.5px/1.35 'Barlow',sans-serif;color:{{ row.headFg }}">{{ row.label }}</div>
+        <div style="background:#101e30;position:relative;min-height:58px">
+          <div style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(11,1fr)">
+            <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="11">
+              <div onDragOver="{{ cell.onDragOver }}" onDrop="{{ cell.onDrop }}" style="border-left:1px solid rgba(223,231,210,.08);background:{{ cell.bg }}"></div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ row.blocks }}" as="item" hint-placeholder-count="1">
+            <div draggable="true" onDragStart="{{ item.onDragStart }}" onDragEnd="{{ item.onDragEnd }}" onDragOver="{{ item.onDragOver }}" onDrop="{{ item.onDrop }}" onClick="{{ item.onClick }}" style="position:absolute;top:8px;bottom:8px;left:{{ item.left }};width:{{ item.width }};background:{{ item.bg }};border:1px solid {{ item.border }};padding:8px 10px;cursor:grab;overflow:hidden;opacity:{{ item.opacity }}">
+              <div style="font:600 13px/1.15 'Barlow',sans-serif;color:{{ item.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.label }}</div>
+              <div style="font:400 11px/1.3 'Barlow',sans-serif;color:{{ item.fg }};opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px">{{ item.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid rgba(223,231,210,.16);padding:18px 24px 24px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+      <span style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a3b689">Live routing &middot; Denver metro &amp; statewide</span>
+      <span style="font:400 12px/1 'Barlow',sans-serif;color:rgba(247,246,242,.55)">Hover a leg for miles and drive time</span>
+    </div>
+    <div style="border:1px solid rgba(223,231,210,.28)">
+      <iframe ref="{{ mapRef }}" src="./dispatch-map.html" title="Dispatch routing map" style="display:block;width:100%;height:420px;border:0"></iframe>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f7f6f2;min-height:calc(100vh - 48px)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 26px;border-bottom:1px solid rgba(22,40,63,.14);background:#fbfaf7">
+    <div style="display:flex;align-items:center;gap:24px">
+      <span style="font:600 13px/1 'Barlow Condensed',sans-serif;letter-spacing:.18em">OFFICE</span>
+      <span style="font:400 12.5px/1 'Barlow',sans-serif;color:rgba(22,40,63,.6)">Leads &amp; scheduling</span>
+    </div>
+    <div style="display:flex;gap:10px">
+      <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Search name, ZIP, phone" style="border-radius:0;width:230px;padding:10px 12px;font-size:13.5px;border:1px solid rgba(22,40,63,.24);background:#f7f6f2">
+      <button class="hit" onClick="{{ startEstimate }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:10px 16px;font:600 11.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">+ Add lead</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 330px">
+    <div style="padding:24px 26px 30px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;gap:16px">
+        <h2 style="font:600 30px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0">Pipeline</h2>
+        <div style="display:flex;gap:1px;border:1px solid rgba(22,40,63,.22)">
+          <sc-for list="{{ leadFilters }}" as="item" hint-placeholder-count="4">
+            <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};color:{{ item.fg }};font:600 11px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:9px 13px">{{ item.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border:1px solid rgba(22,40,63,.16);background:#fbfaf7">
+        <div style="display:grid;grid-template-columns:1.15fr 1.3fr .75fr .9fr .95fr;gap:1px;background:rgba(22,40,63,.12)">
+          <sc-for list="{{ leadHeads }}" as="item" hint-placeholder-count="5">
+            <div style="background:#efece4;padding:10px 14px;font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.6)">{{ item.label }}</div>
+          </sc-for>
+          <sc-for list="{{ leadRows }}" as="item" hint-placeholder-count="6">
+            <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:12px 14px">
+              <div style="font:500 14.5px/1.2 'Barlow',sans-serif">{{ item.customer }}</div>
+              <div style="font:400 12px/1.4 'Barlow',sans-serif;color:rgba(22,40,63,.55);margin-top:3px">{{ item.phone }}</div>
+            </div>
+            <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:12px 14px;font:400 14px/1.4 'Barlow',sans-serif">{{ item.move }}</div>
+            <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:12px 14px;font:400 14px/1.4 'Barlow',sans-serif">{{ item.date }}</div>
+            <div class="hit" onClick="{{ item.onClick }}" style="background:{{ item.bg }};padding:12px 14px;font:600 14px/1.4 'Barlow',sans-serif">{{ item.estimate }}</div>
+            <div style="background:{{ item.bg }};padding:9px 14px;display:flex;align-items:center">
+              <div class="hit" onClick="{{ item.onStage }}" style="font:600 10px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:7px 8px;border:1px solid {{ item.stageBorder }};background:{{ item.stageBg }};color:{{ item.stageFg }}">{{ item.stage }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="font:400 12.5px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.55);margin-top:12px">{{ leadFootnote }}</div>
+
+      <div style="margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(22,40,63,.14);border:1px solid rgba(22,40,63,.14)">
+        <sc-for list="{{ adminStats }}" as="item" hint-placeholder-count="4">
+          <div style="background:#fbfaf7;padding:16px 18px">
+            <div style="font:600 28px/1 'Barlow Condensed',sans-serif;color:{{ item.fg }}">{{ item.value }}</div>
+            <div style="font:500 10px/1.3 'Barlow',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(22,40,63,.6);margin-top:6px">{{ item.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="border-left:1px solid rgba(22,40,63,.14);background:#efece4;padding:24px 22px">
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin-bottom:14px">Capacity &middot; week of Sep 8</div>
+      <div style="display:grid;gap:1px;background:rgba(22,40,63,.16);border:1px solid rgba(22,40,63,.16);margin-bottom:22px">
+        <sc-for list="{{ weekRows }}" as="item" hint-placeholder-count="6">
+          <div style="background:{{ item.bg }};padding:11px 12px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid {{ item.mark }}">
+            <span style="font:{{ item.weight }} 13px/1 'Barlow',sans-serif">{{ item.label }}</span>
+            <span style="display:flex;gap:3px">
+              <sc-for list="{{ item.slots }}" as="slot" hint-placeholder-count="4">
+                <span style="width:22px;height:8px;background:{{ slot.bg }}"></span>
+              </sc-for>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <div class="blueprint" style="background:#fbfaf7;padding:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font:500 10px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5d7340;margin-bottom:10px">Next action</div>
+        <div style="font:600 19px/1.15 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:6px">{{ nextAction.title }}</div>
+        <div style="font:400 13px/1.5 'Barlow',sans-serif;color:rgba(22,40,63,.68);margin-bottom:14px">{{ nextAction.body }}</div>
+        <button class="hit" onClick="{{ nextAction.onClick }}" style="background:#5d7340;color:#f7f6f2;border:0;padding:11px 16px;font:600 11.5px/1 'Barlow',sans-serif;letter-spacing:.1em;text-transform:uppercase">{{ nextAction.cta }}</button>
+      </div>
+      <div style="font:500 10.5px/1 'Barlow',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(22,40,63,.55);margin:22px 0 12px">Assigned today</div>
+      <div style="display:grid;gap:9px;font:400 13.5px/1.3 'Barlow',sans-serif">
+        <sc-for list="{{ assignedToday }}" as="item" hint-placeholder-count="4">
+          <div>
+            <div style="display:flex;justify-content:space-between;gap:10px"><span>{{ item.label }}</span><span style="font-weight:600;color:{{ item.fg }}">{{ item.value }}</span></div>
+            <div style="height:1px;background:rgba(22,40,63,.12);margin-top:9px"></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const RATES = { 2: 149, 3: 199, 4: 249 };
+const CREWS = [
+  { name: 'Crew A', roster: 'Tovar, Deng, Pike', size: 3 },
+  { name: 'Crew B', roster: 'Ruiz, Hall', size: 2 },
+  { name: 'Crew C', roster: 'Nakai, Bell, Frey', size: 3 },
+  { name: 'Crew D', roster: 'Ostrom, Lail', size: 2 }
+];
+const CATALOG = {
+  'Living room': [
+    { n: 'Sofa, 3-seat', u: 14, h: 'Blanket wrap' },
+    { n: 'Armchair', u: 6, h: 'Blanket wrap' },
+    { n: 'Coffee table', u: 4, h: 'Standard' },
+    { n: 'Bookcase, tall', u: 8, h: 'Standard' },
+    { n: 'TV, 55 inch', u: 5, h: 'TV crate +$40', xp: 40, xl: 'TV crate' },
+    { n: 'Rug, rolled', u: 3, h: 'Standard' }
+  ],
+  'Kitchen': [
+    { n: 'Dish-pack boxes', u: 2, h: 'Fragile' },
+    { n: 'Refrigerator', u: 16, h: 'Appliance dolly' },
+    { n: 'Dining table', u: 9, h: 'Legs off' },
+    { n: 'Dining chairs', u: 2, h: 'Standard' },
+    { n: 'Bar stools', u: 2, h: 'Standard' }
+  ],
+  'Bedrooms': [
+    { n: 'Bed, queen', u: 10, h: 'Disassembly' },
+    { n: 'Bed, king', u: 13, h: 'Disassembly' },
+    { n: 'Dresser', u: 9, h: 'Blanket wrap' },
+    { n: 'Nightstand', u: 3, h: 'Standard' },
+    { n: 'Wardrobe boxes', u: 3, h: 'Provided' },
+    { n: 'Mattress only', u: 6, h: 'Mattress bag' }
+  ],
+  'Office': [
+    { n: 'Desk', u: 8, h: 'Legs off' },
+    { n: 'Office chair', u: 4, h: 'Standard' },
+    { n: 'Filing cabinet', u: 6, h: 'Emptied' },
+    { n: 'Monitor', u: 2, h: 'Fragile' }
+  ],
+  'Garage & misc': [
+    { n: 'Medium boxes', u: 2, h: 'Standard' },
+    { n: 'Bike', u: 4, h: 'Standard' },
+    { n: 'Tool chest', u: 7, h: 'Two-person' },
+    { n: 'Upright piano', u: 26, h: 'Specialty +$180', xp: 180, xl: 'Piano handling' },
+    { n: 'Treadmill', u: 12, h: 'Two-person' },
+    { n: 'Grill', u: 6, h: 'Propane off' }
+  ]
+};
+const ROOMS = Object.keys(CATALOG);
+const PRESETS = {
+  'Studio': { 'Bed, queen': 1, 'Dresser': 1, 'Medium boxes': 10 },
+  '1 bed': { 'Bed, queen': 1, 'Sofa, 3-seat': 1, 'Dresser': 1, 'Medium boxes': 14, 'Dining table': 1, 'Dining chairs': 2 },
+  '2 bed': { 'Bed, queen': 1, 'Sofa, 3-seat': 1, 'Dresser': 2, 'Bookcase, tall': 2, 'Medium boxes': 22, 'Dining table': 1, 'Dining chairs': 4, 'TV, 55 inch': 1 },
+  '3+ bed': { 'Bed, king': 1, 'Bed, queen': 2, 'Sofa, 3-seat': 1, 'Armchair': 2, 'Dresser': 3, 'Bookcase, tall': 3, 'Medium boxes': 34, 'Dining table': 1, 'Dining chairs': 6, 'TV, 55 inch': 2, 'Refrigerator': 1 }
+};
+const DEFAULT_CREW = { 'Studio': 2, '1 bed': 2, '2 bed': 3, '3+ bed': 4 };
+const THROUGHPUT = 9;   // volume units a mover clears per hour
+const MIN_HOURS = 3;    // published three-hour minimum
+function unitsOf(counts) {
+  let u = 0;
+  ROOMS.forEach(r => CATALOG[r].forEach(it => { u += it.u * (counts[it.n] || 0); }));
+  return u;
+}
+function bandFor(size) {
+  const counts = PRESETS[size], movers = DEFAULT_CREW[size], rate = RATES[movers];
+  const hours = Math.max(MIN_HOURS, unitsOf(counts) / (movers * THROUGHPUT));
+  return {
+    size: size,
+    low: Math.round(hours * 0.9 * rate / 10) * 10,
+    high: Math.round(hours * 1.15 * rate / 10) * 10,
+    hours: hours, movers: movers
+  };
+}
+const FLOORS = ['Ground', '2nd', '3rd', '4th+'];
+const SIZES = ['Studio', '1 bed', '2 bed', '3+ bed'];
+const STAGES = ['New', 'Survey set', 'Quoted', 'Booked', 'Complete'];
+const BOOKED_OUT = [5, 6, 13, 20, 27];
+const NAV = [
+  { key: 'site', label: 'Website' },
+  { key: 'estimate', label: 'Estimate' },
+  { key: 'portal', label: 'My move' },
+  { key: 'crew', label: 'Crew app' },
+  { key: 'dispatch', label: 'Dispatch' },
+  { key: 'admin', label: 'Office' }
+];
+const SITE_PAGES = [
+  { key: 'home', label: 'Home' },
+  { key: 'pricing', label: 'Pricing' },
+  { key: 'area', label: 'Service area' },
+  { key: 'commercial', label: 'Commercial' },
+  { key: 'reviews', label: 'Reviews' }
+];
+const HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const SEED_REVIEWS = [
+  { who: 'Marguerite O.', where: 'Wash Park → Arvada', stars: 5, text: 'They wrapped the piano twice and refused a tip. Four hours, no scratches, no drama.', when: 'Aug 2026', crew: 'Crew A' },
+  { who: 'Devon R.', where: 'Office · Commerce City → RiNo', stars: 5, text: 'Moved our studio over a Saturday. Every crate labeled by room, desks reassembled before Monday standup.', when: 'Jul 2026', crew: 'Crew B' },
+  { who: 'Priya S.', where: 'Studio · Denver local', stars: 4, text: 'Arrived fifteen minutes late and told me before I had to ask. Bill came in under the estimate.', when: 'Jul 2026', crew: 'Crew D' },
+  { who: 'Tomas L.', where: '3 bed · Littleton → Parker', stars: 5, text: 'Third-floor walk-up on both ends and they never once complained. Same price they quoted.', when: 'Jun 2026', crew: 'Crew C' }
+];
+function hourOf(w) {
+  const m = /^(\d+):/.exec(w || '');
+  if (!m) return 8;
+  let h = parseInt(m[1], 10);
+  if (/PM/i.test(w) && h < 12) h += 12;
+  return h;
+}
+function stars(n) { return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
+
+function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function dateLabel(day) {
+  const d = new Date(2026, 8, day);
+  const dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+  return dow + ', Sep ' + day;
+}
+function items(spec) {
+  return spec.map(function (s) { return { name: s[0], handling: s[1], done: !!s[2] }; });
+}
+
+const SEED = [
+  {
+    id: 'FM-8841', customer: 'Doyle, D.', phone: '303.555.0186', size: '2 bed',
+    from: '1420 Tennyson St, Denver', to: 'Golden, CO', day: 12, window: '8:00–8:30 AM',
+    movers: 3, crew: 'Crew A', status: 'onsite', low: 820, high: 1050, stage: 'Booked',
+    clockIn: Date.now() - 6126000, photos: 6, hours: null,
+    items: items([['Sofa, 3-seat', 'Blanket wrap', 1], ['Bookcase, tall', 'Standard', 1], ['Bookcase, tall', 'Standard', 1],
+      ['Bed, queen', 'Disassembly', 1], ['Dresser', 'Blanket wrap', 1], ['Dish-pack boxes ×8', 'Fragile', 1],
+      ['TV, 55 inch', 'Crate #7', 0], ['Upright piano', '2-person + skid', 0], ['Dining table', 'Legs off', 0],
+      ['Dining chairs ×4', 'Standard', 0], ['Rug, rolled', 'Standard', 0], ['Medium boxes ×14', 'Standard', 0]]),
+    tasks: [
+      { label: 'Reserve the freight elevator', note: 'Tennyson St. building needs a 2-hour HOA window', done: false },
+      { label: 'Empty the filing cabinet', note: 'We can’t move loaded cabinets safely', done: true },
+      { label: 'Set aside anything you’re taking yourself', note: 'Meds, documents, valuables', done: false }
+    ],
+    messages: [
+      { who: 'Crew A', text: 'On site and wrapping the sofa now. Piano is next.', mine: false },
+      { who: 'You', text: 'Great — the elevator is held until noon.', mine: true }
+    ]
+  },
+  {
+    id: 'FM-8842', customer: 'Whitfield, R.', phone: '303.555.9021', size: '2 bed',
+    from: 'Wash Park, Denver', to: 'Commerce City storage', day: 12, window: '9:00–9:30 AM',
+    movers: 3, crew: 'Crew C', status: 'onsite', low: 850, high: 1080, stage: 'Booked',
+    clockIn: Date.now() - 9300000, photos: 3, hours: null, late: 45,
+    items: items([['Sofa, 2-seat', 'Blanket wrap', 1], ['Bed, king', 'Disassembly', 1], ['Dresser', 'Blanket wrap', 1],
+      ['Desk', 'Legs off', 0], ['Filing cabinet', 'Emptied', 0], ['Medium boxes ×22', 'Standard', 0]]),
+    tasks: [{ label: 'Sign the storage agreement', note: 'Commerce City unit 114', done: true }],
+    messages: [{ who: 'Crew C', text: 'Elevator was held by another tenant — we’re about 45 minutes behind.', mine: false }]
+  },
+  {
+    id: 'FM-8843', customer: 'Reyes Design', phone: '720.555.3390', size: 'Office',
+    from: 'Commerce City', to: 'RiNo, Denver', day: 12, window: '8:00–8:30 AM',
+    movers: 4, crew: 'Crew B', status: 'enroute', low: 1480, high: 1760, stage: 'Booked',
+    clockIn: null, photos: 0, hours: null,
+    items: items([['Desks ×9', 'Legs off', 0], ['Office chairs ×11', 'Standard', 0], ['Filing cabinets ×4', 'Emptied', 0],
+      ['Monitors ×14', 'Fragile', 0], ['Crates ×30', 'Labeled', 0]]),
+    tasks: [], messages: []
+  },
+  {
+    id: 'FM-8844', customer: 'Kaplan, D.', phone: '303.555.4412', size: '3 bed',
+    from: 'Littleton', to: 'Parker', day: 12, window: '8:00–8:30 AM',
+    movers: 4, crew: null, status: 'unassigned', low: 1400, high: 1790, stage: 'Quoted',
+    clockIn: null, photos: 0, hours: null,
+    items: items([['Sofa, 3-seat', 'Blanket wrap', 0], ['Upright piano', 'Specialty', 0], ['Bed, king', 'Disassembly', 0],
+      ['Bed, queen', 'Disassembly', 0], ['Dresser ×2', 'Blanket wrap', 0], ['Medium boxes ×31', 'Standard', 0]]),
+    tasks: [], messages: []
+  },
+  {
+    id: 'FM-8845', customer: 'Okonjo, A.', phone: '720.555.1180', size: 'Studio',
+    from: 'Denver', to: 'Denver', day: 12, window: '1:00–1:30 PM',
+    movers: 2, crew: null, status: 'unassigned', low: 400, high: 510, stage: 'Quoted',
+    clockIn: null, photos: 0, hours: null,
+    items: items([['Bed, queen', 'Disassembly', 0], ['Sofa, 2-seat', 'Blanket wrap', 0], ['Medium boxes ×12', 'Standard', 0]]),
+    tasks: [], messages: []
+  },
+  {
+    id: 'FM-8839', customer: 'Brenner, D.', phone: '303.555.7719', size: '1 bed',
+    from: 'Denver', to: 'Commerce City', day: 12, window: '7:00–7:30 AM',
+    movers: 2, crew: 'Crew D', status: 'complete', low: 550, high: 700, stage: 'Complete',
+    clockIn: null, photos: 4, hours: 4,
+    items: items([['Bed, queen', 'Disassembly', 1], ['Sofa, 2-seat', 'Blanket wrap', 1], ['Medium boxes ×15', 'Standard', 1]]),
+    tasks: [], messages: []
+  },
+  {
+    id: 'FM-8846', customer: 'Nyland, S.', phone: '303.555.7734', size: '1 bed',
+    from: 'Aurora', to: 'Aurora', day: 26, window: 'Not set',
+    movers: 2, crew: null, status: 'lead', low: null, high: null, stage: 'New',
+    clockIn: null, photos: 0, hours: null, ageHrs: 2, items: [], tasks: [], messages: []
+  },
+  {
+    id: 'FM-8847', customer: 'Baumann Dental', phone: '303.555.6600', size: 'Office',
+    from: 'Denver', to: 'Arvada', day: 3, window: 'Not set',
+    movers: 4, crew: null, status: 'lead', low: 6400, high: 6400, stage: 'Survey set',
+    clockIn: null, photos: 0, hours: null, items: [], tasks: [], messages: []
+  }
+];
+
+class Component extends DCLogic {
+  state = {
+    route: 'site',
+    sitePage: 'home',
+    step: 1,
+    room: 'Living room',
+    reviews: SEED_REVIEWS,
+    draft: { stars: 5, text: '' },
+    drag: null,
+    card: { name: '', num: '', exp: '', save: true },
+    jobs: SEED.map(j => Object.assign({ hour: hourOf(j.window), paid: j.status === 'complete', reviewed: false }, j)),
+    myId: 'FM-8841',
+    crewId: 'FM-8841',
+    leadFilter: 'All',
+    search: '',
+    msg: '',
+    crewMsg: '',
+    now: Date.now(),
+    seq: 8848,
+    q: {
+      from: '', to: '', fromFloor: 'Ground', toFloor: 'Ground', elevator: false,
+      size: '2 bed', day: 12, movers: 3, packing: false, name: '', email: '', phone: '',
+      counts: Object.assign({}, PRESETS['2 bed'])
+    }
+  };
+
+  mapRef = React.createRef();
+
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (this.state.jobs.some(j => j.clockIn)) this.setState({ now: Date.now() });
+    }, 1000);
+    this.onMsg = e => { if (e.data && e.data.type === 'fm-map-ready') this.pushMap(); };
+    window.addEventListener('message', this.onMsg);
+  }
+  componentDidUpdate() { this.pushMap(); }
+  componentWillUnmount() { clearInterval(this.timer); window.removeEventListener('message', this.onMsg); }
+
+  pushMap() {
+    const f = this.mapRef.current;
+    if (!f || !f.contentWindow) return;
+    const jobs = this.state.jobs.filter(j => j.status !== 'lead').map(j => ({
+      id: j.id, customer: j.customer, from: j.from, to: j.to, crew: j.crew, status: j.status, late: j.late || 0
+    }));
+    f.contentWindow.postMessage({ type: 'fm-jobs', jobs }, '*');
+  }
+
+  invoice(j) {
+    const hours = j.hours || (j.low && RATES[j.movers] ? j.low / RATES[j.movers] : 4);
+    const rate = RATES[j.movers];
+    const lines = [{ label: j.movers + ' movers + truck · ' + hours.toFixed(2) + ' hrs @ $' + rate, val: hours * rate }];
+    if (j.items.some(i => /piano/i.test(i.name))) lines.push({ label: 'Piano handling', val: 180 });
+    if (j.items.some(i => /TV/i.test(i.name))) lines.push({ label: 'TV crate', val: 40 });
+    lines.push({ label: 'Materials · wrap, pads, tape', val: 28 });
+    const total = lines.reduce((a, b) => a + b.val, 0);
+    return { hours, rate, lines, total };
+  }
+
+  go(route) { return () => this.setState(route === 'site' ? { route, sitePage: 'home' } : { route }); }
+  setQ(k, v) { this.setState(s => ({ q: Object.assign({}, s.q, { [k]: v }) })); }
+  patch(id, fn) {
+    this.setState(s => ({ jobs: s.jobs.map(j => (j.id === id ? fn(Object.assign({}, j)) : j)) }));
+  }
+  job(id) { return this.state.jobs.find(j => j.id === id) || this.state.jobs[0]; }
+
+  bump(name, d) {
+    this.setState(s => {
+      const c = Object.assign({}, s.q.counts);
+      c[name] = Math.max(0, (c[name] || 0) + d);
+      return { q: Object.assign({}, s.q, { counts: c }) };
+    });
+  }
+
+  quote() {
+    const q = this.state.q;
+    let units = 0; const extras = [];
+    ROOMS.forEach(r => CATALOG[r].forEach(it => {
+      const n = q.counts[it.n] || 0;
+      if (!n) return;
+      units += it.u * n;
+      if (it.xp) extras.push({ label: it.xl + ' × ' + n, raw: it.xp * n });
+    }));
+    const rate = RATES[q.movers];
+    let hours = units ? units / (q.movers * THROUGHPUT) : 0;
+    if (q.fromFloor !== 'Ground' && !q.elevator) hours *= 1.12;
+    if (q.toFloor !== 'Ground' && !q.elevator) hours *= 1.08;
+    if (units) hours = Math.max(MIN_HOURS, hours);
+    if (q.packing) {
+      const p = Math.round(hours * 0.6 * 65);
+      extras.push({ label: 'Packing crew', raw: p });
+    }
+    const ex = extras.reduce((a, b) => a + b.raw, 0);
+    const low = units ? Math.round((hours * 0.9 * rate + ex) / 10) * 10 : 0;
+    const high = units ? Math.round((hours * 1.15 * rate + ex) / 10) * 10 : 0;
+    const count = Object.keys(q.counts).reduce((a, k) => a + q.counts[k], 0);
+    return { units, hours, rate, extras, low, high, count };
+  }
+
+  book = () => {
+    const q = this.state.q, p = this.quote(), id = 'FM-' + this.state.seq;
+    const list = [];
+    ROOMS.forEach(r => CATALOG[r].forEach(it => {
+      const n = q.counts[it.n] || 0;
+      if (n) list.push({ name: it.n + (n > 1 ? ' ×' + n : ''), handling: it.h, done: false });
+    }));
+    const job = {
+      id, customer: q.name || 'New customer', phone: q.phone || '—', size: q.size,
+      from: q.from || 'Denver', to: q.to || 'Denver', day: q.day, window: '8:00–8:30 AM',
+      movers: q.movers, crew: null, status: 'unassigned', low: p.low, high: p.high, stage: 'Booked',
+      clockIn: null, photos: 0, hours: null, items: list, hour: 8, paid: false, reviewed: false,
+      card: this.state.card.num ? this.state.card.num.replace(/\D/g, '').slice(-4) : null,
+      tasks: [
+        { label: 'Confirm parking for a 26-foot truck', note: 'Both ends — permits take a day', done: false },
+        { label: 'Set aside anything you’re taking yourself', note: 'Meds, documents, valuables', done: false }
+      ],
+      messages: [{ who: 'Flatirons', text: 'Booked. A dispatcher assigns your crew 48 hours out.', mine: false }]
+    };
+    this.setState(s => ({
+      jobs: s.jobs.concat([job]), myId: id, crewId: id, route: 'portal', step: 1, seq: s.seq + 1
+    }));
+  };
+
+  renderVals() {
+    const s = this.state, q = s.q, p = this.quote();
+    const OL = '#5d7340', NV = '#16283f', CR = '#f7f6f2', PP = '#fbfaf7';
+    const jobsToday = s.jobs.filter(j => j.status !== 'lead');
+
+    const seg = (list, cur, onPick) => list.map(v => {
+      const on = v === cur;
+      return {
+        label: v, onClick: () => onPick(v),
+        bg: on ? OL : CR, fg: on ? PP : 'rgba(22,40,63,.7)', weight: on ? 600 : 500,
+        border: on ? OL : 'rgba(22,40,63,.22)'
+      };
+    });
+
+    // ---- estimate
+    const stepDefs = [['Addresses', 1], ['What we’re moving', 2], ['Date & crew', 3], ['Confirm', 4]];
+    const steps = stepDefs.map(d => {
+      const n = d[1], active = s.step === n, done = s.step > n;
+      return {
+        label: d[0], kicker: 'Step ' + n + (done ? ' · done' : ''),
+        bg: active ? OL : done ? '#eef1e8' : CR,
+        fg: active ? PP : done ? NV : 'rgba(22,40,63,.45)',
+        kickerFg: active ? '#dfe7d2' : done ? OL : 'rgba(22,40,63,.45)',
+        onClick: () => this.setState({ step: n })
+      };
+    });
+    const itemRows = CATALOG[s.room].map(it => {
+      const qty = q.counts[it.n] || 0;
+      return {
+        name: it.n, handling: it.h, qty: qty,
+        rowBg: qty ? '#f4f6ef' : PP,
+        handlingFg: it.xp ? OL : 'rgba(22,40,63,.5)',
+        qtyFg: qty ? NV : 'rgba(22,40,63,.35)',
+        inc: () => this.bump(it.n, 1), dec: () => this.bump(it.n, -1)
+      };
+    });
+    const roomTabs = ROOMS.map(r => {
+      const on = r === s.room;
+      const n = CATALOG[r].reduce((a, it) => a + (q.counts[it.n] || 0), 0);
+      return {
+        label: n ? r + ' · ' + n : r, onClick: () => this.setState({ room: r }),
+        bg: on ? OL : 'transparent', fg: on ? PP : 'rgba(22,40,63,.7)', border: on ? OL : 'rgba(22,40,63,.22)'
+      };
+    });
+    const firstDow = new Date(2026, 8, 1).getDay();
+    const calendar = [];
+    for (let i = 0; i < firstDow; i++) calendar.push({ label: '', bg: 'transparent', fg: 'transparent', border: 'transparent', weight: 400, onClick: () => {} });
+    for (let d = 1; d <= 30; d++) {
+      const full = BOOKED_OUT.indexOf(d) > -1, on = q.day === d;
+      calendar.push({
+        label: '' + d, weight: on ? 600 : 400,
+        bg: on ? OL : full ? 'rgba(22,40,63,.1)' : '#efece4',
+        fg: on ? PP : full ? 'rgba(22,40,63,.35)' : NV,
+        border: on ? OL : 'rgba(22,40,63,.14)',
+        onClick: full ? () => {} : () => this.setQ('day', d)
+      });
+    }
+    const moverOpts = [2, 3, 4].map(m => {
+      const on = q.movers === m;
+      const hrs = p.units ? Math.max(MIN_HOURS, p.units / (m * THROUGHPUT)) : 0;
+      return {
+        label: m + ' movers + truck', rate: '$' + RATES[m] + '/hr',
+        note: m === 2 ? 'Studios and one-bedrooms' : m === 3 ? 'Most two and three-bedrooms' : 'Big houses, offices, tight windows',
+        est: p.units ? '≈ ' + hrs.toFixed(1) + ' hrs' : 'Add items',
+        bg: on ? '#eef1e8' : PP, border: on ? OL : 'rgba(22,40,63,.18)',
+        fg: NV, subFg: 'rgba(22,40,63,.6)',
+        onClick: () => this.setQ('movers', m)
+      };
+    });
+    const priceLines = [
+      { label: 'Labor & truck', value: '$' + p.rate + '/hr', fg: 'rgba(247,246,242,.85)' },
+      { label: 'Estimated hours', value: p.units ? p.hours.toFixed(1) + ' hrs' : '—', fg: 'rgba(247,246,242,.85)' }
+    ].concat(p.extras.map(e => ({ label: e.label, value: money(e.raw), fg: 'rgba(247,246,242,.85)' })))
+      .concat([
+        { label: q.elevator ? 'Elevator reserved' : 'Stair carry', value: q.elevator ? 'No premium' : (q.fromFloor === 'Ground' && q.toFloor === 'Ground' ? 'None' : 'Included'), fg: 'rgba(247,246,242,.85)' },
+        { label: 'Deposit', value: '$0', fg: '#a3b689' }
+      ]);
+
+    // ---- portal
+    const mine = this.job(s.myId);
+    const mDone = mine.items.filter(i => i.done).length;
+    const mPct = mine.items.length ? Math.round((mDone / mine.items.length) * 100) : 0;
+    const order = { unassigned: 1, scheduled: 2, enroute: 3, onsite: 4, complete: 5 };
+    const stage = order[mine.status] || 1;
+    const tl = [
+      { label: 'Estimate accepted', note: money(mine.low) + '–' + money(mine.high) + ' range locked', at: 1 },
+      { label: 'Inventory confirmed', note: mine.items.length + ' items on the list', at: 1 },
+      { label: 'Crew assigned', note: mine.crew ? mine.crew + ' · truck 26′' : 'Posted 48 hours before', at: 2 },
+      { label: 'Move day', note: stage >= 4 ? 'Loading now — ' + mDone + ' of ' + mine.items.length + ' aboard' : 'Live crew location on the day', at: 4 },
+      { label: 'Delivered & signed', note: mine.hours ? mine.hours.toFixed(1) + ' hrs billed' : 'Digital bill of lading', at: 5 }
+    ].map((t, i, arr) => {
+      const done = stage >= t.at;
+      return {
+        label: t.label, note: t.note,
+        dotBg: done ? OL : 'transparent', dotBorder: done ? OL : 'rgba(22,40,63,.35)',
+        lineBg: done && i < arr.length - 1 ? OL : 'rgba(22,40,63,.2)',
+        fg: done ? NV : 'rgba(22,40,63,.5)', subFg: done ? 'rgba(22,40,63,.6)' : 'rgba(22,40,63,.45)'
+      };
+    });
+    const my = {
+      id: mine.id, initials: mine.customer.slice(0, 1) + (mine.customer.split(', ')[1] || 'D').slice(0, 1),
+      dateLong: dateLabel(mine.day), route: mine.from + ' → ' + mine.to,
+      crewLine: mine.crew ? 'Crew arrives ' + mine.window + ' · ' + mine.movers + ' movers · ' + mine.crew : 'Arrival window ' + mine.window + ' · crew assigned 48 hrs out',
+      live: mine.status === 'enroute' || mine.status === 'onsite',
+      liveLabel: mine.status === 'enroute' ? 'Crew en route' : 'Crew on site',
+      truckLeft: mine.status === 'enroute' ? '46%' : '11%',
+      truckTop: mine.status === 'enroute' ? '48%' : '68%',
+      mapNote: mine.from.split(',')[0] + ' → ' + mine.to.split(',')[0],
+      loadLine: mDone + ' of ' + mine.items.length + ' items loaded',
+      loadPct: mPct + '%',
+      etaLine: mine.late ? 'Running ' + mine.late + ' min late' : 'On schedule',
+      timeline: tl,
+      tasks: mine.tasks.map((t, i) => ({
+        label: t.label, note: t.note,
+        bg: t.done ? '#eef1e8' : PP,
+        boxBg: t.done ? OL : 'transparent', boxBorder: t.done ? OL : 'rgba(22,40,63,.4)',
+        tick: t.done ? PP : 'transparent',
+        fg: t.done ? 'rgba(22,40,63,.5)' : NV, strike: t.done ? 'line-through' : 'none',
+        onClick: () => this.patch(mine.id, j => {
+          j.tasks = j.tasks.map((x, xi) => (xi === i ? Object.assign({}, x, { done: !x.done }) : x));
+          return j;
+        })
+      })),
+      messages: mine.messages.map(m => ({
+        who: m.who, text: m.text,
+        align: m.mine ? 'end' : 'start',
+        crewAlign: m.mine ? 'start' : 'end',
+        bg: m.mine ? NV : '#eef1e8',
+        fg: m.mine ? CR : NV,
+        metaFg: m.mine ? '#a3b689' : OL
+      })),
+      docs: [
+        { label: 'Signed estimate', kind: 'PDF' },
+        { label: 'Certificate of insurance', kind: 'PDF' },
+        { label: 'Inventory list (' + mine.items.length + ')', kind: 'View' }
+      ]
+    };
+
+    // ---- crew app
+    const cj = this.job(s.crewId);
+    const cDone = cj.items.filter(i => i.done).length;
+    const elapsed = cj.clockIn ? Math.floor((s.now - cj.clockIn) / 1000) : 0;
+    const nextStatus = { unassigned: 'enroute', scheduled: 'enroute', enroute: 'onsite', onsite: 'complete', complete: 'complete' };
+    const advLabel = { unassigned: 'Start the run', scheduled: 'Start the run', enroute: 'Arrived on site', onsite: 'Depart for drop-off', complete: 'Job closed' };
+    const statusLabel = { unassigned: 'Unassigned', scheduled: 'Scheduled', enroute: 'En route', onsite: 'Loading', complete: 'Complete', lead: 'Lead' };
+    const crew = {
+      jobIndexLabel: 'Job ' + (jobsToday.indexOf(cj) + 1) + ' of ' + jobsToday.length + ' · ' + cj.id,
+      route: cj.from.split(',')[0] + ' → ' + cj.to.split(',')[0],
+      customer: cj.customer + ' · ' + cj.size,
+      estLine: money(cj.low) + '–' + money(cj.high) + ' est.',
+      statusLabel: statusLabel[cj.status],
+      badgeBg: cj.status === 'complete' ? '#dfe7d2' : OL,
+      badgeFg: cj.status === 'complete' ? NV : PP,
+      progressLabel: cDone + ' / ' + cj.items.length,
+      progressPct: (cj.items.length ? Math.round((cDone / cj.items.length) * 100) : 0) + '%',
+      photos: cj.photos, photoNote: cj.photos ? 'Tap to add another before wheels up' : 'Shoot the walls and the big pieces first',
+      clockLabel: cj.clockIn ? 'Clock running' : cj.hours ? 'Billed' : 'Not clocked in',
+      clockValue: cj.clockIn
+        ? Math.floor(elapsed / 3600) + ':' + pad(Math.floor((elapsed % 3600) / 60)) + ':' + pad(elapsed % 60)
+        : cj.hours ? cj.hours.toFixed(1) + ' hrs' : '—',
+      advanceLabel: advLabel[cj.status] || 'Start the run',
+      items: cj.items.map((it, i) => ({
+        name: it.name, handling: it.handling,
+        bg: it.done ? '#eef1e8' : PP,
+        boxBg: it.done ? OL : 'transparent', boxBorder: it.done ? OL : 'rgba(22,40,63,.4)',
+        tick: it.done ? PP : 'transparent',
+        fg: it.done ? 'rgba(22,40,63,.5)' : NV,
+        weight: it.done ? 400 : 500,
+        strike: it.done ? 'line-through' : 'none',
+        onClick: () => this.patch(cj.id, j => {
+          j.items = j.items.map((x, xi) => (xi === i ? Object.assign({}, x, { done: !x.done }) : x));
+          return j;
+        })
+      })),
+      messages: my.messages && cj.id === mine.id ? my.messages : cj.messages.map(m => ({
+        who: m.who, text: m.text, align: m.mine ? 'end' : 'start', crewAlign: m.mine ? 'start' : 'end',
+        bg: m.mine ? '#eef1e8' : NV, fg: m.mine ? NV : CR, metaFg: m.mine ? OL : '#a3b689'
+      })),
+      logDamage: () => this.patch(cj.id, j => { j.photos = j.photos + 1; return j; }),
+      markAll: () => this.patch(cj.id, j => { j.items = j.items.map(x => Object.assign({}, x, { done: true })); return j; }),
+      advance: () => this.patch(cj.id, j => {
+        const next = nextStatus[j.status];
+        if (next === 'onsite') j.clockIn = Date.now();
+        if (next === 'complete') {
+          j.hours = j.clockIn ? Math.max(1, (Date.now() - j.clockIn) / 3600000) : 4;
+          j.clockIn = null; j.stage = 'Complete';
+          j.items = j.items.map(x => Object.assign({}, x, { done: true }));
+        }
+        j.status = next;
+        return j;
+      })
+    };
+    const crewJobList = jobsToday.map(j => {
+      const on = j.id === s.crewId;
+      return {
+        customer: j.customer, route: j.from.split(',')[0] + ' → ' + j.to.split(',')[0],
+        meta: (j.crew || 'Unassigned') + ' · ' + j.window,
+        status: statusLabel[j.status],
+        bg: on ? NV : PP, fg: on ? CR : NV,
+        border: on ? NV : 'rgba(22,40,63,.2)',
+        subFg: on ? 'rgba(247,246,242,.7)' : 'rgba(22,40,63,.6)',
+        tagBg: j.status === 'unassigned' ? '#dfe7d2' : OL,
+        tagFg: j.status === 'unassigned' ? NV : PP,
+        onClick: () => this.setState({ crewId: j.id })
+      };
+    });
+
+    // ---- dispatch
+    const busy = {};
+    jobsToday.forEach(j => { if (j.crew && j.status !== 'complete') busy[j.crew] = j; });
+    const colDefs = [
+      { key: 'unassigned', label: 'Unassigned', match: j => j.status === 'unassigned' },
+      { key: 'scheduled', label: 'Scheduled', match: j => j.status === 'scheduled' },
+      { key: 'progress', label: 'In progress', match: j => j.status === 'enroute' || j.status === 'onsite' },
+      { key: 'complete', label: 'Complete', match: j => j.status === 'complete' }
+    ];
+    const dispatchCols = colDefs.map(c => {
+      const list = jobsToday.filter(c.match);
+      return {
+        label: c.label + ' · ' + list.length,
+        fg: c.key === 'unassigned' ? '#a3b689' : 'rgba(247,246,242,.5)',
+        empty: list.length === 0,
+        jobs: list.map(j => {
+          const done = j.items.filter(i => i.done).length;
+          const pct = j.items.length ? Math.round((done / j.items.length) * 100) : 0;
+          const flag = j.late ? '+' + j.late + 'm' : j.status === 'complete' ? 'Signed' : j.items.some(i => /piano/i.test(i.name)) ? 'Piano' : j.movers + ' mvrs';
+          return {
+            customer: j.customer, route: j.from.split(',')[0] + ' → ' + j.to.split(',')[0],
+            meta: j.window + ' · ' + (j.crew || 'no crew') + ' · ' + (j.hours ? j.hours.toFixed(1) + ' hrs · ' + money(j.low) : money(j.low) + '–' + money(j.high)),
+            flag: flag,
+            flagBg: j.late ? '#a3b689' : j.status === 'complete' ? 'transparent' : 'rgba(93,115,64,.9)',
+            flagFg: j.late ? '#101e30' : j.status === 'complete' ? 'rgba(247,246,242,.6)' : PP,
+            border: j.status === 'unassigned' ? OL : j.late ? '#a3b689' : 'rgba(223,231,210,.3)',
+            opacity: j.status === 'complete' ? '.7' : '1',
+            hasBar: j.status === 'onsite' || j.status === 'enroute',
+            barPct: (j.status === 'enroute' ? 25 : pct) + '%',
+            needsCrew: j.status === 'unassigned',
+            crewChips: CREWS.map(cw => {
+              const taken = !!busy[cw.name];
+              return {
+                label: cw.name.replace('Crew ', '') + ' · ' + cw.size,
+                border: taken ? 'rgba(223,231,210,.25)' : OL,
+                fg: taken ? 'rgba(247,246,242,.4)' : '#dfe7d2',
+                bg: 'transparent',
+                onClick: taken ? () => {} : () => this.patch(j.id, x => { x.crew = cw.name; x.status = 'scheduled'; return x; })
+              };
+            }),
+            hasAction: j.status === 'scheduled' || j.status === 'enroute' || j.status === 'onsite',
+            actionLabel: j.status === 'scheduled' ? 'Send en route' : j.status === 'enroute' ? 'Mark arrived' : 'Close out job',
+            onAction: () => this.patch(j.id, x => {
+              const next = nextStatus[x.status];
+              if (next === 'onsite') x.clockIn = Date.now();
+              if (next === 'complete') {
+                x.hours = x.clockIn ? Math.max(1, (Date.now() - x.clockIn) / 3600000) : 4;
+                x.clockIn = null; x.stage = 'Complete';
+                x.items = x.items.map(i => Object.assign({}, i, { done: true }));
+              }
+              x.status = next;
+              return x;
+            })
+          };
+        })
+      };
+    });
+    const unassignedN = jobsToday.filter(j => j.status === 'unassigned').length;
+    const billed = jobsToday.reduce((a, j) => a + (j.hours ? j.hours * RATES[j.movers] : 0), 0);
+    const hoursBilled = jobsToday.reduce((a, j) => a + (j.hours || 0), 0);
+    const dispatchStats = [
+      { value: unassignedN, label: 'Unassigned', fg: '#a3b689' },
+      { value: jobsToday.filter(j => j.status === 'enroute' || j.status === 'onsite').length, label: 'In progress', fg: 'rgba(247,246,242,.55)' },
+      { value: hoursBilled.toFixed(1), label: 'Hours billed', fg: 'rgba(247,246,242,.55)' },
+      { value: jobsToday.filter(j => j.late).length, label: 'Running late', fg: '#a3b689' }
+    ];
+    const crewsPanel = CREWS.map(cw => {
+      const j = busy[cw.name];
+      return {
+        label: cw.name + ' · ' + cw.roster,
+        status: j ? (j.late ? '+' + j.late + 'm' : statusLabel[j.status]) : 'Open',
+        fg: j ? (j.late ? '#a3b689' : OL) : '#dfe7d2'
+      };
+    });
+    const mapDots = jobsToday.slice(0, 5).map((j, i) => ({
+      left: [26, 52, 68, 38, 14][i] + '%', top: [34, 22, 62, 74, 52][i] + '%',
+      bg: j.status === 'complete' ? 'transparent' : j.late ? '#a3b689' : OL,
+      border: j.status === 'complete' ? '#dfe7d2' : 'transparent'
+    }));
+
+    // ---- office
+    const filters = ['All', 'New', 'Quoted', 'Booked'];
+    const searched = s.jobs.filter(j => {
+      if (!s.search) return true;
+      const t = (j.customer + ' ' + j.phone + ' ' + j.from + ' ' + j.to).toLowerCase();
+      return t.indexOf(s.search.toLowerCase()) > -1;
+    });
+    const filtered = searched.filter(j => s.leadFilter === 'All' || j.stage === s.leadFilter);
+    const leadRows = filtered.map(j => ({
+      customer: j.customer, phone: j.phone,
+      move: j.size + ' · ' + j.from.split(',')[0] + ' → ' + j.to.split(',')[0],
+      date: j.window === 'Not set' ? dateLabel(j.day).replace(/^\w+, /, '') : dateLabel(j.day),
+      estimate: j.low ? money(j.low) + '–' + money(j.high) : '—',
+      stage: j.stage + (j.ageHrs ? ' · ' + j.ageHrs + 'h' : ''),
+      bg: j.id === s.myId ? '#f4f6ef' : PP,
+      stageBg: j.stage === 'New' ? '#efece4' : j.stage === 'Complete' ? 'transparent' : '#eef1e8',
+      stageBorder: j.stage === 'New' ? 'rgba(22,40,63,.25)' : OL,
+      stageFg: j.stage === 'New' ? 'rgba(22,40,63,.7)' : '#41522d',
+      onClick: () => this.setState({ myId: j.id, crewId: j.id, route: 'portal' }),
+      onStage: () => this.patch(j.id, x => {
+        x.stage = STAGES[(STAGES.indexOf(x.stage) + 1) % STAGES.length];
+        if (x.stage === 'Booked' && x.status === 'lead') x.status = 'unassigned';
+        return x;
+      })
+    }));
+    const booked = s.jobs.filter(j => j.stage === 'Booked' || j.stage === 'Complete').length;
+    const adminStats = [
+      { value: s.jobs.length, label: 'Leads this month', fg: NV },
+      { value: booked, label: 'Booked', fg: NV },
+      { value: Math.round((booked / s.jobs.length) * 100) + '%', label: 'Close rate', fg: OL },
+      { value: money(s.jobs.reduce((a, j) => a + (j.low || 0), 0) / Math.max(1, s.jobs.filter(j => j.low).length)), label: 'Avg. job value', fg: NV }
+    ];
+    const weekRows = [8, 9, 10, 11, 12, 13].map(d => {
+      const n = s.jobs.filter(j => j.day === d && j.status !== 'lead').length;
+      const full = BOOKED_OUT.indexOf(d) > -1 || n >= 4;
+      return {
+        label: dateLabel(d).replace(', Sep', ' Sep') + (full ? ' · full' : ''),
+        bg: q.day === d ? '#eef1e8' : PP,
+        mark: q.day === d ? OL : 'transparent',
+        weight: full ? 600 : 500,
+        slots: [0, 1, 2, 3].map(i => ({ bg: i < Math.max(n, full ? 4 : n) ? OL : 'rgba(22,40,63,.14)' }))
+      };
+    });
+    const newest = s.jobs.filter(j => j.stage === 'New')[0];
+    const nextAction = newest
+      ? {
+        title: 'Call ' + newest.customer.split(',')[0] + ' back',
+        body: 'Web lead from ' + (newest.ageHrs || 2) + ' hours ago. Leads called inside four hours book three times more often.',
+        cta: 'Call ' + newest.phone,
+        onClick: () => this.patch(newest.id, x => { x.stage = 'Survey set'; return x; })
+      }
+      : unassignedN
+        ? { title: 'Assign ' + unassignedN + ' open job' + (unassignedN > 1 ? 's' : ''), body: 'Tomorrow’s board still has jobs without a crew. Assign them on the dispatch board.', cta: 'Open dispatch', onClick: () => this.setState({ route: 'dispatch' }) }
+        : { title: 'Board is clean', body: 'Every lead has a next step and every job has a crew.', cta: 'View dispatch', onClick: () => this.setState({ route: 'dispatch' }) };
+    const assignedToday = CREWS.map(cw => {
+      const j = busy[cw.name];
+      return { label: cw.name, value: j ? j.customer : 'Open', fg: j ? NV : OL };
+    });
+
+    // ---- website sub-pages
+    const siteNav = SITE_PAGES.map(pg => {
+      const on = s.sitePage === pg.key;
+      return {
+        label: pg.label, onClick: () => this.setState({ route: 'site', sitePage: pg.key }),
+        fg: on ? NV : 'rgba(22,40,63,.6)', line: on ? OL : 'transparent', weight: on ? 600 : 500
+      };
+    });
+    const reviewsList = s.reviews.map(r => ({
+      who: r.who, where: r.where, text: r.text, when: r.when + ' · ' + r.crew,
+      starsText: stars(r.stars)
+    }));
+    const avg = s.reviews.reduce((a, r) => a + r.stars, 0) / s.reviews.length;
+
+    // ---- payments / bill of lading
+    const inv = this.invoice(mine);
+    const payment = {
+      show: mine.status === 'complete',
+      total: money(inv.total),
+      status: mine.paid ? 'Paid in full' : 'Due on receipt',
+      statusFg: mine.paid ? OL : '#8a5a2b',
+      cardLine: mine.card ? 'Card on file · •••• ' + mine.card : 'No card on file',
+      lines: inv.lines.map(l => ({ label: l.label, value: money(l.val) })),
+      cta: mine.paid ? 'Download receipt' : 'Pay ' + money(inv.total) + ' now',
+      ctaBg: mine.paid ? 'transparent' : NV,
+      ctaFg: mine.paid ? NV : CR,
+      ctaBorder: mine.paid ? 'rgba(22,40,63,.3)' : NV,
+      onPay: () => {
+        if (mine.paid) return;
+        this.patch(mine.id, j => {
+          j.paid = true;
+          j.messages = j.messages.concat([{ who: 'Flatirons', text: 'Payment received — receipt is in your documents.', mine: false }]);
+          return j;
+        });
+      },
+      bolRows: [
+        { label: 'Items loaded / delivered', value: mine.items.length + ' / ' + mine.items.length },
+        { label: 'Condition photos', value: '' + mine.photos },
+        { label: 'Damage claims', value: 'None reported' },
+        { label: 'Hours billed', value: inv.hours.toFixed(2) + ' hrs @ $' + inv.rate },
+        { label: 'Signed at drop-off', value: mine.customer }
+      ]
+    };
+    const reviewCard = {
+      show: mine.status === 'complete' && !mine.reviewed,
+      thanks: mine.reviewed,
+      starOpts: [1, 2, 3, 4, 5].map(n => ({
+        label: '★', fg: n <= s.draft.stars ? OL : 'rgba(22,40,63,.25)',
+        onClick: () => this.setState({ draft: Object.assign({}, s.draft, { stars: n }) })
+      })),
+      text: s.draft.text,
+      onText: e => this.setState({ draft: Object.assign({}, s.draft, { text: e.target.value }) }),
+      crewLine: (mine.crew || 'Your crew') + ' · ' + dateLabel(mine.day),
+      submit: () => {
+        const r = {
+          who: mine.customer, where: mine.size + ' · ' + mine.from.split(',')[0] + ' → ' + mine.to.split(',')[0],
+          stars: s.draft.stars, text: s.draft.text || 'Smooth move, on time, no surprises on the bill.',
+          when: 'Sep 2026', crew: mine.crew || 'Crew A'
+        };
+        this.setState(st => ({ reviews: [r].concat(st.reviews), draft: { stars: 5, text: '' } }));
+        this.patch(mine.id, j => { j.reviewed = true; return j; });
+      }
+    };
+    const referral = {
+      code: 'FLAT-' + mine.id.replace('FM-', ''),
+      credit: '$75',
+      note: 'They get $75 off their first move, you get $75 back the day they book.'
+    };
+
+    // ---- dispatch schedule (drag to reschedule)
+    const scheduleRows = [{ crew: null, label: 'Unassigned' }].concat(CREWS.map(cw => ({ crew: cw.name, label: cw.name + ' · ' + cw.roster })))
+      .map(row => {
+        const rowJobs = jobsToday.filter(j => (row.crew ? j.crew === row.crew : !j.crew));
+        return {
+          label: row.label,
+          headFg: row.crew ? 'rgba(247,246,242,.8)' : '#a3b689',
+          cells: HOURS.map(h => ({
+            onDragOver: e => e.preventDefault(),
+            onDrop: e => {
+              e.preventDefault();
+              const id = s.drag;
+              if (!id) return;
+              this.patch(id, j => {
+                j.crew = row.crew;
+                j.hour = h;
+                j.window = (h > 12 ? h - 12 : h) + ':00–' + (h > 12 ? h - 12 : h) + ':30 ' + (h >= 12 ? 'PM' : 'AM');
+                if (!row.crew) { j.status = 'unassigned'; j.clockIn = null; }
+                else if (j.status === 'unassigned') j.status = 'scheduled';
+                return j;
+              });
+              this.setState({ drag: null });
+            },
+            bg: h % 2 ? 'rgba(223,231,210,.04)' : 'transparent'
+          })),
+          blocks: rowJobs.map(j => {
+            const span = Math.min(6, Math.max(1.5, j.hours || (j.low / RATES[j.movers]) || 3));
+            const dragging = s.drag === j.id;
+            return {
+              label: j.customer,
+              meta: j.size + ' · ' + span.toFixed(1) + ' hrs · ' + (j.hours ? money(j.low) : money(j.low) + '–' + money(j.high)),
+              left: ((j.hour - 7) / HOURS.length * 100) + '%',
+              width: (span / HOURS.length * 100) + '%',
+              bg: j.status === 'complete' ? 'rgba(223,231,210,.12)' : j.late ? 'rgba(163,182,137,.22)' : j.crew ? 'rgba(93,115,64,.9)' : 'transparent',
+              border: j.crew ? (j.late ? '#a3b689' : OL) : OL,
+              fg: j.crew && j.status !== 'complete' ? PP : '#dfe7d2',
+              opacity: dragging ? '.4' : '1',
+              onDragStart: () => this.setState({ drag: j.id }),
+              onDragEnd: () => this.setState({ drag: null }),
+              onDragOver: e => e.preventDefault(),
+              onDrop: e => {
+                e.preventDefault();
+                const id = s.drag;
+                if (!id || id === j.id) return this.setState({ drag: null });
+                this.patch(id, x => {
+                  x.crew = j.crew; x.hour = j.hour;
+                  if (!j.crew) { x.status = 'unassigned'; } else if (x.status === 'unassigned') x.status = 'scheduled';
+                  return x;
+                });
+                this.setState({ drag: null });
+              },
+              onClick: () => this.setState({ crewId: j.id })
+            };
+          })
+        };
+      });
+    const autoFill = () => {
+      const open = CREWS.map(c => c.name).filter(n => !busy[n]);
+      let i = 0;
+      const pending = jobsToday.filter(j => !j.crew);
+      this.setState(st => ({
+        jobs: st.jobs.map(j => {
+          if (pending.indexOf(j) === -1 || i >= open.length) return j;
+          const crew = open[i++];
+          return Object.assign({}, j, { crew, status: 'scheduled' });
+        })
+      }));
+    };
+    const unpaid = s.jobs.filter(j => j.status === 'complete' && !j.paid);
+    const payables = s.jobs.filter(j => j.status === 'complete').map(j => {
+      const iv = this.invoice(j);
+      return {
+        label: j.customer, value: money(iv.total),
+        status: j.paid ? 'Paid' : 'Due',
+        fg: j.paid ? OL : '#8a5a2b',
+        onClick: () => this.patch(j.id, x => { x.paid = !x.paid; return x; })
+      };
+    });
+
+    return {
+      siteNav,
+      typicalBands: SIZES.map(sz => {
+        const b = bandFor(sz);
+        return {
+          label: sz, range: money(b.low) + '–' + money(b.high),
+          crew: b.movers + ' movers, ' + (Math.round(b.hours * 2) / 2).toFixed(1).replace('.0', '') + '–' + (Math.round((b.hours + 1) * 2) / 2).toFixed(1).replace('.0', '') + ' hrs'
+        };
+      }),
+      siteHome: s.route === 'site' && s.sitePage === 'home',
+      sitePricing: s.route === 'site' && s.sitePage === 'pricing',
+      siteArea: s.route === 'site' && s.sitePage === 'area',
+      siteCommercial: s.route === 'site' && s.sitePage === 'commercial',
+      siteReviews: s.route === 'site' && s.sitePage === 'reviews',
+      reviewsList, avgStarsText: stars(Math.round(avg)), avgStars: avg.toFixed(1),
+      reviewCount: s.reviews.length,
+      payment, reviewCard, referral, scheduleRows, autoFill, payables,
+      unpaidCount: unpaid.length,
+      scheduleHours: HOURS.map(h => ({ label: (h > 12 ? h - 12 : h) + (h >= 12 ? 'p' : 'a') })),
+      mapRef: this.mapRef,
+      card: s.card,
+      onCardName: e => this.setState({ card: Object.assign({}, s.card, { name: e.target.value }) }),
+      onCardNum: e => this.setState({ card: Object.assign({}, s.card, { num: e.target.value }) }),
+      onCardExp: e => this.setState({ card: Object.assign({}, s.card, { exp: e.target.value }) }),
+      navItems: NAV.map(n => {
+        const on = s.route === n.key;
+        return {
+          label: n.label, onClick: this.go(n.key),
+          fg: on ? '#f7f6f2' : 'rgba(247,246,242,.6)',
+          line: on ? OL : 'transparent',
+          bg: on ? 'rgba(93,115,64,.18)' : 'transparent'
+        };
+      }),
+      clockLabel: 'Sat 12 Sep · 10:12',
+      isSite: s.route === 'site', isEst: s.route === 'estimate', isPortal: s.route === 'portal',
+      isCrew: s.route === 'crew', isDispatch: s.route === 'dispatch', isAdmin: s.route === 'admin',
+      step1: s.step === 1, step2: s.step === 2, step3: s.step === 3, step4: s.step === 4,
+      q: Object.assign({}, q, { date: dateLabel(q.day) }),
+      steps, itemRows, roomTabs, calendar, moverOpts, priceLines,
+      dowLabels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => ({ label: d })),
+      sizeOpts: seg(SIZES, q.size, v => {
+        this.setState(st => ({ q: Object.assign({}, st.q, { size: v, movers: DEFAULT_CREW[v], counts: Object.assign({}, PRESETS[v]) }) }));
+      }),
+      fromFloorOpts: seg(FLOORS, q.fromFloor, v => this.setQ('fromFloor', v)),
+      toFloorOpts: seg(FLOORS, q.toFloor, v => this.setQ('toFloor', v)),
+      elevatorBg: q.elevator ? OL : 'transparent',
+      elevatorBorder: q.elevator ? OL : 'rgba(22,40,63,.4)',
+      elevatorTick: q.elevator ? PP : 'transparent',
+      packingBg: q.packing ? OL : 'transparent',
+      packingBorder: q.packing ? OL : 'rgba(22,40,63,.4)',
+      packingTick: q.packing ? PP : 'transparent',
+      quoteRef: '#FM-' + s.seq,
+      priceRange: p.units ? money(p.low) + '–' + money(p.high) : 'Add items',
+      priceBasis: p.units
+        ? 'Based on ' + p.hours.toFixed(1) + ' hrs, ' + q.movers + ' movers, one truck.'
+        : 'Pick a home size or count a few rooms and the range appears here.',
+      inventorySummary: p.count
+        ? p.count + ' items · ' + p.units + ' volume units · ' + dateLabel(q.day)
+        : 'Nothing counted yet.',
+      confirmRows: [
+        { label: 'Move date', value: dateLabel(q.day) },
+        { label: 'Route', value: (q.from || 'Denver') + ' → ' + (q.to || 'Denver') },
+        { label: 'Access', value: q.fromFloor + ' → ' + q.toFloor + (q.elevator ? ' · elevator' : '') },
+        { label: 'Crew', value: q.movers + ' movers · $' + p.rate + '/hr' },
+        { label: 'Inventory', value: p.count + ' items' },
+        { label: 'Estimate', value: p.units ? money(p.low) + '–' + money(p.high) : '—' },
+        { label: 'Due today', value: '$0' }
+      ],
+      bookNote: p.units ? 'You can change anything up to 48 hours before.' : 'Add a few items first — step 2.',
+      startEstimate: () => this.setState({ route: 'estimate', step: q.from ? 2 : 1 }),
+      nextStep: () => this.setState(st => ({ step: Math.min(4, st.step + 1) })),
+      prevStep: () => this.setState(st => ({ step: Math.max(1, st.step - 1) })),
+      goPortal: this.go('portal'), goCrew: () => this.setState({ crewId: s.myId, route: 'crew' }),
+      book: this.book,
+      onFrom: e => this.setQ('from', e.target.value),
+      onTo: e => this.setQ('to', e.target.value),
+      onName: e => this.setQ('name', e.target.value),
+      onEmail: e => this.setQ('email', e.target.value),
+      onPhone: e => this.setQ('phone', e.target.value),
+      toggleElevator: () => this.setQ('elevator', !q.elevator),
+      togglePacking: () => this.setQ('packing', !q.packing),
+      my, crew, crewJobList,
+      msg: s.msg, crewMsg: s.crewMsg,
+      onMsg: e => this.setState({ msg: e.target.value }),
+      onCrewMsg: e => this.setState({ crewMsg: e.target.value }),
+      focusMsg: () => {},
+      sendMsg: () => {
+        if (!s.msg.trim()) return;
+        this.patch(mine.id, j => { j.messages = j.messages.concat([{ who: 'You', text: s.msg, mine: true }]); return j; });
+        this.setState({ msg: '' });
+      },
+      sendCrewMsg: () => {
+        if (!s.crewMsg.trim()) return;
+        this.patch(cj.id, j => { j.messages = j.messages.concat([{ who: cj.crew || 'Flatirons', text: s.crewMsg, mine: false }]); return j; });
+        this.setState({ crewMsg: '' });
+      },
+      dispatchCols, dispatchStats, crewsPanel, mapDots,
+      dispatchDate: 'Sat, Sep 12 · ' + jobsToday.length + ' jobs',
+      dispatchHint: unassignedN ? 'Tap a crew chip to assign' : 'All jobs crewed',
+      billedToday: money(billed),
+      billedNote: hoursBilled.toFixed(1) + ' hours closed out across ' + jobsToday.filter(j => j.hours).length + ' jobs',
+      leadFilters: filters.map(f => {
+        const on = s.leadFilter === f;
+        const n = f === 'All' ? searched.length : searched.filter(j => j.stage === f).length;
+        return {
+          label: f + ' ' + n, onClick: () => this.setState({ leadFilter: f }),
+          bg: on ? OL : 'transparent', fg: on ? PP : 'rgba(22,40,63,.6)'
+        };
+      }),
+      leadHeads: ['Customer', 'Move', 'Date', 'Estimate', 'Stage'].map(l => ({ label: l })),
+      leadRows,
+      leadFootnote: 'Click a row to open that customer’s portal · click the stage chip to advance it',
+      adminStats, weekRows, nextAction, assignedToday,
+      search: s.search,
+      onSearch: e => this.setState({ search: e.target.value })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

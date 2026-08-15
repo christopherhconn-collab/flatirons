@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="stylesheet" href="_ds/industry-5daa45b7-f3ba-478b-9f03-3acdec467a94/styles.css">
+<script src="_ds/industry-5daa45b7-f3ba-478b-9f03-3acdec467a94/_ds_bundle.js"></script>
+<script src="./doc-page.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ink:#16283f; --olive:#5d7340; --olive-d:#41522d; --paper:#fbfaf7;
+  --rule:rgba(22,40,63,.16); --mute:rgba(22,40,63,.62);
+}
+doc-page:not(:defined){visibility:hidden}
+doc-page{font-family:"Barlow",system-ui,sans-serif;color:var(--ink);font-size:10.5pt;line-height:1.6}
+h1,h2,h3,h4{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.02em;margin:0}
+h1{font-size:31pt;line-height:.98;font-weight:600}
+h2{font-size:18pt;font-weight:600;margin:26pt 0 9pt;padding-bottom:5pt;border-bottom:1.5pt solid var(--ink)}
+h3{font-size:13pt;font-weight:600;margin:16pt 0 5pt}
+h4{font-size:10.5pt;font-weight:600;letter-spacing:.1em;color:var(--olive-d);margin:12pt 0 4pt}
+p{margin:0 0 8pt;orphans:3;widows:3;text-wrap:pretty}
+ul,ol{margin:0 0 9pt;padding-left:15pt}
+li{margin-bottom:3.5pt;orphans:3;widows:3}
+strong{font-weight:600}
+em{font-style:normal;color:var(--olive-d);font-weight:500}
+.kick{font:500 8.5pt/1 "Barlow",sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--olive)}
+.lede{font-size:12pt;line-height:1.55;color:var(--mute);max-width:62ch}
+.meta{display:flex;gap:26pt;flex-wrap:wrap;font:500 8.5pt/1.4 "Barlow",sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:8pt 0;margin:16pt 0 22pt}
+table{width:100%;border-collapse:collapse;margin:8pt 0 12pt;font-size:9.5pt}
+th{font:600 8pt/1.3 "Barlow",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);text-align:left;padding:6pt 8pt;background:#efece4;border-bottom:1px solid var(--rule)}
+td{padding:6pt 8pt;border-bottom:1px solid var(--rule);vertical-align:top}
+td.n{white-space:nowrap;font-weight:600}
+.callout{border:1px solid var(--rule);background:var(--paper);padding:11pt 13pt;margin:12pt 0;break-inside:avoid;orphans:3;widows:3}
+.callout.hot{border-color:var(--olive);background:#f1f4ea}
+.callout p:last-child{margin-bottom:0}
+.phase{break-inside:avoid;border:1px solid var(--rule);background:var(--paper);padding:12pt 14pt;margin:10pt 0}
+.phase-hd{display:flex;justify-content:space-between;align-items:baseline;gap:14pt;border-bottom:1px solid var(--rule);padding-bottom:6pt;margin-bottom:8pt}
+.phase-hd h3{margin:0}
+.phase-when{font:600 8.5pt/1 "Barlow",sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--olive-d);white-space:nowrap}
+.two{column-count:2;column-gap:20pt}
+.two h4{margin-top:0}
+.check{list-style:none;padding-left:0}
+.check li{padding-left:16pt;position:relative}
+.check li::before{content:"□";position:absolute;left:0;color:var(--olive);font-size:11pt;line-height:1.35}
+.stack{display:grid;gap:0;border:1px solid var(--rule);margin:8pt 0 12pt;break-inside:avoid}
+.stack div{display:flex;justify-content:space-between;gap:12pt;padding:6pt 10pt;border-bottom:1px solid var(--rule);font-size:9.5pt}
+.stack div:last-child{border-bottom:0}
+.stack span:first-child{font-weight:500}
+.stack span:last-child{color:var(--mute);text-align:right}
+.foot{display:flex;justify-content:space-between;font:500 7.5pt/1 "Barlow",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--rule);padding-top:6pt}
+.appendix{break-before:page}
+</style></helmet>
+
+<doc-page margin="0.7in">
+
+<div slot="footer" class="foot"><span>Flatirons Movers &middot; Build Plan</span><span>Confidential &middot; August 2026</span></div>
+
+<div class="kick">Development plan &middot; v1</div>
+<h1>Flatirons Movers:<br>from prototype to product</h1>
+<p class="lede">A staged plan to turn the working prototype into software that runs the business &mdash; ordered so each stage pays for the next, and so you can stop at any stage and still have something that earns.</p>
+
+<div class="meta">
+  <span>Prepared for &middot; Flatirons Movers</span>
+  <span>Horizon &middot; 12 months</span>
+  <span>Est. spend &middot; $19k&ndash;$46k</span>
+  <span>Status &middot; Prototype complete</span>
+</div>
+
+<h2>The one decision that shapes everything</h2>
+<p>You are not building one product. You are building <em>two</em>, and they have opposite economics.</p>
+<p><strong>The customer-facing half</strong> &mdash; website, instant quote, booking, tracking portal &mdash; is where you win jobs. Every competitor in Denver has a phone number and a contact form; almost none give a real price in two minutes. This is your differentiation, it is cheap to build, and nobody sells you a good version of it.</p>
+<p><strong>The back-office half</strong> &mdash; dispatch, crew app, invoicing, payroll, insurance documents &mdash; is where you lose money if it is bad, but it is <em>identical at every moving company in the country</em>. Elromco, SmartMoving and MoveitPro have each spent a decade on it. Building your own costs six figures and buys you nothing a customer can see.</p>
+
+<div class="callout hot">
+  <h4>The recommendation</h4>
+  <p><strong>Build the front. Buy the back. Connect them once.</strong> Ship your own quote-and-book experience, subscribe to an existing dispatch platform, and pipe booked jobs from one into the other. Revisit building your own back office only if you pass roughly 200 moves a month and the platform is actively holding you back.</p>
+</div>
+
+<h2>Stage 0 &mdash; Before you write any code</h2>
+<div class="phase">
+  <div class="phase-hd"><h3>Validate the pricing model and pick your platform</h3><span class="phase-when">2&ndash;3 weeks &middot; ~$0</span></div>
+  <p>The prototype encodes assumptions: a nine-volume-unit-per-mover-hour throughput, a three-hour minimum, $149/$199/$249 crew rates, a $45 metro travel fee. Those numbers drive every quote the software will ever produce. Get them right before they are load-bearing.</p>
+  <ul class="check">
+    <li>Pull your last 60 completed jobs. For each, record inventory, crew size, actual hours, final invoice.</li>
+    <li>Run each one through the prototype's estimator. Count how many land inside the quoted range.</li>
+    <li>Tune throughput and the range width until you hit 85&ndash;90% accuracy. <em>This is the single highest-value day of work in the whole plan.</em></li>
+    <li>Demo three dispatch platforms (Elromco, SmartMoving, MoveitPro). Ask each the same question: <em>can I create a job through your API?</em> If the answer is no, cross them off.</li>
+    <li>Confirm QuickBooks integration and per-truck or per-user pricing in writing.</li>
+  </ul>
+  <p><strong>Exit test:</strong> you can state your hourly throughput as a number you trust, and you have a signed platform quote.</p>
+</div>
+
+<h2>Stage 1 &mdash; Marketing site and instant quote</h2>
+<div class="phase">
+  <div class="phase-hd"><h3>The half that wins jobs</h3><span class="phase-when">4&ndash;6 weeks &middot; $6k&ndash;$14k</span></div>
+  <p>Ship the five public pages and the four-step estimator from the prototype as a real site. No customer accounts yet, no live tracking &mdash; a lead that arrives with a priced inventory attached is already a step-change over a contact form.</p>
+  <h4>Scope</h4>
+  <ul>
+    <li>Home, Pricing, Service area, Commercial, Reviews &mdash; static pages, real content, fast.</li>
+    <li>The four-step estimator with server-side pricing (never trust a price computed in the browser).</li>
+    <li>Booking writes a lead to your database <em>and</em> creates the job in the dispatch platform by API.</li>
+    <li>Confirmation email and SMS to the customer; instant SMS alert to whoever answers the phone.</li>
+    <li>Analytics on the estimator funnel: where people abandon, which step loses them.</li>
+  </ul>
+  <h4>Stack</h4>
+  <div class="stack">
+    <div><span>Framework</span><span>Next.js on Vercel &mdash; fast, cheap, good SEO</span></div>
+    <div><span>Database</span><span>Postgres via Supabase or Neon</span></div>
+    <div><span>Email &amp; SMS</span><span>Resend + Twilio</span></div>
+    <div><span>Addresses &amp; distance</span><span>Google Places + Distance Matrix</span></div>
+    <div><span>Errors</span><span>Sentry from day one</span></div>
+  </div>
+  <p><strong>Exit test:</strong> a stranger prices a two-bedroom move and books it, the job appears on the dispatch board without anyone retyping it, and you have the search rankings to be found.</p>
+</div>
+
+<h2>Stage 2 &mdash; Customer portal and payments</h2>
+<div class="phase">
+  <div class="phase-hd"><h3>Cut the &ldquo;where are they?&rdquo; phone calls</h3><span class="phase-when">4&ndash;6 weeks &middot; $5k&ndash;$12k</span></div>
+  <p>Every move generates three to five inbound calls that a portal answers for free: what time, what do I need to do, what will it cost, where is the crew, send me the insurance certificate.</p>
+  <ul>
+    <li>Magic-link login &mdash; no passwords, no signup friction.</li>
+    <li>Move timeline, customer checklist, document vault (estimate, certificate of insurance, inventory).</li>
+    <li>Card on file via <strong>Stripe</strong>. Authorize at booking, capture the real hours after the crew closes the job.</li>
+    <li>Digital bill of lading with a signature captured on the crew's phone.</li>
+    <li>Two-way messaging between customer and crew &mdash; SMS underneath, threaded in the portal.</li>
+  </ul>
+  <div class="callout">
+    <p><strong>Payments warning.</strong> Hourly billing means the final amount is unknown at booking. Use a Stripe authorization for the top of the range, then capture the true amount. Get your terms &mdash; three-hour minimum, quarter-hour increments, what happens above the range &mdash; reviewed by a lawyer before the first card is charged.</p>
+  </div>
+  <p><strong>Exit test:</strong> a move completes and gets paid without a phone call or a paper form.</p>
+</div>
+
+<h2>Stage 3 &mdash; Dispatch integration and the crew's phone</h2>
+<div class="phase">
+  <div class="phase-hd"><h3>Make the bought platform feel like yours</h3><span class="phase-when">3&ndash;5 weeks &middot; $4k&ndash;$10k</span></div>
+  <p>You are not rebuilding the dispatch board here. You are making the platform you bought talk to the site you built, so nothing is entered twice and the customer sees the truth.</p>
+  <ul>
+    <li>Two-way sync: your bookings create jobs; their status changes update your portal.</li>
+    <li>Crew location published to the portal map on move day only, from the platform's own crew app.</li>
+    <li>Automated review request the morning after, with the referral code attached.</li>
+    <li>A thin internal dashboard for the numbers the platform reports badly: estimate accuracy, close rate by lead source, revenue per crew hour.</li>
+  </ul>
+  <p><strong>Exit test:</strong> your office team works in one system, not two, and the customer's tracking view is live without anyone updating it by hand.</p>
+</div>
+
+<h2>Stage 4 &mdash; Only if the numbers justify it</h2>
+<div class="phase">
+  <div class="phase-hd"><h3>Build your own back office</h3><span class="phase-when">4&ndash;6 months &middot; $40k+</span></div>
+  <p>Do this <em>only</em> when all three are true: you are past roughly 200 moves a month, the platform is demonstrably costing you jobs or hours, and you have a developer on retainer rather than a project budget. Then rebuild dispatch, the crew app, scheduling and payroll on your own stack &mdash; the prototype already shows the shape.</p>
+  <p>Most companies your size never reach this stage, and that is a good outcome, not a failure.</p>
+</div>
+
+<h2>Budget and sequence</h2>
+<table>
+  <thead><tr><th>Stage</th><th>Duration</th><th>Build cost</th><th>Runs at</th><th>What it buys</th></tr></thead>
+  <tbody>
+    <tr><td class="n">0 &middot; Validate</td><td>2&ndash;3 wks</td><td class="n">$0</td><td>&mdash;</td><td>Pricing you can trust</td></tr>
+    <tr><td class="n">1 &middot; Site + quote</td><td>4&ndash;6 wks</td><td class="n">$6k&ndash;14k</td><td>~$60/mo</td><td>More booked jobs</td></tr>
+    <tr><td class="n">2 &middot; Portal + pay</td><td>4&ndash;6 wks</td><td class="n">$5k&ndash;12k</td><td>+2.9% card</td><td>Fewer calls, faster cash</td></tr>
+    <tr><td class="n">3 &middot; Integration</td><td>3&ndash;5 wks</td><td class="n">$4k&ndash;10k</td><td>$200&ndash;500/mo</td><td>No double entry</td></tr>
+    <tr><td class="n">Total, stages 0&ndash;3</td><td><strong>3&ndash;4 months</strong></td><td class="n"><strong>$15k&ndash;36k</strong></td><td><strong>~$400/mo</strong></td><td>A business that runs itself</td></tr>
+    <tr><td class="n">4 &middot; Own back office</td><td>4&ndash;6 mos</td><td class="n">$40k+</td><td>$300/mo</td><td>Optional. Later.</td></tr>
+  </tbody>
+</table>
+<p>Add 20% contingency and a $2k&ndash;4k design pass if you want the logo direction applied across the whole system. Rates assumed: $85&ndash;125/hr for a competent US-based contractor, or $45&ndash;70/hr for a vetted offshore team with a strong project manager.</p>
+
+<h2>Hiring: what to actually ask for</h2>
+<p>You do not need an agency and you do not need a technical co-founder. You need <strong>one senior full-stack contractor</strong> who has shipped a Next.js and Stripe project before, on a fixed-scope engagement per stage.</p>
+<ul>
+  <li><strong>Show them the prototype first.</strong> It is worth more than any written spec &mdash; it removes ambiguity about what you want, and it will cut their estimate.</li>
+  <li>Hire for one stage at a time. Stage 1 is the audition.</li>
+  <li>Insist on: your GitHub organisation, your Vercel and Stripe accounts, weekly deploys to a staging URL you can click.</li>
+  <li>Red flags: a fixed bid for all four stages sight-unseen, a proposal that starts with dispatch, anyone who wants to build the back office first, or anyone who dismisses the bought platform without pricing the alternative.</li>
+</ul>
+
+<h2>What can go wrong</h2>
+<table>
+  <thead><tr><th>Risk</th><th>How it shows up</th><th>What to do about it</th></tr></thead>
+  <tbody>
+    <tr><td class="n">Bad pricing model</td><td>Quotes come in low, crews rush, reviews slip</td><td>Stage 0 is non-negotiable. Re-run it quarterly.</td></tr>
+    <tr><td class="n">Platform has no API</td><td>Stage 3 becomes manual re-entry</td><td>Confirm API access in writing before you subscribe.</td></tr>
+    <tr><td class="n">Scope creep into Stage 4</td><td>&ldquo;While we're in here&hellip;&rdquo; on the dispatch board</td><td>Fixed scope per stage. Park ideas in a list.</td></tr>
+    <tr><td class="n">Crew won't adopt</td><td>Checklists left blank, photos never taken</td><td>Pay a small per-job bonus for a complete record for the first 90 days.</td></tr>
+    <tr><td class="n">Chargebacks</td><td>Disputed hours with no evidence</td><td>Signed digital bill of lading plus timestamped photos on every job.</td></tr>
+  </tbody>
+</table>
+
+<h2 class="appendix">Appendix &mdash; What the prototype already settles</h2>
+<p>Hand this document and the prototype to a developer together. The prototype is not a mockup: it is a working specification with the business rules encoded in it.</p>
+<div class="two">
+  <h4>Already decided</h4>
+  <ul>
+    <li>Six surfaces and how they connect</li>
+    <li>The four-step estimator, step by step</li>
+    <li>Pricing: rates, minimum, throughput, add-ons</li>
+    <li>Item catalogue with volume units and handling</li>
+    <li>Job status model: unassigned &rarr; scheduled &rarr; en route &rarr; on site &rarr; complete</li>
+    <li>Crew assignment and drag-to-reschedule behaviour</li>
+    <li>Invoice lines and the bill of lading</li>
+    <li>Review and referral loop</li>
+    <li>Full visual system: colour, type, components</li>
+  </ul>
+  <h4>Still open</h4>
+  <ul>
+    <li>Long-haul and interstate pricing rules</li>
+    <li>Storage: units, monthly billing, in and out</li>
+    <li>Crew payroll, tips and shift scheduling</li>
+    <li>Damage claims workflow</li>
+    <li>Commercial flat-bid approval chain</li>
+    <li>Multi-truck jobs on one booking</li>
+    <li>Cancellation and rescheduling policy in code</li>
+    <li>Which dispatch platform, and its data model</li>
+  </ul>
+</div>
+
+<div class="callout">
+  <h4>Next step this week</h4>
+  <p>Pull the last 60 job records and book three platform demos. Nothing else on this plan can be estimated honestly until Stage 0 is done &mdash; and Stage 0 costs you nothing but a weekend.</p>
+</div>
+
+</doc-page>
+
+</x-dc>
+</body>
+</html>
