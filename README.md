@@ -267,6 +267,18 @@ Each of these is a decision, not an oversight.
 
 ## Known gaps worth a decision
 
+- **The quoted range excludes travel.** `CONFIG` has no travel component: the
+  engine prices labour plus item surcharges, while the business bills $45 flat
+  inside the metro and $1.15 per loaded mile beyond. `/pricing` now says so
+  plainly in both places a range appears. **The estimator does not** — its price
+  rail and confirm table show the same labour-only range with no mention of
+  travel, and that is the screen a customer commits on. Either fold travel into
+  the engine once Distance Matrix lands at step 6, or carry the same disclosure
+  into the rail.
+- **There is no published hit-rate claim.** The prototype's "nine out of ten
+  moves land inside the range we quote" was removed: measured against 60 real
+  jobs it was 45%, and every miss was over the top. Reinstate a figure only from
+  a measured re-run that counts mileage.
 - **The published bands sit below the estimator for the same preset.**
   `typicalBand()` reproduces the prototype's `bandFor()`, which omits per-item
   surcharges, so the 2-bed band is $40 under what the estimator quotes and the
