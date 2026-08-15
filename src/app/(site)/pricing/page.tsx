@@ -138,8 +138,9 @@ export default function PricingPage() {
             ))}
           </div>
           <p className="text-ink-quiet mt-3 text-[12.5px] leading-[1.5]">
-            Computed from the same engine that prices your estimate — not a
-            rounded-off marketing number.
+            Crew and truck only — travel is added as listed. Computed from the
+            same engine that prices your estimate, not a rounded-off marketing
+            number.
           </p>
         </div>
 
@@ -158,9 +159,11 @@ export default function PricingPage() {
               Your estimate is a range, not a bid
             </h2>
             <p className="text-body-sm mb-4 text-[rgb(22_40_63/0.7)]">
-              You pay the hours we work. Nine out of ten moves land inside the
-              range we quote — when we go over, we eat the difference above the
-              top of the range.
+              You pay the hours we work. The range covers the move itself —
+              crew, truck and any special handling. Travel is added on top, at
+              the flat metro rate or by the mile, exactly as listed above. Go
+              over the top of the range on the labour and we eat the
+              difference.
             </p>
             <form action={startEstimate}>
               <button
