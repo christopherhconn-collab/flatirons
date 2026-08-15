@@ -24,9 +24,25 @@
    see README.md, "These constants must be configurable without a deploy."
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export const CONFIG = {
+export type PricingConfig = {
   /** Hourly rate by crew size, in whole dollars. */
-  rates: { 2: 149, 3: 199, 4: 249 } as Record<CrewSize, number>,
+  rates: Record<CrewSize, number>;
+  /** Volume units one mover clears per hour. */
+  throughput: number;
+  /** Published minimum, in hours. */
+  minHours: number;
+  /** Access multipliers for stairs without a service elevator. */
+  stairsPickup: number;
+  stairsDropoff: number;
+  packing: { hoursFactor: number; ratePerHour: number };
+  range: { low: number; high: number };
+  roundTo: number;
+  materials: number;
+};
+
+export const CONFIG: PricingConfig = {
+  /** Hourly rate by crew size, in whole dollars. */
+  rates: { 2: 149, 3: 199, 4: 249 },
 
   /** Volume units one mover clears per hour. The single most sensitive value. */
   throughput: 9,
@@ -53,7 +69,7 @@ export const CONFIG = {
 
   /** Flat materials charge on the final invoice. */
   materials: 28,
-} as const;
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Types
@@ -291,6 +307,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     packing = false,
   } = input;
   const includeSurcharges = options?.includeSurcharges ?? true;
+  const cfg = options?.config ?? CONFIG;
 
   let units = 0;
   const extras: QuoteExtra[] = [];
@@ -307,18 +324,18 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     }
   }
 
-  const rate = CONFIG.rates[movers];
+  const rate = cfg.rates[movers];
 
-  let hours = units ? units / (movers * CONFIG.throughput) : 0;
-  if (fromFloor !== "Ground" && !elevator) hours *= CONFIG.stairsPickup;
-  if (toFloor !== "Ground" && !elevator) hours *= CONFIG.stairsDropoff;
-  if (units) hours = Math.max(CONFIG.minHours, hours);
+  let hours = units ? units / (movers * cfg.throughput) : 0;
+  if (fromFloor !== "Ground" && !elevator) hours *= cfg.stairsPickup;
+  if (toFloor !== "Ground" && !elevator) hours *= cfg.stairsDropoff;
+  if (units) hours = Math.max(cfg.minHours, hours);
 
   if (packing) {
     extras.push({
       label: "Packing crew",
       amount: Math.round(
-        hours * CONFIG.packing.hoursFactor * CONFIG.packing.ratePerHour,
+        hours * cfg.packing.hoursFactor * cfg.packing.ratePerHour,
       ),
     });
   }
@@ -333,10 +350,10 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     extras,
     extrasTotal,
     low: units
-      ? roundToIncrement(hours * CONFIG.range.low * rate + extrasTotal, CONFIG.roundTo)
+      ? roundToIncrement(hours * cfg.range.low * rate + extrasTotal, cfg.roundTo)
       : 0,
     high: units
-      ? roundToIncrement(hours * CONFIG.range.high * rate + extrasTotal, CONFIG.roundTo)
+      ? roundToIncrement(hours * cfg.range.high * rate + extrasTotal, cfg.roundTo)
       : 0,
     itemCount: itemCountOf(counts),
   };
@@ -353,6 +370,15 @@ export type QuoteOptions = {
    * `typicalBands()` to make the two agree — see the note there.
    */
   includeSurcharges?: boolean;
+
+  /**
+   * Price against a candidate configuration instead of the live `CONFIG`.
+   *
+   * This exists for the tuning harness, which sweeps a value across a range and
+   * re-prices historical jobs at each step. Production callers should omit it
+   * so every quote uses one configuration.
+   */
+  config?: PricingConfig;
 };
 
 export type TypicalBand = {
@@ -374,18 +400,21 @@ export type TypicalBand = {
  * See `QuoteOptions.includeSurcharges` — this is a real discrepancy with the
  * estimator for the presets that contain a TV, and worth a product decision.
  */
-export function typicalBand(size: HomeSize): TypicalBand {
+export function typicalBand(
+  size: HomeSize,
+  config: PricingConfig = CONFIG,
+): TypicalBand {
   const movers = DEFAULT_CREW[size];
   const q = quote(
     { counts: PRESETS[size], movers },
-    { includeSurcharges: false },
+    { includeSurcharges: false, config },
   );
   return { size, movers, hours: q.hours, low: q.low, high: q.high };
 }
 
 /** All four published bands, in order, for the pricing page's band table. */
-export function typicalBands(): TypicalBand[] {
-  return HOME_SIZES.map(typicalBand);
+export function typicalBands(config: PricingConfig = CONFIG): TypicalBand[] {
+  return HOME_SIZES.map((size) => typicalBand(size, config));
 }
 
 /**

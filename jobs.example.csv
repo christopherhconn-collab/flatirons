@@ -1,0 +1,6 @@
+id,size,items,movers,actual_hours,invoice,from_floor,to_floor,elevator,packing
+FM-1001,2 bed,,3,4.75,995,Ground,Ground,no,no
+FM-1002,1 bed,"Bike:1; Grill:1",2,4.25,660,2nd,Ground,no,no
+FM-1003,Studio,,2,3,450,Ground,3rd,no,no
+FM-1004,3+ bed,"Upright piano:1",4,7.5,2050,Ground,Ground,no,yes
+FM-1005,,"Sofa, 3-seat:1; Bed, queen:1; Medium boxes:18; TV, 55 inch:1",2,5.25,820,4th+,Ground,yes,no
