@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local data store (stands in for Postgres until step 3)
+/.data/
+
+# historical job exports — customer data, never commit
+/jobs.csv
+/jobs.*.csv
