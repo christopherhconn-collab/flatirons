@@ -20,8 +20,14 @@ project_id = "flatirons"
 [api]
 enabled = true
 port = 54321
-# Only the application schema is exposed. Prisma's migration bookkeeping lives
-# in `_prisma_migrations` and has no business being reachable over PostgREST.
+# `public` is exposed, but every table in it has row-level security enabled and
+# no policies, so PostgREST can read nothing — including `_prisma_migrations`,
+# which lives in `public` too and would otherwise be listed. Narrowing this
+# list is not what protects the data; the RLS migration is. See
+# prisma/migrations/20260816215500_enable_row_level_security/.
+#
+# A new table therefore needs RLS turned on in its migration. Adding one and
+# relying on this line to hide it does not work.
 schemas = ["public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000

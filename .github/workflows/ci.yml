@@ -40,8 +40,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    # One server here, so both URLs point at it. `DIRECT_URL` is set rather
+    # than left to fall back so the two-connection path production uses is the
+    # one CI exercises — a typo in the migration URL should fail here, not on
+    # a Supabase deploy.
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/flatirons
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/flatirons
 
     steps:
       - uses: actions/checkout@v4

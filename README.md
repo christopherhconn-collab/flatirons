@@ -55,13 +55,54 @@ are upserted, and fixture jobs are left alone if any job already exists. Pass
 
 | Variable | What it is |
 | --- | --- |
-| `DATABASE_URL` | Postgres connection string. Required. |
+| `DATABASE_URL` | Postgres connection string. Required. Pooled, on Supabase. |
+| `DIRECT_URL` | Session-mode connection for migrations and the seed. Optional; falls back to `DATABASE_URL`. |
+| `DATABASE_POOL_MAX` | Connections per pool. Optional; defaults to 5. |
 | `NEXT_PUBLIC_SITE_URL` | Used by `src/app/sitemap.ts`; falls back to the production hostname. |
 
-**On Supabase specifically:** use the pooled connection string (pgbouncer, port
-6543) for the app and the direct one (port 5432) for `db:migrate` and
-`db:deploy`. Migrations need a session-mode connection that a transaction
-pooler will not give them.
+## Running on Supabase
+
+Take both connection strings from **Project settings → Database → Connection
+pooling**. The hostname is the same for both and only the port tells them
+apart:
+
+```
+DATABASE_URL="postgresql://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require"
+DIRECT_URL="postgresql://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require"
+```
+
+Then `npm run db:deploy && npm run db:seed`. Nothing else changes — the app
+only ever sees `DATABASE_URL`.
+
+**Do not use the `db.<ref>.supabase.co:5432` string the dashboard offers
+first.** That host is IPv6-only. It works from a laptop on IPv6 and fails on
+GitHub Actions and most CI with `ENETUNREACH`, which reads like an outage
+rather than a wrong hostname. Port 5432 on the *pooler* host is also session
+mode and is reachable over IPv4.
+
+**Why two URLs.** The migration engine takes an advisory lock and runs
+multi-statement DDL that has to stay on a single server connection start to
+finish. A transaction pooler hands out a different backend per transaction, so
+`db:deploy` against port 6543 either hangs on the lock or half-applies. The
+app has the opposite need: serverless instances open and drop connections
+faster than Postgres can absorb directly, which is what the pooler is for.
+`src/lib/db-url.ts` is the one place that decides which is which.
+
+**Prepared statements need no special handling.** The `?pgbouncer=true` flag
+that older Prisma setups require is for the Rust engine's named prepared
+statements. Prisma 7 goes through `@prisma/adapter-pg`, and the adapter only
+names a statement when given a `statementNameGenerator`; this app does not
+pass one, so every query uses the unnamed statement that a transaction pooler
+handles correctly.
+
+**Every table has row-level security on and no policies.** Supabase serves the
+`public` schema over PostgREST using a publishable key designed to ship in the
+browser, so a table left open there is world-readable — every customer name,
+phone number and address in `jobs`. RLS with no policies denies PostgREST
+everything while leaving the app untouched, because the app connects as the
+tables' owner and an owner is exempt from its own policies. **A new table in
+`public` needs a line in a migration enabling RLS on it**, or it ships open.
+See `prisma/migrations/20260816215500_enable_row_level_security/`.
 
 | Script | What it does |
 | --- | --- |

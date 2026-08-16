@@ -20,6 +20,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
+import { migrationDatabaseUrl } from "../src/lib/db-url";
 import { CATALOG, ROOMS } from "../src/lib/pricing";
 import { seedData } from "../src/lib/seed";
 
@@ -31,13 +32,11 @@ const STAGE_TO_DB = {
   Complete: "Complete",
 } as const;
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set — see README.md, 'Local setup'.");
-}
-
+// The direct URL, same as migrations: seeding runs alongside `db:deploy` at
+// release time, and pinning both to one connection string means a deploy
+// cannot half-succeed because the two steps reached different endpoints.
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString }),
+  adapter: new PrismaPg({ connectionString: migrationDatabaseUrl() }),
 });
 
 async function main() {

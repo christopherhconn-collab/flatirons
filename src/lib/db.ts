@@ -22,6 +22,8 @@
 
 import { PrismaPg } from "@prisma/adapter-pg";
 
+import { appDatabaseUrl, poolMax } from "@/lib/db-url";
+
 import { PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
@@ -29,16 +31,18 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error(
-      "DATABASE_URL is not set. Copy .env.example to .env and point it at a " +
-        "Postgres instance — see README.md, 'Local setup'.",
-    );
-  }
-
   return new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
+    // The pooled URL on Supabase — see src/lib/db-url.ts for why the app and
+    // the migrations use different ones.
+    //
+    // No `statementNameGenerator` is passed, so the adapter leaves the `name`
+    // off every query and node-postgres uses the unnamed prepared statement.
+    // That is what makes this safe through a transaction pooler, which does
+    // not carry named statements across the connections it hands out.
+    adapter: new PrismaPg({
+      connectionString: appDatabaseUrl(),
+      max: poolMax(),
+    }),
     // Slow queries are the thing worth seeing in development; a full query log
     // buries them.
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
