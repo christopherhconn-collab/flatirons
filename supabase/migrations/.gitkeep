@@ -1,0 +1,4 @@
+Deliberately empty — Prisma owns the schema. See ../README.md.
+
+Git will not track an empty directory, so this file exists to keep the path
+present for the Supabase GitHub integration.
