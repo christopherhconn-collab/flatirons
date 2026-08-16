@@ -72,7 +72,8 @@ DIRECT_URL="postgresql://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:
 ```
 
 Then `npm run db:deploy && npm run db:seed`. Nothing else changes — the app
-only ever sees `DATABASE_URL`.
+only ever sees `DATABASE_URL`. The full path from here to a live site is
+[DEPLOY.md](DEPLOY.md).
 
 **Do not use the `db.<ref>.supabase.co:5432` string the dashboard offers
 first.** That host is IPv6-only. It works from a laptop on IPv6 and fails on
