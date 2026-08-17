@@ -20,7 +20,7 @@ the staged build order.
 | 7 | Deploy | Done — Vercel + Supabase, see DEPLOY.md |
 | 8 | Customer portal | Done — magic-link auth for customers, GitHub for staff; enforced when the Supabase env is set |
 | 9 | Payments | Done — Stripe Checkout + webhook when configured; no card detail ever stored |
-| 10–11 | Dispatch integration, office dashboard | Not started |
+| 10–11 | Dispatch board, office dashboard | Done in-house — kanban, crew assignment, status machine, pipeline, capacity, next-action; no external dispatch platform, no SMS (needs Twilio), map distances still approximations (needs Distance Matrix) |
 
 Routes:
 
@@ -34,6 +34,9 @@ Routes:
 | `/estimate` | The four-step estimator with the persistent price rail |
 | `/track` | Reference lookup into the portal |
 | `/move/[id]` | The customer's tracking portal |
+| `/login` | Sign-in — magic link for customers, GitHub for staff |
+| `/dispatch` | Staff: the dispatch board — kanban, crew assignment, status machine, routing map |
+| `/office` | Staff: the lead pipeline — search, stage chips, capacity strip, next action |
 | `/tokens` | Design-token reference, for checking against the prototype |
 
 ## Local setup
