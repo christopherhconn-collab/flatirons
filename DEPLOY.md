@@ -49,18 +49,15 @@ before go-live).
 
 ## 2. Import the repo on Vercel
 
-**Add New → Project**, import this repository. Vercel detects Next.js; keep
-the defaults except:
+**Add New → Project**, import this repository. Vercel detects Next.js, and
+`vercel.json` in the repo already sets the build command to
+`npm run db:deploy && npm run build` — confirm the import screen shows it,
+change nothing else. Every production deploy then applies any new committed
+migrations before the build, so schema and code cannot get out of step.
+`migrate deploy` only ever applies committed migration files — it generates
+nothing and asks nothing.
 
-**Build command** — override to:
-
-```
-npm run db:deploy && npm run build
-```
-
-Every production deploy then applies any new committed migrations before the
-build, so schema and code cannot get out of step. `migrate deploy` only ever
-applies committed migration files — it generates nothing and asks nothing.
+The one thing the dashboard still needs from you is the environment:
 
 **Environment variables** — add three, scoped to **Production only**:
 
