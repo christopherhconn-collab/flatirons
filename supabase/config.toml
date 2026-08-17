@@ -1,0 +1,73 @@
+# Supabase project configuration.
+#
+# This directory exists so the Supabase GitHub integration has a path to point
+# at — "supabase", the default. It configures the project and the local
+# development stack.
+#
+# ─── Read this before adding migrations here ───────────────────────────────
+#
+# **Prisma owns the schema.** Migrations live in `prisma/migrations/` and are
+# applied by `npm run db:deploy`, which CI runs against a throwaway Postgres on
+# every pull request. `supabase/migrations/` is deliberately empty.
+#
+# Two migration systems pointed at one database will double-apply and fail, or
+# worse, half-apply and leave the schema in a state neither tool recognises.
+# Pick one. If you would rather Supabase own deploys, the switch is deliberate
+# and needs doing properly — see supabase/README.md.
+
+project_id = "flatirons"
+
+[api]
+enabled = true
+port = 54321
+# `public` is exposed, but every table in it has row-level security enabled and
+# no policies, so PostgREST can read nothing — including `_prisma_migrations`,
+# which lives in `public` too and would otherwise be listed. Narrowing this
+# list is not what protects the data; the RLS migration is. See
+# prisma/migrations/20260816215500_enable_row_level_security/.
+#
+# A new table therefore needs RLS turned on in its migration. Adding one and
+# relying on this line to hide it does not work.
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+# Match the Postgres the app is developed and tested against.
+major_version = 16
+
+[studio]
+enabled = true
+port = 54323
+
+# Catches outbound mail locally so magic links can be read without sending any.
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+# Customers get magic links — no passwords. They are homeowners booking a move,
+# and every password is a support call waiting to happen.
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+double_confirm_changes = true
+
+# Staff and office get GitHub. Credentials come from the environment; never
+# commit them. Create the OAuth app on GitHub with the callback URL
+# https://<project-ref>.supabase.co/auth/v1/callback — Supabase's callback,
+# not the app's.
+[auth.external.github]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GITHUB_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GITHUB_SECRET)"

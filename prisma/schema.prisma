@@ -1,0 +1,256 @@
+// Flatirons Movers — database schema.
+//
+// Step 3 of the build plan. Models the job board, the reviews, the crews, the
+// item catalogue and the estimator's in-progress drafts.
+//
+// Two shape decisions worth knowing before you read it:
+//
+//   Leads are Jobs, not a separate table. The build plan lists `Lead` as its
+//   own model, but the prototype's state notes call `jobs[]` "every job and
+//   lead — the single source of truth", and the pipeline promotes a lead to a
+//   booked job in place. Splitting them would mean copying a row on promotion
+//   and keeping two tables honest about the same customer. `JobStatus.lead`
+//   does the same work with none of that.
+//
+//   Dates are `YYYY-MM-DD` strings, not `date` columns. Every date in this
+//   codebase is a calendar day in Denver — a move date, not an instant — and
+//   the whole app already treats them as strings precisely so that no timezone
+//   conversion can slide a move a day earlier for anyone west of Greenwich.
+//   ISO strings sort and group correctly, which is all the queries need.
+//   Timestamps that really are instants (`clockIn`, `at`, `createdAt`) are
+//   proper `DateTime` columns.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Where the work is. Driven by the crew app and the dispatch board alike.
+enum JobStatus {
+  lead
+  unassigned
+  scheduled
+  enroute
+  onsite
+  complete
+}
+
+/// Where the *sale* is. Separate from status, and cycled by the office.
+enum PipelineStage {
+  New       @map("New")
+  SurveySet @map("Survey set")
+  Quoted    @map("Quoted")
+  Booked    @map("Booked")
+  Complete  @map("Complete")
+}
+
+model Crew {
+  id     Int    @id @default(autoincrement())
+  /// "Crew A". Unique because dispatch addresses crews by name.
+  name   String @unique
+  roster String
+  size   Int
+
+  jobs Job[]
+
+  @@map("crews")
+}
+
+model Job {
+  /// The customer-facing reference, "FM-8848". Quoted back on the phone, so it
+  /// is the primary key rather than a surrogate id.
+  id       String @id
+  customer String
+  phone    String
+  email    String
+  /// The home size chosen in the estimator, or "Office" for commercial work.
+  size     String
+
+  fromAddress String
+  toAddress   String
+  /// `YYYY-MM-DD`. See the note at the top of this file.
+  date        String @db.VarChar(10)
+  /// "8:00–8:30 AM", or "Not set" on a lead.
+  window      String
+
+  movers Int
+  crewId Int?
+  crew   Crew? @relation(fields: [crewId], references: [id], onDelete: SetNull)
+
+  status JobStatus
+  stage  PipelineStage
+
+  /// The quoted range, locked at booking.
+  low  Int
+  high Int
+
+  /// The priced inventory as `{ itemName: quantity }`, kept so the invoice can
+  /// be rebuilt from source rather than from the denormalised item rows.
+  counts Json
+
+  fromFloor String
+  toFloor   String
+  elevator  Boolean @default(false)
+  packing   Boolean @default(false)
+
+  /// Set when the crew arrives on site, cleared when the job closes out.
+  clockIn  DateTime?
+  /// Billed hours, written at close-out.
+  hours    Float?
+  photos   Int       @default(0)
+  paid     Boolean   @default(false)
+  reviewed Boolean   @default(false)
+  /// Minutes behind the arrival window, when dispatch has flagged it.
+  late     Int?
+
+  /// Last four digits only. Stripe Elements holds the real number at step 9.
+  cardLast4 String?
+
+  items    InventoryItem[]
+  tasks    CustomerTask[]
+  messages Message[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+
+  /// The board is read by day, and capacity is counted by day.
+  @@index([date, status])
+  @@index([stage])
+  @@map("jobs")
+}
+
+model InventoryItem {
+  id       Int     @id @default(autoincrement())
+  jobId    String
+  job      Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  /// "Medium boxes ×34" — quantities are folded in, matching the crew's rows.
+  name     String
+  handling String
+  done     Boolean @default(false)
+  /// Room order from the catalogue. The crew loads in this order.
+  position Int
+
+  @@index([jobId])
+  @@map("inventory_items")
+}
+
+model CustomerTask {
+  id       Int     @id @default(autoincrement())
+  jobId    String
+  job      Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  label    String
+  note     String
+  done     Boolean @default(false)
+  position Int
+
+  @@index([jobId])
+  @@map("customer_tasks")
+}
+
+model Message {
+  id    Int      @id @default(autoincrement())
+  jobId String
+  job   Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  /// Display attribution — "Crew A", "You", "Flatirons".
+  who   String
+  text  String
+  /// True when the customer wrote it. The crew app mirrors the alignment.
+  mine  Boolean
+  at    DateTime @default(now())
+
+  @@index([jobId, at])
+  @@map("messages")
+}
+
+model Review {
+  id    String @id
+  who   String
+  /// "2 bed · Denver → Golden".
+  place String
+  stars Int
+  text  String
+  /// `YYYY-MM-DD` of the move, which is what the card's month tag shows.
+  date  String @db.VarChar(10)
+  crew  String
+
+  /// Set when the review came from a customer's portal; null for seeded ones.
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  /// The public page lists newest first.
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+model CatalogItem {
+  /// The display name doubles as the key in a counts map, so it is the id.
+  name           String  @id
+  room           String
+  volumeUnits    Int
+  handling       String
+  surcharge      Int?
+  surchargeLabel String?
+  /// Order within the room, as the estimator lists them.
+  position       Int
+
+  @@index([room])
+  @@map("catalog_items")
+}
+
+/// An in-progress estimate, kept server-side and keyed by an opaque id in a
+/// cookie — so a refresh does not lose the customer's work, and so the price
+/// they see is never a number the browser was trusted to compute.
+model QuoteDraft {
+  id  String @id
+  /// "FM-8848", reserved when the draft is created and used at booking.
+  ref String
+
+  fromAddress String  @default("")
+  toAddress   String  @default("")
+  fromFloor   String  @default("Ground")
+  toFloor     String  @default("Ground")
+  elevator    Boolean @default(false)
+  size        String  @default("2 bed")
+  /// `YYYY-MM-DD`, or empty until the customer picks a day.
+  date        String  @default("") @db.VarChar(10)
+  movers      Int     @default(3)
+  packing     Boolean @default(false)
+  counts      Json
+
+  name  String @default("")
+  email String @default("")
+  phone String @default("")
+
+  /// Held only so the confirm step can echo the last four digits back. Stripe
+  /// Elements replaces this at step 9 and no number reaches our server.
+  cardNumber String @default("")
+  cardExpiry String @default("")
+
+  step Int    @default(1)
+  room String @default("Living room")
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  /// Abandoned drafts are swept on age.
+  @@index([updatedAt])
+  @@map("quote_drafts")
+}
+
+/// Named counters. Today just `quote_ref`, which issues the FM-XXXX sequence.
+///
+/// A table rather than a Postgres sequence because the value is customer-facing
+/// and occasionally needs setting by hand — and because sequences are not
+/// transactional, so a rolled-back booking would still burn a reference.
+model Counter {
+  name  String @id
+  value Int
+
+  @@map("counters")
+}

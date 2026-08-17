@@ -13,7 +13,7 @@ the staged build order.
 | --- | --- | --- |
 | 1 | Scaffold and design tokens | Done |
 | 2 | Pricing engine and tests | Done — tuning against real jobs still outstanding |
-| 3 | Database and schema | **Stood in for.** `src/lib/store.ts` is a JSON-file repository with the shape Prisma will have |
+| 3 | Database and schema | Done — Postgres behind Prisma, with migrations and a seed script |
 | 4 | Marketing pages | Done — desktop as designed; mobile is a fallback, not a design |
 | 5 | The estimator | Done |
 | 6 | Booking | Done, minus the third-party services (no Resend, Twilio, Places or Distance Matrix) |
@@ -38,17 +38,72 @@ Routes:
 
 ## Local setup
 
+You need Postgres. Anything from a local install to a Supabase project will do
+— the app only ever sees `DATABASE_URL`.
+
 ```bash
-npm install
-npm run dev        # http://localhost:3000
+cp .env.example .env          # then point DATABASE_URL at your database
+npm install                   # `postinstall` generates the Prisma client
+npm run db:migrate            # apply migrations
+npm run db:seed               # catalogue, four crews, fixture jobs and reviews
+npm run dev                   # http://localhost:3000
 ```
 
-No environment variables are needed. Nothing talks to a database or a
-third-party service. State lives in `.data/flatirons.json`, which is created
-and seeded on first run and is gitignored — delete it to reset.
+`npm run db:seed` is safe to re-run: the catalogue, crews and reference counter
+are upserted, and fixture jobs are left alone if any job already exists. Pass
+`-- --force` to wipe and rewrite them.
 
-`NEXT_PUBLIC_SITE_URL` is read by `src/app/sitemap.ts` and falls back to the
-production hostname.
+| Variable | What it is |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string. Required. Pooled, on Supabase. |
+| `DIRECT_URL` | Session-mode connection for migrations and the seed. Optional; falls back to `DATABASE_URL`. |
+| `DATABASE_POOL_MAX` | Connections per pool. Optional; defaults to 5. |
+| `NEXT_PUBLIC_SITE_URL` | Used by `src/app/sitemap.ts`; falls back to the production hostname. |
+
+## Running on Supabase
+
+Take both connection strings from **Project settings → Database → Connection
+pooling**. The hostname is the same for both and only the port tells them
+apart:
+
+```
+DATABASE_URL="postgresql://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require"
+DIRECT_URL="postgresql://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require"
+```
+
+Then `npm run db:deploy && npm run db:seed`. Nothing else changes — the app
+only ever sees `DATABASE_URL`. The full path from here to a live site is
+[DEPLOY.md](DEPLOY.md).
+
+**Do not use the `db.<ref>.supabase.co:5432` string the dashboard offers
+first.** That host is IPv6-only. It works from a laptop on IPv6 and fails on
+GitHub Actions and most CI with `ENETUNREACH`, which reads like an outage
+rather than a wrong hostname. Port 5432 on the *pooler* host is also session
+mode and is reachable over IPv4.
+
+**Why two URLs.** The migration engine takes an advisory lock and runs
+multi-statement DDL that has to stay on a single server connection start to
+finish. A transaction pooler hands out a different backend per transaction, so
+`db:deploy` against port 6543 either hangs on the lock or half-applies. The
+app has the opposite need: serverless instances open and drop connections
+faster than Postgres can absorb directly, which is what the pooler is for.
+`src/lib/db-url.ts` is the one place that decides which is which.
+
+**Prepared statements need no special handling.** The `?pgbouncer=true` flag
+that older Prisma setups require is for the Rust engine's named prepared
+statements. Prisma 7 goes through `@prisma/adapter-pg`, and the adapter only
+names a statement when given a `statementNameGenerator`; this app does not
+pass one, so every query uses the unnamed statement that a transaction pooler
+handles correctly.
+
+**Every table has row-level security on and no policies.** Supabase serves the
+`public` schema over PostgREST using a publishable key designed to ship in the
+browser, so a table left open there is world-readable — every customer name,
+phone number and address in `jobs`. RLS with no policies denies PostgREST
+everything while leaving the app untouched, because the app connects as the
+tables' owner and an owner is exempt from its own policies. **A new table in
+`public` needs a line in a migration enabling RLS on it**, or it ships open.
+See `prisma/migrations/20260816215500_enable_row_level_security/`.
 
 | Script | What it does |
 | --- | --- |
@@ -58,12 +113,16 @@ production hostname.
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest, once |
 | `npm run test:watch` | Vitest, watching |
+| `npm run db:migrate` | Create and apply a migration from schema changes |
+| `npm run db:deploy` | Apply committed migrations — what CI and production run |
+| `npm run db:seed` | Seed the catalogue, crews, counter and fixtures |
+| `npm run db:studio` | Prisma Studio, to browse the data |
 | `npm run tune -- jobs.csv` | Score the engine against real completed jobs |
 
 ### Seeded data to look at
 
-The store seeds eight jobs relative to the day it is first created, so every
-state in the portal is reachable straight away:
+`db:seed` writes eight jobs dated relative to the day it runs, so every state
+in the portal is reachable straight away:
 
 | Reference | State | What it shows |
 | --- | --- | --- |
@@ -94,17 +153,22 @@ src/
     route-map.tsx     Wrapper around public/dispatch-map.html
     portal-bits.tsx   Live refresh and the clipboard button
   lib/
+    db.ts             The Prisma client — server only
     pricing.ts        The pricing engine — server only
     pricing.test.ts   Engine tests
     estimate.ts       The estimator's view model and patch validator
     jobs.ts           The job record and its two state machines
-    store.ts          The repository — server only
+    store.ts          The repository over Prisma — server only
     seed.ts           Fixture jobs, reviews and crews
     session.ts        Quote and move cookies — server only
     format.ts         Money, stars, dates
     site.ts           Constants shared by the chrome and the pages
     tuning.ts         Accuracy harness — server only
     tuning.test.ts    Harness tests
+prisma/
+  schema.prisma       The schema
+  migrations/         Committed migrations
+  seed.ts             The seed script
 scripts/
   tune.ts             The tuning CLI
 public/
@@ -138,11 +202,9 @@ dropped rather than stored.
 
 ## What is deliberately not here
 
-- **A database.** `src/lib/store.ts` is a JSON-file repository behind the API
-  Prisma will expose (`getJob`, `updateJob`, `createJob`, `listJobs`,
-  `listReviews`, `addReview`). Step 3 rewrites that one file. It serialises
-  writes through a promise chain and degrades to memory-only on a read-only
-  filesystem — **do not deploy it to more than one instance.**
+- **A managed database.** The schema, migrations and seed are real, and the
+  app runs against any Postgres. Nothing provisions one for you — point
+  `DATABASE_URL` at Supabase, Neon or a local server.
 - **Authentication.** `/move/[id]` is readable by anyone who knows a job
   reference, exactly as in the prototype. Magic-link auth is step 8 and must
   land before this is pointed at real customers; the guard belongs both in the
