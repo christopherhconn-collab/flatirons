@@ -8,17 +8,17 @@
  * review are the things a customer reaches for on a phone with one bar in a
  * stairwell.
  *
- * There is no authorisation check here yet, because there is no auth yet:
- * step 8 of the build plan adds magic-link sessions, and every one of these
- * functions needs the "is this caller this job's customer" guard added at the
- * same time. See the note in `page.tsx`.
+ * Every function starts with `requireMoveAccess`: Server Functions are
+ * reachable by direct POST, so the page guarding itself protects nothing.
+ * With auth unconfigured the guard admits everyone — prototype mode; see
+ * `src/lib/auth.ts` for exactly what that means and when it ends.
  */
 
 import { revalidatePath } from "next/cache";
 
+import { requireMoveAccess } from "@/lib/auth";
 import { place } from "@/lib/format";
-import type { Job } from "@/lib/jobs";
-import { addReview, getJob, updateJob } from "@/lib/store";
+import { addReview, updateJob } from "@/lib/store";
 
 function refresh(id: string) {
   revalidatePath(`/move/${id}`);
@@ -29,6 +29,7 @@ export async function toggleTask(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   const index = Number(formData.get("index"));
   if (!id || !Number.isInteger(index)) return;
+  await requireMoveAccess(id);
 
   await updateJob(id, (job) => ({
     ...job,
@@ -44,6 +45,7 @@ export async function sendMessage(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   const text = String(formData.get("text") ?? "").trim().slice(0, 1000);
   if (!id || !text) return;
+  await requireMoveAccess(id);
 
   await updateJob(id, (job) => ({
     ...job,
@@ -65,6 +67,7 @@ export async function sendMessage(formData: FormData): Promise<void> {
 export async function payInvoice(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
+  await requireMoveAccess(id);
 
   await updateJob(id, (job) =>
     job.paid || job.status !== "complete"
@@ -99,8 +102,8 @@ export async function submitReview(formData: FormData): Promise<void> {
   const text = String(formData.get("text") ?? "").trim().slice(0, 1000);
   if (!id || !Number.isInteger(stars) || stars < 1 || stars > 5) return;
 
-  const job: Job | null = await getJob(id);
-  if (!job || job.status !== "complete" || job.reviewed) return;
+  const job = await requireMoveAccess(id);
+  if (job.status !== "complete" || job.reviewed) return;
 
   await addReview({
     id: `RV-${job.id}`,

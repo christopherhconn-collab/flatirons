@@ -2,7 +2,6 @@ import { Fragment } from "react";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { Check } from "@/components/icons";
 import { LogoLockup } from "@/components/logo";
@@ -18,7 +17,7 @@ import {
   referralCode,
   timelineFor,
 } from "@/lib/jobs";
-import { getJob } from "@/lib/store";
+import { authEnabled, requireMoveAccess } from "@/lib/auth";
 import { payInvoice, sendMessage, submitReview, toggleTask } from "./actions";
 
 export const metadata: Metadata = {
@@ -32,18 +31,19 @@ export const dynamic = "force-dynamic";
 /**
  * The customer's tracking portal.
  *
- * ⚠ NOT YET AUTHENTICATED. Anyone with a job reference can open this page, as
- * in the prototype. Magic-link auth is step 8 of the build plan and must land
- * before this is pointed at real customers — at which point the guard belongs
- * both here and in every action in `actions.ts`.
+ * Guarded by `requireMoveAccess`: the signed-in visitor must be this job's
+ * customer, or staff. The same guard opens every action in `actions.ts` —
+ * they are reachable by direct POST, so this page guarding itself would
+ * protect nothing. With auth unconfigured (no Supabase env) the guard admits
+ * anyone with a reference, exactly as the prototype did — see the header of
+ * `src/lib/auth.ts` for when that mode is acceptable.
  *
  * Mobile-first at 414px, floated on the desk ground exactly as designed. Touch
  * targets are 44px at minimum and 52px on the tappable list rows.
  */
 export default async function MovePage(props: PageProps<"/move/[id]">) {
   const { id } = await props.params;
-  const job = await getJob(id);
-  if (!job) notFound();
+  const job = await requireMoveAccess(id);
 
   const live = isLive(job);
   const loaded = loadedCount(job);
@@ -576,6 +576,18 @@ export default async function MovePage(props: PageProps<"/move/[id]">) {
             Help
           </a>
         </nav>
+
+        {/* Only rendered when there is a session to end. */}
+        {authEnabled() && (
+          <form action="/auth/signout" method="post" className="border-line border-t">
+            <button
+              type="submit"
+              className="text-ink-quiet interactive w-full py-3 text-center text-[10.5px] leading-none font-medium tracking-[0.14em] uppercase"
+            >
+              Sign out
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
