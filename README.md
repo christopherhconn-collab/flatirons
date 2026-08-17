@@ -17,8 +17,8 @@ the staged build order.
 | 4 | Marketing pages | Done — desktop as designed; mobile is a fallback, not a design |
 | 5 | The estimator | Done |
 | 6 | Booking | Done, minus the third-party services (no Resend, Twilio, Places or Distance Matrix) |
-| 7 | Deploy | Not started |
-| 8 | Customer portal | Done, minus magic-link auth |
+| 7 | Deploy | Done — Vercel + Supabase, see DEPLOY.md |
+| 8 | Customer portal | Done — magic-link auth for customers, GitHub for staff; enforced when the Supabase env is set |
 | 9 | Payments | Bill of lading and review prompt done; Stripe not wired |
 | 10–11 | Dispatch integration, office dashboard | Not started |
 

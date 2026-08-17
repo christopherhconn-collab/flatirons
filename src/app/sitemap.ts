@@ -1,12 +1,14 @@
 import type { MetadataRoute } from "next";
 
+import { siteOrigin } from "@/lib/site-url";
+
 /**
  * The five public marketing pages. The estimator, the portal and `/track` are
  * excluded deliberately — one is a funnel step with no standalone content, the
  * others are private to a customer.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://flatironsmovers.com";
+  const base = siteOrigin();
   const now = new Date();
 
   return [
