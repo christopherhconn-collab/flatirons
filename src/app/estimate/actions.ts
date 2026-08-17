@@ -184,7 +184,9 @@ export async function bookMove(): Promise<{ error: string } | never> {
     paid: false,
     reviewed: false,
     late: null,
-    cardLast4: draft.cardNumber.replace(/\D/g, "").slice(-4) || null,
+    // Written by the Stripe webhook when the invoice is paid; nothing about a
+    // card exists before then.
+    cardLast4: null,
     items: inventoryFor(draft.counts),
     tasks: seedTasks(draft),
     messages: [

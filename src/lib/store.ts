@@ -50,8 +50,6 @@ export type QuoteDraft = {
   name: string;
   email: string;
   phone: string;
-  cardNumber: string;
-  cardExpiry: string;
   step: 1 | 2 | 3 | 4;
   room: string;
   updatedAt: number;
@@ -427,8 +425,6 @@ function toDraft(row: DraftRow): QuoteDraft {
     name: row.name,
     email: row.email,
     phone: row.phone,
-    cardNumber: row.cardNumber,
-    cardExpiry: row.cardExpiry,
     step: row.step as QuoteDraft["step"],
     room: row.room,
     updatedAt: row.updatedAt.getTime(),
@@ -456,8 +452,6 @@ export async function saveDraft(draft: QuoteDraft): Promise<QuoteDraft> {
     name: draft.name,
     email: draft.email,
     phone: draft.phone,
-    cardNumber: draft.cardNumber,
-    cardExpiry: draft.cardExpiry,
     step: draft.step,
     room: draft.room,
   };

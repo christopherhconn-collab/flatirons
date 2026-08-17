@@ -19,7 +19,7 @@ the staged build order.
 | 6 | Booking | Done, minus the third-party services (no Resend, Twilio, Places or Distance Matrix) |
 | 7 | Deploy | Done — Vercel + Supabase, see DEPLOY.md |
 | 8 | Customer portal | Done — magic-link auth for customers, GitHub for staff; enforced when the Supabase env is set |
-| 9 | Payments | Bill of lading and review prompt done; Stripe not wired |
+| 9 | Payments | Done — Stripe Checkout + webhook when configured; no card detail ever stored |
 | 10–11 | Dispatch integration, office dashboard | Not started |
 
 Routes:

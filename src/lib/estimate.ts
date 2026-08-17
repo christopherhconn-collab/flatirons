@@ -61,8 +61,6 @@ export function emptyDraft(id: string, ref: string): QuoteDraft {
     name: "",
     email: "",
     phone: "",
-    cardNumber: "",
-    cardExpiry: "",
     step: 1,
     room: "Living room",
     updatedAt: Date.now(),
@@ -86,8 +84,6 @@ export type EstimatePatch = {
   name?: string;
   email?: string;
   phone?: string;
-  cardNumber?: string;
-  cardExpiry?: string;
   step?: number;
   room?: string;
   /** Adjust one catalogue item's count by a delta. */
@@ -139,13 +135,6 @@ export function applyPatch(draft: QuoteDraft, patch: EstimatePatch): QuoteDraft 
   if (email !== undefined) next.email = email;
   const phone = text(patch.phone);
   if (phone !== undefined) next.phone = phone;
-
-  // Held only so the confirm step can echo the last four digits back. Stripe
-  // Elements replaces this at step 9 and the number never reaches our server.
-  const cardNumber = text(patch.cardNumber);
-  if (cardNumber !== undefined) next.cardNumber = cardNumber.replace(/[^\d ]/g, "");
-  const cardExpiry = text(patch.cardExpiry);
-  if (cardExpiry !== undefined) next.cardExpiry = cardExpiry.slice(0, 7);
 
   if (isFloor(patch.fromFloor)) next.fromFloor = patch.fromFloor;
   if (isFloor(patch.toFloor)) next.toFloor = patch.toFloor;
@@ -230,8 +219,6 @@ export type EstimateView = {
   name: string;
   email: string;
   phone: string;
-  cardNumber: string;
-  cardExpiry: string;
 
   hasItems: boolean;
   priceRange: string;
@@ -443,8 +430,6 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     name: draft.name,
     email: draft.email,
     phone: draft.phone,
-    cardNumber: draft.cardNumber,
-    cardExpiry: draft.cardExpiry,
 
     hasItems,
     priceRange: range,

@@ -106,10 +106,6 @@ describe("applyPatch", () => {
     expect(next.from).toHaveLength(200);
   });
 
-  it("strips everything but digits and spaces from a card number", () => {
-    const next = applyPatch(draft(), { cardNumber: "4242-abc 4242" });
-    expect(next.cardNumber).toBe("4242 4242");
-  });
 });
 
 describe("firstOpenDate", () => {

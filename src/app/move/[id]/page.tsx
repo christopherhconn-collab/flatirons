@@ -18,6 +18,7 @@ import {
   timelineFor,
 } from "@/lib/jobs";
 import { authEnabled, requireMoveAccess } from "@/lib/auth";
+import { stripeEnabled } from "@/lib/stripe";
 import { payInvoice, sendMessage, submitReview, toggleTask } from "./actions";
 
 export const metadata: Metadata = {
@@ -44,6 +45,10 @@ export const dynamic = "force-dynamic";
 export default async function MovePage(props: PageProps<"/move/[id]">) {
   const { id } = await props.params;
   const job = await requireMoveAccess(id);
+  const params = await props.searchParams;
+  // Back from Stripe but the webhook hasn't landed yet. The page already
+  // re-polls while live; the banner explains the seconds in between.
+  const paymentPending = params.paid === "pending" && !job.paid;
 
   const live = isLive(job);
   const loaded = loadedCount(job);
@@ -54,7 +59,7 @@ export default async function MovePage(props: PageProps<"/move/[id]">) {
 
   return (
     <div className="bg-desk flex min-h-dvh justify-center px-4 py-[26px] pb-10">
-      {live && <LiveRefresh />}
+      {(live || paymentPending) && <LiveRefresh />}
 
       <div
         id="top"
@@ -377,11 +382,20 @@ export default async function MovePage(props: PageProps<"/move/[id]">) {
                   ))}
                 </dl>
 
+                {paymentPending && (
+                  <p
+                    role="status"
+                    className="border-line-strong bg-olive-tint text-ink mb-3 border p-3 text-[12.5px] leading-[1.5]"
+                  >
+                    Payment received by Stripe — confirming with the office.
+                    This usually takes a few seconds; the page updates itself.
+                  </p>
+                )}
                 <form action={payInvoice}>
                   <input type="hidden" name="id" value={job.id} />
                   <button
                     type="submit"
-                    disabled={job.paid}
+                    disabled={job.paid || paymentPending}
                     className={`interactive w-full border py-3.5 text-[13px] leading-none font-semibold tracking-[0.1em] uppercase ${
                       job.paid
                         ? "text-ink border-[rgb(22_40_63/0.3)] bg-transparent"
@@ -394,9 +408,13 @@ export default async function MovePage(props: PageProps<"/move/[id]">) {
                   </button>
                 </form>
                 <p className="text-ink-quiet mt-[9px] text-center text-[11.5px] leading-[1.4]">
-                  {job.cardLast4
-                    ? `Card on file · •••• ${job.cardLast4}`
-                    : "No card on file"}
+                  {job.paid
+                    ? job.cardLast4
+                      ? `Paid · •••• ${job.cardLast4}`
+                      : "Paid in full"
+                    : stripeEnabled()
+                      ? "Secure checkout by Stripe — Apple Pay, Google Pay, or any card"
+                      : "Card or check with the crew — this button records the payment"}
                 </p>
               </div>
             </section>
