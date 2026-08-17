@@ -107,7 +107,8 @@ model Job {
   /// Minutes behind the arrival window, when dispatch has flagged it.
   late     Int?
 
-  /// Last four digits only. Stripe Elements holds the real number at step 9.
+  /// Last four digits, written by the Stripe webhook when the invoice is
+  /// paid. Never populated from anything a customer typed on our pages.
   cardLast4 String?
 
   items    InventoryItem[]
@@ -226,11 +227,6 @@ model QuoteDraft {
   name  String @default("")
   email String @default("")
   phone String @default("")
-
-  /// Held only so the confirm step can echo the last four digits back. Stripe
-  /// Elements replaces this at step 9 and no number reaches our server.
-  cardNumber String @default("")
-  cardExpiry String @default("")
 
   step Int    @default(1)
   room String @default("Living room")

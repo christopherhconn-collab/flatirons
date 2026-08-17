@@ -15,10 +15,14 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireMoveAccess } from "@/lib/auth";
 import { place } from "@/lib/format";
+import { invoiceOf } from "@/lib/jobs";
+import { siteOrigin } from "@/lib/site-url";
 import { addReview, updateJob } from "@/lib/store";
+import { checkoutParamsFor, stripe, stripeEnabled } from "@/lib/stripe";
 
 function refresh(id: string) {
   revalidatePath(`/move/${id}`);
@@ -60,14 +64,27 @@ export async function sendMessage(formData: FormData): Promise<void> {
 /**
  * Settle the bill.
  *
- * A bookkeeping flip, not a charge — Stripe lands at step 9 of the build plan,
- * and the terms need a lawyer's eye before any card is touched. Nothing here
- * moves money.
+ * With Stripe configured this creates a Checkout Session and sends the
+ * customer to Stripe's page — the card is typed there, never here — and the
+ * *webhook* is what marks the job paid, because a success URL can be typed
+ * into a browser but a signed webhook cannot.
+ *
+ * Without Stripe it stays the prototype's bookkeeping flip. Nothing in that
+ * mode moves money.
  */
 export async function payInvoice(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  await requireMoveAccess(id);
+  const job = await requireMoveAccess(id);
+
+  if (stripeEnabled()) {
+    if (job.paid || job.status !== "complete") return;
+    const session = await stripe().checkout.sessions.create(
+      checkoutParamsFor(job, invoiceOf(job), siteOrigin()),
+    );
+    if (!session.url) throw new Error("Stripe returned a session with no URL");
+    redirect(session.url);
+  }
 
   await updateJob(id, (job) =>
     job.paid || job.status !== "complete"

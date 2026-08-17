@@ -856,37 +856,17 @@ function StepConfirm({
       <div className="bg-paper mt-6 max-w-[720px] border border-[rgb(22_40_63/0.18)] p-5">
         <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="display text-[20px] leading-none tracking-[0.08em]">
-            Card on file — optional
+            No deposit
           </h3>
           <span className="text-olive text-[10.5px] leading-none font-medium tracking-[0.16em] uppercase">
             $0 charged today
           </span>
         </div>
-        <p className="text-ink-body mb-4 text-[13.5px] leading-[1.55]">
-          Skip it and pay the crew by card or check on the day. Leave it and we
-          bill the final hours automatically once you sign the bill of lading.
+        <p className="text-ink-body text-[13.5px] leading-[1.55]">
+          Nothing to enter now — no card, no deposit. After the crew finishes
+          and you sign the bill of lading, pay the final invoice online from
+          your move page, or with the crew by card or check.
         </p>
-        <div className="grid grid-cols-[1.4fr_1fr] gap-3.5 max-sm:grid-cols-1">
-          <input
-            defaultValue={view.cardNumber}
-            placeholder="Card number"
-            inputMode="numeric"
-            autoComplete="cc-number"
-            onChange={(e) =>
-              sendLater("cardNumber", { cardNumber: e.target.value })
-            }
-            className="bg-bg border border-[rgb(22_40_63/0.24)] p-3 text-[14.5px]"
-          />
-          <input
-            defaultValue={view.cardExpiry}
-            placeholder="MM / YY"
-            autoComplete="cc-exp"
-            onChange={(e) =>
-              sendLater("cardExpiry", { cardExpiry: e.target.value })
-            }
-            className="bg-bg border border-[rgb(22_40_63/0.24)] p-3 text-[14.5px]"
-          />
-        </div>
       </div>
 
       <div className="mt-[26px] flex flex-wrap items-center gap-2.5">
