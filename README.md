@@ -16,11 +16,11 @@ the staged build order.
 | 3 | Database and schema | Done — Postgres behind Prisma, with migrations and a seed script |
 | 4 | Marketing pages | Done — desktop as designed; mobile is a fallback, not a design |
 | 5 | The estimator | Done |
-| 6 | Booking | Done, minus the third-party services (no Resend, Twilio, Places or Distance Matrix) |
+| 6 | Booking | Done — confirmation SMS via Twilio when configured; still no Resend, Places or Distance Matrix |
 | 7 | Deploy | Done — Vercel + Supabase, see DEPLOY.md |
 | 8 | Customer portal | Done — magic-link auth for customers, GitHub for staff; enforced when the Supabase env is set |
 | 9 | Payments | Done — Stripe Checkout + webhook when configured; no card detail ever stored |
-| 10–11 | Dispatch board, office dashboard | Done in-house — kanban, crew assignment, status machine, pipeline, capacity, next-action; no external dispatch platform, no SMS (needs Twilio), map distances still approximations (needs Distance Matrix) |
+| 10–11 | Dispatch board, office dashboard | Done in-house — kanban, crew assignment, status machine, pipeline, capacity, next-action; no external dispatch platform; review-request SMS automated via Twilio + daily cron when configured; map distances still approximations (needs Distance Matrix) |
 
 Routes:
 

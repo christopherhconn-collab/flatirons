@@ -482,3 +482,38 @@ export async function sweepStaleDrafts(olderThanDays = 30): Promise<number> {
   });
   return count;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Review requests
+
+   The daily cron's two queries. `reviewAskedAt` deliberately stays out of
+   the domain `Job` — nothing renders it; it exists so "send once" is a
+   database fact rather than a race.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Jobs whose customers should get the morning-after review text: completed
+ * before today, never reviewed, never asked.
+ */
+export async function jobsAwaitingReviewRequest(
+  todayISO: string,
+): Promise<Job[]> {
+  const rows = await prisma.job.findMany({
+    where: {
+      status: "complete",
+      reviewed: false,
+      reviewAskedAt: null,
+      date: { lt: todayISO },
+    },
+    include: JOB_INCLUDE,
+  });
+  return rows.map(toJob);
+}
+
+/** Stamp a job as asked, so tomorrow's cron skips it. */
+export async function markReviewAsked(id: string): Promise<void> {
+  await prisma.job.update({
+    where: { id },
+    data: { reviewAskedAt: new Date() },
+  });
+}
