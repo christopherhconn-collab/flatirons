@@ -104,6 +104,24 @@ export function staffEmails(): ReadonlySet<string> {
  *                           confirm itself by behaving differently
  *   Auth not configured   → open, prototype behavior (see header comment)
  */
+/**
+ * The gate on the staff surfaces — the dispatch board and the office
+ * pipeline. Same contract as `requireMoveAccess`, applied to a whole page:
+ *
+ *   Signed out          → redirect to /login, carrying the way back
+ *   Signed in, not staff → 404 — the boards' existence is not customer-facing
+ *   Auth not configured  → open, prototype behavior (see header comment)
+ *
+ * Call it at the top of the page *and* of every staff Server Function.
+ */
+export async function requireStaffAccess(nextPath: string): Promise<void> {
+  if (!authEnabled()) return;
+
+  const email = await sessionEmail();
+  if (!email) redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  if (!staffEmails().has(email.trim().toLowerCase())) notFound();
+}
+
 export async function requireMoveAccess(id: string): Promise<Job> {
   const job = await getJob(id);
   if (!job) notFound();
