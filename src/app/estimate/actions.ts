@@ -14,6 +14,9 @@
 
 import { redirect } from "next/navigation";
 
+import { siteOrigin } from "@/lib/site-url";
+import { bookingConfirmationText, sendSms, smsEnabled } from "@/lib/sms";
+
 import {
   type EstimatePatch,
   type EstimateView,
@@ -131,10 +134,9 @@ function seedTasks(draft: {
  * Book the move.
  *
  * Writes the job with its priced inventory and seeded checklist, drops the
- * draft, and routes to the portal. Steps 6 and 9 of the build plan add the
- * confirmation email and SMS, the office alert, and the Stripe authorisation —
- * none of those services are wired up yet, and this deliberately does not
- * pretend otherwise.
+ * draft, texts the confirmation when Twilio is configured, and routes to the
+ * portal. Still not wired, deliberately and visibly: the confirmation email
+ * (needs Resend) and the office alert.
  *
  * Returns an error string when the draft is not bookable; otherwise redirects.
  */
@@ -204,6 +206,13 @@ export async function bookMove(): Promise<{ error: string } | never> {
   await deleteDraft(draft.id);
   await clearDraftCookie();
   await rememberMove(job.id);
+
+  // The confirmation text, when Twilio is configured. A failed send never
+  // fails the booking — sendSms returns false and the customer still lands
+  // on their portal, which says everything the text would have.
+  if (smsEnabled()) {
+    await sendSms(job.phone, bookingConfirmationText(job, siteOrigin()));
+  }
 
   redirect(`/move/${job.id}`);
 }

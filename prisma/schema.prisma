@@ -111,6 +111,10 @@ model Job {
   /// paid. Never populated from anything a customer typed on our pages.
   cardLast4 String?
 
+  /// When the morning-after review SMS went out. The cron uses this to send
+  /// exactly once; null means not yet asked (or SMS was off that morning).
+  reviewAskedAt DateTime?
+
   items    InventoryItem[]
   tasks    CustomerTask[]
   messages Message[]
