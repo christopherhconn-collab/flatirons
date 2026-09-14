@@ -11,9 +11,14 @@
 /** The 1180px content cap. Bands run full-bleed; their contents do not. */
 export const SHELL = "mx-auto w-full max-w-[1180px] px-[34px] max-md:px-[18px]";
 
-export const PHONE = "303.555.0150";
+export const PHONE = "720.437.4198";
 /** Bare digits, for `tel:`. */
-export const PHONE_HREF = "tel:+13035550150";
+export const PHONE_HREF = "tel:+17204374198";
+
+/** The business address, as shown in the footer. One line; the suite is a
+ * mailing suite, not the truck yard. */
+export const ADDRESS =
+  "5910 S University Blvd, Ste C18-253, Greenwood Village, CO 80121";
 
 export const SITE_NAV = [
   { href: "/", label: "Home" },

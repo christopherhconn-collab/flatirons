@@ -17,7 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { LogoLockup } from "@/components/logo";
-import { PHONE, PHONE_HREF, SHELL, SITE_NAV } from "@/lib/site";
+import { ADDRESS, PHONE, PHONE_HREF, SHELL, SITE_NAV } from "@/lib/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -119,8 +119,8 @@ export function SiteFooter() {
           className={`${SHELL} text-cream-muted flex flex-wrap justify-between gap-4 py-5 text-[11.5px] leading-none`}
         >
           <span>
-            Flatirons Movers · Commerce City, CO · PUC 00412 · Licensed, bonded
-            and insured
+            Flatirons Movers · {ADDRESS} · PUC 00412 · Licensed, bonded and
+            insured
           </span>
           <a href={PHONE_HREF} className="hover:text-olive-pale">
             {PHONE}

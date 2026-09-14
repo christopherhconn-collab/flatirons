@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LogoLockup } from "@/components/logo";
+import { PHONE, PHONE_HREF } from "@/lib/site";
 import { safeNextPath } from "@/lib/access";
 import { authEnabled, sessionEmail } from "@/lib/auth";
 import { sendMagicLink, signInWithGitHub } from "./actions";
@@ -137,8 +138,8 @@ export default async function LoginPage(props: PageProps<"/login">) {
 
         <p className="text-ink-muted mt-4 text-center text-[12.5px]">
           Booked by phone and not sure which email we have?{" "}
-          <a href="tel:+13035550150" className="underline">
-            303.555.0150
+          <a href={PHONE_HREF} className="underline">
+            {PHONE}
           </a>
         </p>
       </div>
