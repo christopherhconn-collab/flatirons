@@ -122,9 +122,14 @@ export function SiteFooter() {
             Flatirons Movers · {ADDRESS} · PUC 00412 · Licensed, bonded and
             insured
           </span>
-          <a href={PHONE_HREF} className="hover:text-olive-pale">
-            {PHONE}
-          </a>
+          <span className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-olive-pale">
+              Privacy policy
+            </Link>
+            <a href={PHONE_HREF} className="hover:text-olive-pale">
+              {PHONE}
+            </a>
+          </span>
         </div>
       </div>
     </footer>
