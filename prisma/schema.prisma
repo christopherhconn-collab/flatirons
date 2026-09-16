@@ -37,6 +37,10 @@ enum JobStatus {
   enroute
   onsite
   complete
+  /// Called off. Terminal, like `complete`: the day is released and the job
+  /// leaves the board, but the record stays because a cancellation fee may
+  /// have been charged against it.
+  cancelled
 }
 
 /// Where the *sale* is. Separate from status, and cycled by the office.
@@ -107,9 +111,25 @@ model Job {
   /// Minutes behind the arrival window, when dispatch has flagged it.
   late     Int?
 
-  /// Last four digits, written by the Stripe webhook when the invoice is
-  /// paid. Never populated from anything a customer typed on our pages.
+  /// Last four digits, written by the Stripe webhook when a card is saved or
+  /// an invoice is paid. Never populated from anything typed on our pages.
   cardLast4 String?
+
+  /// ── Card on file ───────────────────────────────────────────────────────
+  /// Set by the webhook when the customer completes the setup-mode Checkout
+  /// from their booking confirmation. Together these let the office charge
+  /// the final bill, or a late-cancellation fee, without the customer
+  /// present. Null means no card was saved and every charge is on-session.
+  stripeCustomerId      String?
+  stripePaymentMethodId String?
+  cardOnFileAt          DateTime?
+
+  /// ── Cancellation ───────────────────────────────────────────────────────
+  /// When the office called the job off, and what was charged for it in
+  /// cents. A zero fee is recorded as 0, not null: "cancelled free of
+  /// charge" and "cancelled, fee not yet resolved" are different facts.
+  cancelledAt         DateTime?
+  cancellationFeeCents Int?
 
   /// When the morning-after review SMS went out. The cron uses this to send
   /// exactly once; null means not yet asked (or SMS was off that morning).

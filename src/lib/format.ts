@@ -126,3 +126,66 @@ export function arrivalWindow(hour: number): string {
 export function place(address: string): string {
   return address.split(",")[0].trim();
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Instants
+
+   The one place a calendar day is allowed to become a point in time. Only the
+   cancellation window needs this: "is the move less than 48 hours away" is a
+   question about instants, and every other date in the app is deliberately a
+   string (see the note above).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/** Denver's UTC offset in milliseconds at a given instant — MDT or MST. */
+function denverOffset(at: number): number {
+  // `en-CA` formats as `YYYY-MM-DD, HH:MM:SS`, so reading the wall clock back
+  // is a plain parse. `h23` rather than `hour12: false`, which renders
+  // midnight as hour 24 on some ICU builds and would parse as the next day.
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Denver",
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(at));
+  const get = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const wall = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour"),
+    get("minute"),
+    get("second"),
+  );
+  return wall - at;
+}
+
+/**
+ * The instant at which `hour` o'clock Denver time falls on `iso`.
+ *
+ * Offsets are resolved twice because the offset itself depends on the instant
+ * being sought: the first pass lands within an hour, the second settles it
+ * even on the two mornings a year when the clocks move.
+ */
+export function denverInstant(iso: string, hour: number): number {
+  const { year, month, day } = parseDate(iso);
+  const wall = Date.UTC(year, month - 1, day, hour);
+  let at = wall;
+  for (let pass = 0; pass < 2; pass++) at = wall - denverOffset(at);
+  return at;
+}
+
+/**
+ * The start hour of an arrival window like `8:00–8:30 AM`, or null when the
+ * window is `Not set` — the value a lead carries before it is scheduled.
+ */
+export function windowStartHour(window: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})\s*[–-]/.exec(window.trim());
+  if (!match) return null;
+  const hour = Number(match[1]) % 12;
+  return /PM/i.test(window) ? hour + 12 : hour;
+}

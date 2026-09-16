@@ -40,6 +40,8 @@ export type PricingConfig = {
   range: { low: number; high: number };
   roundTo: number;
   materials: number;
+  /** Late-cancellation policy. See the note on the value below. */
+  cancellation: { feeDollars: number; windowHours: number };
 };
 
 export const CONFIG: PricingConfig = {
@@ -82,6 +84,21 @@ export const CONFIG: PricingConfig = {
 
   /** Flat materials charge on the final invoice. */
   materials: 28,
+
+  /**
+   * Cancelling inside `windowHours` of the arrival window costs `feeDollars`;
+   * outside it, nothing. A flat fee rather than a percentage because that is
+   * what the customer agreed to in one sentence on their confirmation, and a
+   * percentage of an estimate is not a number anyone can check.
+   *
+   * PLACEHOLDER — Flatirons is a PUC-regulated household-goods carrier (PUC
+   * 00412), and a cancellation charge has to match the tariff filed with the
+   * Colorado PUC. 48 hours / $150 is the common shape in this market, not a
+   * value read off Flatirons' own tariff. Reconcile it against the filing
+   * before the first fee is charged, and change it here — nothing else in the
+   * codebase hard-codes either number.
+   */
+  cancellation: { feeDollars: 150, windowHours: 48 },
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

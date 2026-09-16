@@ -7,7 +7,7 @@ import { RouteMap } from "@/components/route-map";
 import { authEnabled, requireStaffAccess } from "@/lib/auth";
 import { dateLabel, money } from "@/lib/format";
 import type { Job } from "@/lib/jobs";
-import { invoiceOf, isLive } from "@/lib/jobs";
+import { cancellationFor, invoiceOf, isLive } from "@/lib/jobs";
 import { todayISO } from "@/lib/session";
 import {
   assignedToday,
@@ -16,9 +16,12 @@ import {
   dispatchStats,
 } from "@/lib/staff";
 import { listCrews, listJobs } from "@/lib/store";
+import { stripeEnabled } from "@/lib/stripe";
 import {
   advanceJobStatus,
   assignJobCrew,
+  cancelJobAndCharge,
+  chargeSavedCard,
   recordPayment,
 } from "./actions";
 
@@ -33,6 +36,33 @@ const ADVANCE_LABEL: Partial<Record<Job["status"], string>> = {
   scheduled: "Send en route",
   enroute: "Mark arrived",
   onsite: "Close out job",
+};
+
+/**
+ * What a money action's outcome says to the office.
+ *
+ * Every one of these is actionable — three of the four failures are ordinary
+ * business outcomes and each has a different next step, so they do not
+ * collapse into "something went wrong".
+ */
+const CHARGE_OUTCOME: Record<string, string> = {
+  ok: "Charged to the card on file. Stripe has emailed the receipt.",
+  no_card: "No card on file — take payment by phone and record it here.",
+  authentication_required:
+    "The bank wants the cardholder. Ask the customer to pay from their portal.",
+  declined: "The card was declined. Call the customer for another one.",
+  error: "Stripe couldn't be reached. Nothing was charged — try again.",
+};
+
+const CANCEL_OUTCOME: Record<string, string> = {
+  ok: "Cancelled. The day is free.",
+  uncollected:
+    "Cancelled, but the late fee was not charged — Stripe is not configured. Invoice it by hand.",
+  no_card: "Cancelled. No card on file, so the late fee is uncollected.",
+  authentication_required:
+    "Cancelled. The late fee needs the cardholder — invoice it by hand.",
+  declined: "Cancelled. The late fee was declined — invoice it by hand.",
+  error: "Cancelled. Stripe couldn't be reached, so the late fee is unpaid.",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -53,6 +83,9 @@ function JobCard({
 }) {
   const advance = ADVANCE_LABEL[job.status];
   const complete = job.status === "complete";
+  // What calling this job off costs right now. Shown on the button so the
+  // dispatcher knows before they press it, not after.
+  const cancellation = cancellationFor(job);
   const flag =
     job.late && !complete
       ? `${job.late} min late`
@@ -131,6 +164,25 @@ function JobCard({
           </button>
         </form>
       )}
+
+      {!complete && job.status !== "cancelled" && (
+        <form action={cancelJobAndCharge} className="mt-1.5">
+          <input type="hidden" name="id" value={job.id} />
+          <button
+            type="submit"
+            title={
+              cancellation.late
+                ? `Inside the notice window — ${money(cancellation.feeCents / 100)} will be charged to the card on file`
+                : "Outside the notice window — free to cancel"
+            }
+            className="w-full border border-[rgb(223_231_210/0.3)] py-2 text-[10.5px] leading-none font-medium tracking-[0.1em] text-[rgb(223_231_210/0.75)] uppercase"
+          >
+            {cancellation.late
+              ? `Cancel · ${money(cancellation.feeCents / 100)} fee`
+              : "Cancel · free"}
+          </button>
+        </form>
+      )}
     </article>
   );
 }
@@ -143,8 +195,21 @@ function JobCard({
  * crew chips and advance buttons cover the day's actual operations, and
  * README's "deliberately not here" list says why the rest waits.
  */
-export default async function DispatchPage() {
+export default async function DispatchPage(props: PageProps<"/dispatch">) {
   await requireStaffAccess("/dispatch");
+
+  // What the last money action did, carried back in the query string. Both
+  // actions redirect here rather than failing silently — an uncollected bill
+  // nobody hears about is worse than a declined card somebody does.
+  const params = await props.searchParams;
+  const one = (key: string) =>
+    typeof params[key] === "string" ? params[key] : null;
+  const jobRef = one("job");
+  const notice =
+    (one("charge") && CHARGE_OUTCOME[one("charge")!]) ||
+    (one("cancel") && CANCEL_OUTCOME[one("cancel")!]) ||
+    null;
+  const noticeOk = one("charge") === "ok" || one("cancel") === "ok";
 
   const [jobs, crews] = await Promise.all([listJobs(), listCrews()]);
   const today = todayISO();
@@ -171,6 +236,20 @@ export default async function DispatchPage() {
   return (
     <div className="bg-ink-deep min-h-dvh px-6 py-5 max-md:px-4">
       {anyLive && <LiveRefresh />}
+
+      {notice && (
+        <p
+          role="status"
+          className={`mb-4 border p-3 text-[12.5px] leading-[1.5] ${
+            noticeOk
+              ? "border-olive bg-[rgb(223_231_210/0.08)] text-[#dfe7d2]"
+              : "border-olive-pale bg-[rgb(223_231_210/0.12)] text-[#f7f6f2]"
+          }`}
+        >
+          {jobRef ? `${jobRef} — ` : ""}
+          {notice}
+        </p>
+      )}
 
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
@@ -306,6 +385,17 @@ export default async function DispatchPage() {
                       {job.paid ? "Paid" : "Due"}
                     </button>
                   </form>
+                  {!job.paid && job.cardOnFileAt && stripeEnabled() && (
+                    <form action={chargeSavedCard} className="mt-1">
+                      <input type="hidden" name="id" value={job.id} />
+                      <button
+                        type="submit"
+                        className="w-full border border-[rgb(223_231_210/0.3)] py-1.5 text-[9.5px] leading-none font-medium tracking-[0.12em] text-[#dfe7d2] uppercase"
+                      >
+                        Charge •••• {job.cardLast4 ?? "card"}
+                      </button>
+                    </form>
+                  )}
                 </li>
               ))}
             </ul>

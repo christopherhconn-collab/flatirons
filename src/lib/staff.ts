@@ -46,8 +46,13 @@ export function officeStats(jobs: Job[], monthPrefix: string) {
     new Date(j.createdAt).toISOString().startsWith(monthPrefix),
   );
   const booked = thisMonth.filter((j) => j.stage !== "New");
+  // A cancelled booking is not a win. It keeps its stage — the record of the
+  // sale is still true — but it does not belong in the close rate or the
+  // average value, both of which are read as revenue.
   const won = thisMonth.filter(
-    (j) => j.stage === "Booked" || j.stage === "Complete",
+    (j) =>
+      (j.stage === "Booked" || j.stage === "Complete") &&
+      j.status !== "cancelled",
   );
   const values = won.map((j) => (j.low + j.high) / 2).filter((v) => v > 0);
   return {
@@ -75,7 +80,9 @@ export function nextAction(jobs: Job[], now: number = Date.now()): NextAction {
   const oldest = (list: Job[]) =>
     [...list].sort((a, b) => a.createdAt - b.createdAt)[0];
 
-  const newLead = oldest(jobs.filter((j) => j.stage === "New"));
+  const newLead = oldest(
+    jobs.filter((j) => j.stage === "New" && j.status !== "cancelled"),
+  );
   if (newLead) {
     return {
       kind: "call",
@@ -120,7 +127,10 @@ export function weekCapacity(
         weekday: "short",
         timeZone: "UTC",
       }),
-      booked: jobs.filter((j) => j.date === iso && j.status !== "lead").length,
+      // A cancelled job releases its day — that is the point of cancelling.
+      booked: jobs.filter(
+        (j) => j.date === iso && j.status !== "lead" && j.status !== "cancelled",
+      ).length,
       slots: crews.length,
     });
   }
