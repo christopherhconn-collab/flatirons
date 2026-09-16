@@ -19,7 +19,10 @@ import { updateJob } from "@/lib/store";
 import { stripe, stripeEnabled } from "@/lib/stripe";
 
 export async function POST(request: NextRequest) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  // Trimmed for the same reason as the secret key: a newline picked up
+  // when pasting into a dashboard would fail every signature check, and
+  // "bad signature" reads like an attack rather than a stray character.
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   if (!stripeEnabled() || !secret) {
     // Configured half-way: reachable but unusable. 503 so Stripe retries
     // rather than marking the endpoint dead while the secret is being set.

@@ -20,18 +20,34 @@ import Stripe from "stripe";
 
 import type { Invoice, Job } from "./jobs";
 
+/**
+ * The secret key, trimmed.
+ *
+ * The trim is not cosmetic. A key pasted into a hosting dashboard very often
+ * carries a trailing newline, and the SDK puts the value straight into an
+ * `Authorization` header — where Node rejects the newline outright with
+ * `ERR_INVALID_CHAR`. That surfaces as a `StripeConnectionError` ("an error
+ * occurred with our connection to Stripe") several frames from the cause,
+ * and the customer just sees a page that will not load. Whitespace around a
+ * key is never meaningful, so take it off before it reaches a header.
+ */
+function secretKey(): string | undefined {
+  return process.env.STRIPE_SECRET_KEY?.trim() || undefined;
+}
+
 export function stripeEnabled(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY);
+  return Boolean(secretKey());
 }
 
 let client: Stripe | undefined;
 
 /** The SDK client, constructed on first use — same rationale as db.ts. */
 export function stripe(): Stripe {
-  if (!process.env.STRIPE_SECRET_KEY) {
+  const key = secretKey();
+  if (!key) {
     throw new Error("STRIPE_SECRET_KEY is not set — see .env.example.");
   }
-  return (client ??= new Stripe(process.env.STRIPE_SECRET_KEY));
+  return (client ??= new Stripe(key));
 }
 
 /** Dollars to integer cents without floating-point drift. */
