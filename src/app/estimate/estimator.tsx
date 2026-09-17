@@ -19,7 +19,7 @@ import Link from "next/link";
 
 import { Check, ChevronLeft, ChevronRight } from "@/components/icons";
 import { LogoLockup } from "@/components/logo";
-import { PHONE, PHONE_HREF } from "@/lib/site";
+import { PHONE, PHONE_HREF, SMS_CONSENT } from "@/lib/site";
 import type { DayCell, EstimateView } from "@/lib/estimate";
 import { FLOORS, type CrewSize, type Floor } from "@/lib/pricing";
 import { bookMove, updateEstimate } from "./actions";
@@ -835,9 +835,7 @@ function StepConfirm({
             id="sms-consent"
             className="text-ink-muted mt-1.5 text-[11.5px] leading-[1.45]"
           >
-            We&rsquo;ll text your booking confirmation and one follow-up after
-            your move — two messages, no marketing. Message and data rates may
-            apply. Reply STOP to opt out. See our{" "}
+            {SMS_CONSENT} See our{" "}
             <Link href="/privacy" className="underline">
               privacy policy
             </Link>{" "}
