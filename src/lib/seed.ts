@@ -307,6 +307,7 @@ function jobFrom(spec: SeedSpec, base: Date, now: number): Job {
     toFloor: "Ground",
     elevator: false,
     packing: false,
+    laborOnly: false,
     clockIn: spec.clockedInHoursAgo
       ? now - spec.clockedInHoursAgo * 3_600_000
       : null,

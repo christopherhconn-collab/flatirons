@@ -42,6 +42,8 @@ export type PricingConfig = {
   materials: number;
   /** Late-cancellation policy. See the note on the value below. */
   cancellation: { feeDollars: number; windowHours: number };
+  /** Labour-only help, without a truck. See the note on the value below. */
+  laborOnly: { movers: CrewSize; minHours: number; ratePerHour: number };
 };
 
 export const CONFIG: PricingConfig = {
@@ -114,6 +116,22 @@ export const CONFIG: PricingConfig = {
    * two different cancellation fees.
    */
   cancellation: { feeDollars: 150, windowHours: 48 },
+
+  /**
+   * Two movers, no truck, two-hour minimum, Denver metro only — for a
+   * customer who has rented a truck or a container and needs the loading
+   * done.
+   *
+   * The shorter minimum is the point of the service. A full move cannot
+   * sensibly be under three hours, but loading a POD often is, and a
+   * three-hour floor would price this out of the job it exists for.
+   *
+   * NOTE the rate: $149/hr is the same as `rates[2]`, which is two movers
+   * *with* a truck. As specified. Worth deciding deliberately rather than by
+   * default, because /pricing shows both and a customer will notice that the
+   * truck appears to cost nothing.
+   */
+  laborOnly: { movers: 2, minHours: 2, ratePerHour: 149 },
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -155,6 +173,14 @@ export type QuoteInput = {
   elevator?: boolean;
   /** Packing crew the day before. */
   packing?: boolean;
+  /**
+   * Labour only: our crew, the customer's truck or container.
+   *
+   * Overrides `movers` and the rate with `CONFIG.laborOnly`, and drops the
+   * minimum to two hours. The stair multipliers still apply — carrying a sofa
+   * up two flights is the same work whoever owns the truck.
+   */
+  laborOnly?: boolean;
   /**
    * Loaded miles between the two addresses.
    *
@@ -371,6 +397,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     toFloor = "Ground",
     elevator = false,
     packing = false,
+    laborOnly = false,
     miles,
   } = input;
   const includeSurcharges = options?.includeSurcharges ?? true;
@@ -391,12 +418,16 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     }
   }
 
-  const rate = cfg.rates[movers];
+  // Labour-only fixes the crew and the rate: it is one service at one price,
+  // not a modifier on the three crew sizes.
+  const crew = laborOnly ? cfg.laborOnly.movers : movers;
+  const rate = laborOnly ? cfg.laborOnly.ratePerHour : cfg.rates[crew];
+  const minHours = laborOnly ? cfg.laborOnly.minHours : cfg.minHours;
 
-  let hours = units ? units / (movers * cfg.throughput) : 0;
+  let hours = units ? units / (crew * cfg.throughput) : 0;
   if (fromFloor !== "Ground" && !elevator) hours *= cfg.stairsPickup;
   if (toFloor !== "Ground" && !elevator) hours *= cfg.stairsDropoff;
-  if (units) hours = Math.max(cfg.minHours, hours);
+  if (units) hours = Math.max(minHours, hours);
 
   if (packing) {
     extras.push({
@@ -408,7 +439,14 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
   }
 
   if (units && miles !== undefined) {
-    extras.push({ label: "Travel", amount: travelCharge(miles, cfg) });
+    // Labour-only is metro-only and carries no load in our truck, so the
+    // per-loaded-mile component has nothing to bill against: the customer's
+    // vehicle drives the distance. The flat metro fee still applies — the
+    // crew still has to get there.
+    extras.push({
+      label: "Travel",
+      amount: laborOnly ? cfg.travel.flat : travelCharge(miles, cfg),
+    });
   }
 
   const extrasTotal = extras.reduce((sum, e) => sum + e.amount, 0);
@@ -417,7 +455,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     units,
     hours,
     rate,
-    movers,
+    movers: crew,
     extras,
     extrasTotal,
     low: units

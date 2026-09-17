@@ -157,6 +157,7 @@ export async function bookMove(): Promise<{ error: string } | never> {
     toFloor: draft.toFloor,
     elevator: draft.elevator,
     packing: draft.packing,
+    laborOnly: draft.laborOnly,
   });
   const now = Date.now();
 
@@ -181,6 +182,7 @@ export async function bookMove(): Promise<{ error: string } | never> {
     toFloor: draft.toFloor,
     elevator: draft.elevator,
     packing: draft.packing,
+    laborOnly: draft.laborOnly,
     clockIn: null,
     hours: null,
     photos: 0,

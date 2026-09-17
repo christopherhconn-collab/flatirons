@@ -14,20 +14,29 @@ export const metadata: Metadata = {
 const RATE_CARDS = [
   {
     crew: "2 movers + truck",
-    rate: "$149",
+    rate: `$${CONFIG.rates[2]}`,
     body: "Studios and one-bedrooms. Typically 3–5 hours door to door.",
     featured: false,
   },
   {
     crew: "3 movers + truck · most booked",
-    rate: "$199",
+    rate: `$${CONFIG.rates[3]}`,
     body: "Two and three-bedrooms, stairs on either end, one truck load.",
     featured: true,
   },
   {
     crew: "4 movers + truck",
-    rate: "$249",
+    rate: `$${CONFIG.rates[4]}`,
     body: "Four bedrooms, offices, or a hard deadline. Fewer hours, same care.",
+    featured: false,
+  },
+  {
+    // Labour only is the one card whose minimum differs, so the card says so:
+    // the shorter minimum is the reason the service exists, and a customer
+    // comparing it against the three-hour floor above needs to see it here.
+    crew: `${CONFIG.laborOnly.movers} movers, labor only`,
+    rate: `$${CONFIG.laborOnly.ratePerHour}`,
+    body: `You supply the truck or container, we supply the hands. ${CONFIG.laborOnly.minHours}-hour minimum, Denver metro.`,
     featured: false,
   },
 ];
@@ -80,7 +89,7 @@ export default function PricingPage() {
         </p>
       </header>
 
-      <div className="gridlines border-line mb-9 grid-cols-3 border max-md:grid-cols-1">
+      <div className="gridlines border-line mb-9 grid-cols-4 border max-lg:grid-cols-2 max-md:grid-cols-1">
         {RATE_CARDS.map((card) => (
           <div
             key={card.crew}

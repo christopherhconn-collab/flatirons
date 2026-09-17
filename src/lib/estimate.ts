@@ -57,6 +57,7 @@ export function emptyDraft(id: string, ref: string): QuoteDraft {
     date: "",
     movers: DEFAULT_CREW["2 bed"],
     packing: false,
+    laborOnly: false,
     counts: { ...PRESETS["2 bed"] },
     name: "",
     email: "",
@@ -81,6 +82,7 @@ export type EstimatePatch = {
   date?: string;
   movers?: number;
   packing?: boolean;
+  laborOnly?: boolean;
   name?: string;
   email?: string;
   phone?: string;
@@ -140,6 +142,14 @@ export function applyPatch(draft: QuoteDraft, patch: EstimatePatch): QuoteDraft 
   if (isFloor(patch.toFloor)) next.toFloor = patch.toFloor;
   if (typeof patch.elevator === "boolean") next.elevator = patch.elevator;
   if (typeof patch.packing === "boolean") next.packing = patch.packing;
+  if (typeof patch.laborOnly === "boolean") {
+    next.laborOnly = patch.laborOnly;
+    // The service fixes the crew at two. Leaving a stale 3 or 4 in the
+    // draft would show a crew the price does not include: `quote()`
+    // overrides it, so the number on screen and the number billed would
+    // disagree.
+    if (patch.laborOnly) next.movers = CONFIG.laborOnly.movers;
+  }
   if (isRoom(patch.room)) next.room = patch.room;
   if (isCrewSize(patch.movers)) next.movers = patch.movers;
   if (patch.date !== undefined && (patch.date === "" || ISO_DATE.test(patch.date))) {
@@ -230,6 +240,10 @@ export type EstimateView = {
   itemRows: ItemRow[];
   roomTabs: RoomTab[];
   moverOptions: MoverOption[];
+  /** Our crew, the customer's truck. Disables the crew cards. */
+  laborOnly: boolean;
+  /** What labour-only costs, for the toggle's own label. */
+  laborOnlyNote: string;
   calendar: CalendarView;
   confirmRows: { label: string; value: string }[];
   bookNote: string;
@@ -326,6 +340,7 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     toFloor: draft.toFloor,
     elevator: draft.elevator,
     packing: draft.packing,
+    laborOnly: draft.laborOnly,
   });
   const hasItems = priced.units > 0;
   const date = draft.date || firstOpenDate(context.today, context.bookedOut);
@@ -373,7 +388,9 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
       rate: `$${CONFIG.rates[movers]}/hr`,
       note: MOVER_NOTE[movers],
       estimate: hasItems ? `≈ ${alt.hours.toFixed(1)} hrs` : "Add items",
-      selected: draft.movers === movers,
+      // Labour-only fixes the crew at two, so no card is the chosen one while
+      // it is on: the choice being made is the service, not the crew size.
+      selected: !draft.laborOnly && draft.movers === movers,
     };
   });
 
@@ -444,6 +461,11 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     itemRows,
     roomTabs,
     moverOptions,
+    laborOnly: draft.laborOnly,
+    laborOnlyNote:
+      `${CONFIG.laborOnly.movers} movers, no truck · ` +
+      `$${CONFIG.laborOnly.ratePerHour}/hr · ` +
+      `${CONFIG.laborOnly.minHours}-hour minimum · Denver metro`,
     calendar: buildCalendar(date, context),
     confirmRows: [
       { label: "Move date", value: dateLabel(date) },

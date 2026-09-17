@@ -123,6 +123,8 @@ export type Job = {
   toFloor: Floor;
   elevator: boolean;
   packing: boolean;
+  /** Our crew, the customer's truck. Fixes crew and minimum — CONFIG.laborOnly. */
+  laborOnly: boolean;
   /** Epoch ms of arrival on site. Null unless the clock is running. */
   clockIn: number | null;
   /** Billed hours, set when the job closes out. */

@@ -51,6 +51,7 @@ function job(overrides: Partial<Job> = {}): Job {
     toFloor: "Ground",
     elevator: false,
     packing: false,
+    laborOnly: false,
     clockIn: null,
     hours: null,
     photos: 0,

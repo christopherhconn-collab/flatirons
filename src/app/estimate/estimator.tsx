@@ -726,12 +726,28 @@ function StepDateCrew({
           <h3 className="text-label text-ink-muted mb-2.5 tracking-[0.18em]">
             Crew size
           </h3>
-          <div className="grid gap-2.5">
+
+          {/* Labour only is a different service, not a fourth crew size: it
+              fixes the crew at two and the minimum at two hours, so it sits
+              above the cards and turns them off rather than joining them. */}
+          <CheckRow
+            checked={view.laborOnly}
+            onToggle={() => send({ laborOnly: !view.laborOnly })}
+            title="Labor only — I have my own truck or container"
+            note={view.laborOnlyNote}
+            className="mb-3.5"
+          />
+
+          <div
+            className={`grid gap-2.5 ${view.laborOnly ? "pointer-events-none opacity-40" : ""}`}
+            aria-hidden={view.laborOnly}
+          >
             {view.moverOptions.map((option) => (
               <button
                 key={option.movers}
                 type="button"
                 aria-pressed={option.selected}
+                disabled={view.laborOnly}
                 onClick={() => send({ movers: option.movers as CrewSize })}
                 className={`interactive flex items-center justify-between gap-4 border px-[18px] py-4 text-left ${
                   option.selected

@@ -16,6 +16,7 @@ import {
   typicalBand,
   typicalBands,
   unitsOf,
+  type CrewSize,
   type HomeSize,
   type ItemCounts,
 } from "./pricing";
@@ -504,5 +505,70 @@ describe("the published cancellation policy", () => {
     // that differs from the cents actually charged is the same class of bug
     // this block exists to prevent.
     expect(CONFIG.cancellation.feeDollars % 1).toBe(0);
+  });
+});
+
+describe("labour only", () => {
+  const counts = { "Sofa, 3-seat": 1, "Bookcase, tall": 2 };
+
+  it("fixes the crew and the rate whatever movers is asked for", () => {
+    // It is one service at one price, not a modifier on the three crew sizes,
+    // so a stale `movers: 4` from the estimator must not buy a bigger crew.
+    for (const movers of [2, 3, 4] as CrewSize[]) {
+      const q = quote({ counts, movers, laborOnly: true });
+      expect(q.movers).toBe(CONFIG.laborOnly.movers);
+      expect(q.rate).toBe(CONFIG.laborOnly.ratePerHour);
+    }
+  });
+
+  it("uses the two-hour minimum, not the three-hour one", () => {
+    // The shorter minimum is the point of the service: loading a POD is often
+    // under three hours, and a three-hour floor prices it out of that job.
+    const small = { "Coffee table": 1 };
+    expect(quote({ counts: small, movers: 2, laborOnly: true }).hours).toBe(
+      CONFIG.laborOnly.minHours,
+    );
+    expect(quote({ counts: small, movers: 2 }).hours).toBe(CONFIG.minHours);
+  });
+
+  it("still applies the stair premiums", () => {
+    // Carrying a sofa up two flights is the same work whoever owns the truck.
+    //
+    // The load has to be big enough to clear the two-hour floor or the
+    // premium is invisible: it multiplies the raw hours and the clamp happens
+    // after, so a small job is two hours up stairs or not. That is the same
+    // order full service uses, and it is why this asserts on a 2-bed rather
+    // than on the couple of items the other cases use.
+    const big = PRESETS["2 bed"];
+    const flat = quote({ counts: big, movers: 2, laborOnly: true });
+    const stairs = quote({
+      counts: big,
+      movers: 2,
+      laborOnly: true,
+      fromFloor: "3rd",
+    });
+    expect(flat.hours).toBeGreaterThan(CONFIG.laborOnly.minHours);
+    expect(stairs.hours).toBeCloseTo(flat.hours * CONFIG.stairsPickup, 5);
+  });
+
+  it("charges flat metro travel and never per loaded mile", () => {
+    // The customer's vehicle drives the distance; we bill no mileage on it.
+    const near = quote({ counts, movers: 2, laborOnly: true, miles: 5 });
+    const far = quote({ counts, movers: 2, laborOnly: true, miles: 200 });
+    const travel = (q: ReturnType<typeof quote>) =>
+      q.extras.find((e) => e.label === "Travel")?.amount;
+    expect(travel(near)).toBe(CONFIG.travel.flat);
+    expect(travel(far)).toBe(CONFIG.travel.flat);
+    // The full-service quote does scale with distance, which is the contrast.
+    expect(travel(quote({ counts, movers: 2, miles: 200 }))).toBeGreaterThan(
+      CONFIG.travel.flat,
+    );
+  });
+
+  it("leaves the full-service quote untouched", () => {
+    const before = quote({ counts, movers: 3, miles: 12 });
+    expect(before.movers).toBe(3);
+    expect(before.rate).toBe(CONFIG.rates[3]);
+    expect(before.hours).toBeGreaterThanOrEqual(CONFIG.minHours);
   });
 });
