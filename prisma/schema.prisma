@@ -100,9 +100,10 @@ model Job {
   toFloor   String
   elevator  Boolean @default(false)
   packing   Boolean @default(false)
-  /// Our crew, the customer's truck or container. Fixes the crew at two and
-  /// the minimum at two hours — see `CONFIG.laborOnly`.
-  laborOnly Boolean @default(false)
+  /// "full", "loading" or "unloading" — see `ServiceType`. The two
+  /// labour-only halves fix the crew at two and the minimum at two hours,
+  /// and each has only one address that means anything.
+  service   String  @default("full")
 
   /// Set when the crew arrives on site, cleared when the job closes out.
   clockIn  DateTime?
@@ -249,8 +250,8 @@ model QuoteDraft {
   date        String  @default("") @db.VarChar(10)
   movers      Int     @default(3)
   packing     Boolean @default(false)
-  /// Our crew, the customer's truck. See the note on the Job column.
-  laborOnly   Boolean @default(false)
+  /// See the note on the Job column.
+  service     String  @default("full")
   counts      Json
 
   name  String @default("")

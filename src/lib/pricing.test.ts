@@ -515,7 +515,7 @@ describe("labour only", () => {
     // It is one service at one price, not a modifier on the three crew sizes,
     // so a stale `movers: 4` from the estimator must not buy a bigger crew.
     for (const movers of [2, 3, 4] as CrewSize[]) {
-      const q = quote({ counts, movers, laborOnly: true });
+      const q = quote({ counts, movers, service: "unloading" });
       expect(q.movers).toBe(CONFIG.laborOnly.movers);
       expect(q.rate).toBe(CONFIG.laborOnly.ratePerHour);
     }
@@ -525,7 +525,7 @@ describe("labour only", () => {
     // The shorter minimum is the point of the service: loading a POD is often
     // under three hours, and a three-hour floor prices it out of that job.
     const small = { "Coffee table": 1 };
-    expect(quote({ counts: small, movers: 2, laborOnly: true }).hours).toBe(
+    expect(quote({ counts: small, movers: 2, service: "unloading" }).hours).toBe(
       CONFIG.laborOnly.minHours,
     );
     expect(quote({ counts: small, movers: 2 }).hours).toBe(CONFIG.minHours);
@@ -540,11 +540,11 @@ describe("labour only", () => {
     // order full service uses, and it is why this asserts on a 2-bed rather
     // than on the couple of items the other cases use.
     const big = PRESETS["2 bed"];
-    const flat = quote({ counts: big, movers: 2, laborOnly: true });
+    const flat = quote({ counts: big, movers: 2, service: "unloading" });
     const stairs = quote({
       counts: big,
       movers: 2,
-      laborOnly: true,
+      service: "unloading",
       fromFloor: "3rd",
     });
     expect(flat.hours).toBeGreaterThan(CONFIG.laborOnly.minHours);
@@ -553,8 +553,8 @@ describe("labour only", () => {
 
   it("charges flat metro travel and never per loaded mile", () => {
     // The customer's vehicle drives the distance; we bill no mileage on it.
-    const near = quote({ counts, movers: 2, laborOnly: true, miles: 5 });
-    const far = quote({ counts, movers: 2, laborOnly: true, miles: 200 });
+    const near = quote({ counts, movers: 2, service: "unloading", miles: 5 });
+    const far = quote({ counts, movers: 2, service: "unloading", miles: 200 });
     const travel = (q: ReturnType<typeof quote>) =>
       q.extras.find((e) => e.label === "Travel")?.amount;
     expect(travel(near)).toBe(CONFIG.travel.flat);

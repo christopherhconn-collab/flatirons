@@ -26,7 +26,7 @@ import type {
   PipelineStage,
   Review,
 } from "./jobs";
-import type { CrewSize, Floor, ItemCounts } from "./pricing";
+import type { CrewSize, Floor, ItemCounts, ServiceType } from "./pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Types
@@ -46,7 +46,7 @@ export type QuoteDraft = {
   date: string;
   movers: CrewSize;
   packing: boolean;
-  laborOnly: boolean;
+  service: ServiceType;
   counts: ItemCounts;
   name: string;
   email: string;
@@ -92,7 +92,7 @@ function toJob(row: JobRow): Job {
     toFloor: row.toFloor as Floor,
     elevator: row.elevator,
     packing: row.packing,
-    laborOnly: row.laborOnly,
+    service: row.service as ServiceType,
     clockIn: row.clockIn ? row.clockIn.getTime() : null,
     hours: row.hours,
     photos: row.photos,
@@ -195,7 +195,7 @@ export async function createJob(job: Job): Promise<Job> {
       toFloor: job.toFloor,
       elevator: job.elevator,
       packing: job.packing,
-      laborOnly: job.laborOnly,
+      service: job.service,
       clockIn: job.clockIn ? new Date(job.clockIn) : null,
       hours: job.hours,
       photos: job.photos,
@@ -290,7 +290,7 @@ export async function updateJob(
         toFloor: next.toFloor,
         elevator: next.elevator,
         packing: next.packing,
-        laborOnly: next.laborOnly,
+        service: next.service,
         clockIn: next.clockIn ? new Date(next.clockIn) : null,
         hours: next.hours,
         photos: next.photos,
@@ -440,7 +440,7 @@ function toDraft(row: DraftRow): QuoteDraft {
     date: row.date,
     movers: row.movers as CrewSize,
     packing: row.packing,
-    laborOnly: row.laborOnly,
+    service: row.service as ServiceType,
     counts: (row.counts ?? {}) as ItemCounts,
     name: row.name,
     email: row.email,
@@ -468,7 +468,7 @@ export async function saveDraft(draft: QuoteDraft): Promise<QuoteDraft> {
     date: draft.date,
     movers: draft.movers,
     packing: draft.packing,
-    laborOnly: draft.laborOnly,
+    service: draft.service,
     counts: draft.counts as Prisma.InputJsonValue,
     name: draft.name,
     email: draft.email,

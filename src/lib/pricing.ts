@@ -139,6 +139,49 @@ export const CONFIG: PricingConfig = {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export type CrewSize = 2 | 3 | 4;
+
+/**
+ * What we are being hired to do.
+ *
+ * `loading` and `unloading` are the labour-only halves: the customer has a
+ * truck, a trailer or a container, and needs it filled or emptied. Both imply
+ * labour-only pricing, which is why this is one field and not a `laborOnly`
+ * boolean beside an `unloadOnly` one — those two can contradict each other and
+ * a type that can express nonsense eventually does.
+ *
+ * The distinction between them is not the price, which is the same. It is
+ * which end of the move exists: a loading job has no destination to ask about,
+ * and an unloading job has no origin.
+ */
+export type ServiceType = "full" | "loading" | "unloading";
+
+export const SERVICE_TYPES: ServiceType[] = ["full", "loading", "unloading"];
+
+/** True when we bring hands but no truck. */
+export function isLaborOnly(service: ServiceType): boolean {
+  return service !== "full";
+}
+
+/** Whether this service asks about the origin / the destination at all. */
+export function hasOrigin(service: ServiceType): boolean {
+  return service !== "unloading";
+}
+
+export function hasDestination(service: ServiceType): boolean {
+  return service !== "loading";
+}
+
+export const SERVICE_LABEL: Record<ServiceType, string> = {
+  full: "Full move",
+  loading: "Loading only",
+  unloading: "Unloading only",
+};
+
+export const SERVICE_NOTE: Record<ServiceType, string> = {
+  full: "We bring the truck and the crew, door to door.",
+  loading: "Your truck or container at the pickup. We load it.",
+  unloading: "Your truck or container at the destination. We unload it.",
+};
 export type Floor = "Ground" | "2nd" | "3rd" | "4th+";
 export type HomeSize = "Studio" | "1 bed" | "2 bed" | "3+ bed";
 export type RoomName =
@@ -174,13 +217,14 @@ export type QuoteInput = {
   /** Packing crew the day before. */
   packing?: boolean;
   /**
-   * Labour only: our crew, the customer's truck or container.
+   * What we are being hired to do. Defaults to a full move.
    *
-   * Overrides `movers` and the rate with `CONFIG.laborOnly`, and drops the
-   * minimum to two hours. The stair multipliers still apply — carrying a sofa
-   * up two flights is the same work whoever owns the truck.
+   * `loading` and `unloading` override `movers` and the rate with
+   * `CONFIG.laborOnly` and drop the minimum to two hours. The stair
+   * multipliers still apply — carrying a sofa up two flights is the same work
+   * whoever owns the truck.
    */
-  laborOnly?: boolean;
+  service?: ServiceType;
   /**
    * Loaded miles between the two addresses.
    *
@@ -397,7 +441,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     toFloor = "Ground",
     elevator = false,
     packing = false,
-    laborOnly = false,
+    service = "full",
     miles,
   } = input;
   const includeSurcharges = options?.includeSurcharges ?? true;
@@ -420,6 +464,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
 
   // Labour-only fixes the crew and the rate: it is one service at one price,
   // not a modifier on the three crew sizes.
+  const laborOnly = isLaborOnly(service);
   const crew = laborOnly ? cfg.laborOnly.movers : movers;
   const rate = laborOnly ? cfg.laborOnly.ratePerHour : cfg.rates[crew];
   const minHours = laborOnly ? cfg.laborOnly.minHours : cfg.minHours;
