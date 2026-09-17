@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { arrivalWindow } from "./format";
 import type { Job } from "./jobs";
+import { referralCode } from "./jobs";
 import {
   bookingConfirmationText,
   isGsm7,
@@ -47,11 +48,19 @@ describe("message templates", () => {
     expect(text).toContain("No deposit");
   });
 
-  it("review request carries the portal link and the referral code", () => {
+  it("review request carries the portal link and the crew", () => {
     const text = reviewRequestText(job, "https://flatirons.example");
     expect(text).toContain("https://flatirons.example/move/FM-8839#review");
-    expect(text).toContain("FLAT-8839");
     expect(text).toContain("Crew D");
+  });
+
+  it("review request carries no promotional offer", () => {
+    // A carrier rejected this sample for the referral code: "$50 off" is
+    // promotional content, and the campaign is registered as transactional.
+    // The incentive lives on the portal the link lands on, not in the text.
+    const text = reviewRequestText(job, "https://flatirons.example");
+    expect(text).not.toContain(referralCode(job));
+    expect(text).not.toMatch(/\$\d|discount|off\b|free\b|deal|offer/i);
   });
 
   it("review request survives a crewless job", () => {
@@ -93,16 +102,34 @@ describe("SMS compliance and cost", () => {
       expect(isGsm7(body)).toBe(true);
     });
 
-    it(`${name} tells the recipient how to opt out`, () => {
-      // Promised to the carriers in the A2P 10DLC campaign registration, and
-      // compared against live traffic. Dropping it risks the campaign.
-      expect(body).toContain("Reply STOP to opt out.");
+    it(`${name} carries the full compliance tail`, () => {
+      // All three are promised to the carriers in the A2P 10DLC campaign
+      // registration, and the registered samples are compared against live
+      // traffic. A message carrying some of them is the one that gets
+      // flagged, so they are asserted together.
+      expect(body).toContain("Msg&data rates may apply.");
+      expect(body).toContain("Reply HELP for help, STOP to opt out.");
     });
   }
 
+  it("stays inside two segments for the longest realistic crew name", () => {
+    // The review request has ~20 characters of headroom, and the only
+    // variable-length field in it is the crew name. A fixture using "Crew A"
+    // proves nothing about a crew called "Commercial Team Two" — which is
+    // exactly how the en-dash bug got past its own test.
+    const longest = reviewRequestText(
+      { ...job, crew: "the Commercial Team Two crew" } as Job,
+      "https://www.flatironsmoves.com",
+    );
+    expect(isGsm7(longest)).toBe(true);
+    expect(longest.length).toBeLessThanOrEqual(306);
+  });
+
   it("keeps both messages inside two segments", () => {
     // Not a correctness bound, a cost one: every customer gets both, so a
-    // third segment is a 50% rise in the per-customer cost of texting.
+    // third segment is a 50% rise in the per-customer cost of texting. The
+    // compliance tail was sized to fit here — spelling out "Message and data"
+    // instead of "Msg&data" pushes the review request over.
     for (const body of Object.values(bodies)) {
       expect(body.length).toBeLessThanOrEqual(306);
     }

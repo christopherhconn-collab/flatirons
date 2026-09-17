@@ -22,7 +22,6 @@
  */
 
 import type { Job } from "./jobs";
-import { referralCode } from "./jobs";
 
 /**
  * The three Twilio values, trimmed.
@@ -74,7 +73,26 @@ export function toE164(raw: string): string | null {
  * no error we can see.
  */
 
-const OPT_OUT = "Reply STOP to opt out.";
+/**
+ * The compliance tail every message carries.
+ *
+ * Five elements are expected on a message that confirms an opt-in: the brand,
+ * what the recipient signed up for, that rates apply, how to get help, and
+ * how to stop. The first two are the body of each message; these are the
+ * other three, and they are one constant because a message that carries some
+ * of them is the one a carrier flags.
+ *
+ * `Msg&data` rather than `Message and data` is not shorthand for its own
+ * sake: the phrase is carrier-conventional and it keeps both bodies inside
+ * two segments, where spelling it out would push the review request into a
+ * third on every send.
+ *
+ * `/privacy` and `/terms` both tell customers they may reply HELP. We run no
+ * inbound webhook, so that promise is kept by Twilio's opt-out management —
+ * which must have HELP enabled for it to be true.
+ */
+const COMPLIANCE_TAIL =
+  "Msg&data rates may apply. Reply HELP for help, STOP to opt out.";
 
 /** The booking confirmation. Short enough for one SMS segment matters less
  * than saying the three things that stop the "did it work?" callback: the
@@ -83,17 +101,35 @@ export function bookingConfirmationText(job: Job, origin: string): string {
   return toGsm7(
     `Flatirons Movers: you're booked - ${job.id}, ${job.date}, ` +
     `arrival ${job.window}. Track your move and put a card on file at ` +
-    `${origin}/move/${job.id}. No deposit; we bill after the move. ${OPT_OUT}`
+    `${origin}/move/${job.id}. No deposit; we bill after the move. ${COMPLIANCE_TAIL}`
   );
 }
 
-/** The morning-after review request, with the referral code, per step 10. */
+/**
+ * The morning-after review request.
+ *
+ * NO REFERRAL OFFER, DELIBERATELY. Step 10 specified the referral code here,
+ * and a carrier rejected the sample for it: "$50 off" is promotional content,
+ * and this campaign is registered as transactional — a booking confirmation
+ * and one post-move follow-up. An incentive inside a transactional message is
+ * a use-case mismatch, and the fix is to take the incentive out rather than
+ * re-register the campaign as marketing, which carries heavier vetting and
+ * stricter consent for no benefit to a two-message-per-move sender.
+ *
+ * Nothing is lost. The link lands on the portal, and the portal has a
+ * referral section with the code and a copy button a few inches below the
+ * review form — so the customer still gets it, on a page where an offer
+ * belongs.
+ *
+ * `job.crew` is the one unbounded field here, which is why the copy is
+ * tighter than it reads: it has to stay inside two segments for a crew name
+ * longer than "Crew A".
+ */
 export function reviewRequestText(job: Job, origin: string): string {
   return toGsm7(
     `Flatirons Movers: thanks for moving with us${job.crew ? ` and ${job.crew}` : ""}. ` +
-    `Two minutes to leave a review helps more than you'd think: ` +
-    `${origin}/move/${job.id}#review - and code ${referralCode(job)} gives ` +
-    `a friend $50 off their move. ${OPT_OUT}`
+    `A quick review helps more than you'd think: ` +
+    `${origin}/move/${job.id}#review ${COMPLIANCE_TAIL}`
   );
 }
 
