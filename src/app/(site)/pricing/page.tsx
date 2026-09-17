@@ -46,11 +46,13 @@ const ADD_ONS = [
 ];
 
 const RULES = [
-  "Three-hour minimum, then billed to the quarter hour — the clock starts when we arrive, not when we leave the yard.",
+  `${CONFIG.minHours}-hour minimum, then billed to the quarter hour — the clock starts when we arrive, not when we leave the yard.`,
   // Read from CONFIG so this and the estimator's travel note cannot drift
   // apart — they are the two places a customer is told what travel costs.
   `$${CONFIG.travel.flat} flat travel inside the Denver metro. Anywhere else in Colorado, $${CONFIG.travel.perLoadedMile} per loaded mile.`,
-  "No deposit, no card required to hold a date. Cancel up to 48 hours out for free.",
+  // Same rule as /terms and the move portal, from the same constant. Three
+  // pages tell a customer what cancelling costs; none of them may guess.
+  `No deposit to hold a date. Cancel up to ${CONFIG.cancellation.windowHours} hours out for free — inside that, a flat ${money(CONFIG.cancellation.feeDollars)}.`,
   "Stairs, long carries and elevator waits are never an upcharge. Weekend rates are the same as weekday.",
 ];
 

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 import {
   CATALOG_ITEMS,
@@ -458,5 +461,48 @@ describe("invoicing", () => {
     const tvLine = billed.lines.find((l) => l.label.startsWith("TV crate"));
     expect(tvLine?.amount).toBe(quoted.extrasTotal);
     expect(tvLine?.amount).toBe(80);
+  });
+});
+
+describe("the published cancellation policy", () => {
+  /**
+   * Every page that tells a customer what cancelling costs must read the two
+   * numbers from `CONFIG.cancellation`, never restate them.
+   *
+   * This is a regression test for a shipped bug, not a style rule. `/terms`
+   * once said a late cancellation was "billed at the minimum" ($447–$747)
+   * while the booking email and the portal said $150 — two live,
+   * customer-facing documents disagreeing about the same charge by a factor
+   * of five, on a PUC-regulated carrier where the published terms bind.
+   *
+   * Asserting on the source is the only way to catch it: the numbers are
+   * interpolated into JSX prose, so a value test would pass on a page that
+   * had quietly hard-coded them.
+   */
+  const SURFACES = [
+    "src/app/(site)/terms/page.tsx",
+    "src/app/(site)/pricing/page.tsx",
+    "src/app/move/[id]/page.tsx",
+    "src/lib/email.ts",
+    "src/app/dispatch/page.tsx",
+  ];
+
+  for (const surface of SURFACES) {
+    it(`${surface} states the policy from CONFIG`, () => {
+      const source = readFileSync(resolve(import.meta.dirname, "../..", surface), "utf8");
+      expect(source).toMatch(/CONFIG\.cancellation|cancellationFor/);
+    });
+  }
+
+  it("has a fee and a window that are actually usable", () => {
+    // A zero or negative fee would make `chargeCardOnFile` refuse, and the
+    // dispatch button would offer to charge nothing. A zero window would make
+    // every cancellation late.
+    expect(CONFIG.cancellation.feeDollars).toBeGreaterThan(0);
+    expect(CONFIG.cancellation.windowHours).toBeGreaterThan(0);
+    // Whole dollars: `money()` rounds, and a rounded fee on the terms page
+    // that differs from the cents actually charged is the same class of bug
+    // this block exists to prevent.
+    expect(CONFIG.cancellation.feeDollars % 1).toBe(0);
   });
 });

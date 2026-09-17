@@ -129,6 +129,9 @@ export function SiteFooter() {
             <Link href="/terms" className="hover:text-olive-pale">
               Terms &amp; conditions
             </Link>
+            <Link href="/sms-opt-in" className="hover:text-olive-pale">
+              SMS opt-in
+            </Link>
             <a href={PHONE_HREF} className="hover:text-olive-pale">
               {PHONE}
             </a>

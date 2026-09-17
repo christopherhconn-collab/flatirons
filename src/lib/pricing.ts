@@ -91,12 +91,27 @@ export const CONFIG: PricingConfig = {
    * what the customer agreed to in one sentence on their confirmation, and a
    * percentage of an estimate is not a number anyone can check.
    *
-   * PLACEHOLDER — Flatirons is a PUC-regulated household-goods carrier (PUC
-   * 00412), and a cancellation charge has to match the tariff filed with the
-   * Colorado PUC. 48 hours / $150 is the common shape in this market, not a
-   * value read off Flatirons' own tariff. Reconcile it against the filing
-   * before the first fee is charged, and change it here — nothing else in the
-   * codebase hard-codes either number.
+   * ⚠️ PLACEHOLDER — NOT READ OFF FLATIRONS' TARIFF.
+   *
+   * Flatirons is a PUC-regulated household-goods carrier (PUC 00412), so a
+   * cancellation charge has to match the tariff filed with the Colorado PUC.
+   * 48 hours / $150 is the common shape in this market, nothing more.
+   * Reconcile both numbers against the filing before the first fee is
+   * charged.
+   *
+   * These two values are PUBLISHED VERBATIM to customers in five places, all
+   * of which read them from here — so changing them here changes every one,
+   * and none of them may ever restate a literal:
+   *
+   *   /terms           the binding cancellation clause
+   *   /pricing         the plain-English rules list
+   *   /move/[id]       the card-on-file section
+   *   the confirmation email   (src/lib/email.ts)
+   *   the dispatch cancel button's label and its charge
+   *
+   * `src/lib/pricing.test.ts` fails if any of them drifts back to a literal.
+   * That is not hypothetical: /terms and the booking email once shipped with
+   * two different cancellation fees.
    */
   cancellation: { feeDollars: 150, windowHours: 48 },
 };

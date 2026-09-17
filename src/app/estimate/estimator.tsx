@@ -19,7 +19,7 @@ import Link from "next/link";
 
 import { Check, ChevronLeft, ChevronRight } from "@/components/icons";
 import { LogoLockup } from "@/components/logo";
-import { PHONE, PHONE_HREF } from "@/lib/site";
+import { PHONE, PHONE_HREF, SMS_CONSENT } from "@/lib/site";
 import type { DayCell, EstimateView } from "@/lib/estimate";
 import { FLOORS, type CrewSize, type Floor } from "@/lib/pricing";
 import { bookMove, updateEstimate } from "./actions";
@@ -821,9 +821,30 @@ function StepConfirm({
             placeholder="303.555.0186"
             type="tel"
             autoComplete="tel"
+            aria-describedby="sms-consent"
             onChange={(e) => sendLater("phone", { phone: e.target.value })}
             className={INPUT}
           />
+          {/* The SMS consent disclosure, and a compliance artifact as much as
+              a courtesy. A2P 10DLC registration is vetted by a human who
+              opens this page looking for exactly this: what we send, how
+              often, that rates apply, how to stop, and a link to the policy.
+              Its wording is quoted verbatim in the campaign's Message Flow —
+              change one and change the other, or the campaign is rejected. */}
+          <p
+            id="sms-consent"
+            className="text-ink-muted mt-1.5 text-[11.5px] leading-[1.45]"
+          >
+            {SMS_CONSENT} See our{" "}
+            <Link href="/privacy" className="underline">
+              privacy policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/terms" className="underline">
+              terms
+            </Link>
+            .
+          </p>
         </Field>
         <Field label="Email" full>
           <input
