@@ -57,25 +57,92 @@ export function toE164(raw: string): string | null {
   return null;
 }
 
+/**
+ * Two rules bind every message body below, and both cost real money when
+ * broken.
+ *
+ * GSM-7 ONLY. The 7-bit alphabet carriers use has no em dash, en dash, curly
+ * quote or ellipsis. One such character switches the whole message to UCS-2,
+ * which drops the segment size from 153 characters to 67 — so a single
+ * typographic dash in a 200-character message costs an extra segment on every
+ * send, forever. Use `-` and `'`. `isGsm7()` is tested against both bodies.
+ *
+ * OPT-OUT IN EVERY MESSAGE. "Reply STOP to opt out" is what the A2P 10DLC
+ * campaign registration promises the carriers, and the registered sample
+ * messages are compared against live traffic. Dropping it risks the campaign,
+ * and campaign-level filtering means the messages simply stop arriving with
+ * no error we can see.
+ */
+
+const OPT_OUT = "Reply STOP to opt out.";
+
 /** The booking confirmation. Short enough for one SMS segment matters less
  * than saying the three things that stop the "did it work?" callback: the
  * reference, the date, the link. */
 export function bookingConfirmationText(job: Job, origin: string): string {
-  return (
-    `Flatirons Movers: you're booked — ${job.id}, ${job.date}, ` +
+  return toGsm7(
+    `Flatirons Movers: you're booked - ${job.id}, ${job.date}, ` +
     `arrival ${job.window}. Track your move and put a card on file at ` +
-    `${origin}/move/${job.id}. No deposit; we bill after the move.`
+    `${origin}/move/${job.id}. No deposit; we bill after the move. ${OPT_OUT}`
   );
 }
 
 /** The morning-after review request, with the referral code, per step 10. */
 export function reviewRequestText(job: Job, origin: string): string {
-  return (
+  return toGsm7(
     `Flatirons Movers: thanks for moving with us${job.crew ? ` and ${job.crew}` : ""}. ` +
     `Two minutes to leave a review helps more than you'd think: ` +
-    `${origin}/move/${job.id}#review — and code ${referralCode(job)} gives ` +
-    `a friend $50 off their move.`
+    `${origin}/move/${job.id}#review - and code ${referralCode(job)} gives ` +
+    `a friend $50 off their move. ${OPT_OUT}`
   );
+}
+
+/**
+ * The GSM-7 basic alphabet plus its extension table — what a carrier can
+ * send at 153 characters per segment instead of 67.
+ */
+const GSM7 =
+  "@\u00a3$\u00a5\u00e8\u00e9\u00f9\u00ec\u00f2\u00c7\n\u00d8\u00f8\r\u00c5\u00e5\u0394_\u03a6\u0393\u039b\u03a9\u03a0\u03a8\u03a3\u0398\u039e\u00c6\u00e6\u00df\u00c9" +
+  " !\"#\u00a4%&'()*+,-./0123456789:;<=>?" +
+  "\u00a1ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00c4\u00d6\u00d1\u00dc\u00a7" +
+  "\u00bfabcdefghijklmnopqrstuvwxyz\u00e4\u00f6\u00f1\u00fc\u00e0" +
+  "^{}\\[~]|\u20ac";
+
+/**
+ * Whether `text` survives GSM-7 encoding — i.e. whether it bills at 153
+ * characters per segment rather than 67.
+ *
+ * Exported for the tests rather than used at runtime: a message that fails
+ * this still sends, just at roughly double the cost, so the place to catch it
+ * is CI, not production.
+ */
+export function isGsm7(text: string): boolean {
+  return [...text].every((c) => GSM7.includes(c));
+}
+
+/**
+ * Fold the typographic characters the rest of the app uses into their GSM-7
+ * equivalents.
+ *
+ * Sanitising beats forbidding. `job.window` is `8:00\u20138:30 AM` because
+ * `arrivalWindow()` typesets a range with an en dash, which is right on a web
+ * page and wrong in an SMS — and customer names and crew names reach these
+ * bodies too. Asking every upstream caller to know about GSM-7 would fail the
+ * first time somebody added a field; normalising here cannot.
+ *
+ * Anything still outside the alphabet after this is dropped rather than sent:
+ * a missing character costs nothing, and one stray glyph doubles the price of
+ * every message.
+ */
+export function toGsm7(text: string): string {
+  const folded = text
+    .replace(/[\u2010-\u2015]/g, "-") // hyphens, en dash, em dash, bar
+    .replace(/[\u2018\u2019\u201b]/g, "'") // curly single quotes
+    .replace(/[\u201c\u201d]/g, '"') // curly double quotes
+    .replace(/\u2026/g, "...")
+    .replace(/\u00a0/g, " ") // non-breaking space
+    .replace(/[\u2022\u00b7]/g, "-"); // bullets, used in our own copy
+  return [...folded].filter((c) => GSM7.includes(c)).join("");
 }
 
 /**

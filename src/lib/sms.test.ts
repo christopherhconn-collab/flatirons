@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import { arrivalWindow } from "./format";
 import type { Job } from "./jobs";
-import { bookingConfirmationText, reviewRequestText, toE164 } from "./sms";
+import {
+  bookingConfirmationText,
+  isGsm7,
+  reviewRequestText,
+  toE164,
+} from "./sms";
 
 const job = {
   id: "FM-8839",
@@ -32,7 +38,10 @@ describe("message templates", () => {
     const text = bookingConfirmationText(job, "https://flatirons.example");
     expect(text).toContain("FM-8839");
     expect(text).toContain("2026-08-16");
-    expect(text).toContain("7:00–7:30 AM");
+    // The window arrives as `7:00–7:30 AM` and goes out with a plain hyphen:
+    // `toGsm7` folds it so the message bills at 153 characters per segment
+    // rather than 67. The time itself must survive that fold.
+    expect(text).toContain("7:00-7:30 AM");
     expect(text).toContain("https://flatirons.example/move/FM-8839");
     // The marketing promise, restated where it calms the most nerves.
     expect(text).toContain("No deposit");
@@ -48,5 +57,54 @@ describe("message templates", () => {
   it("review request survives a crewless job", () => {
     const text = reviewRequestText({ ...job, crew: null } as Job, "https://x.example");
     expect(text).not.toContain("null");
+  });
+});
+
+describe("SMS compliance and cost", () => {
+  /**
+   * Both of these are regressions waiting to happen, and neither shows up in
+   * production as an error — one arrives as a larger Twilio invoice, the
+   * other as messages that silently stop being delivered.
+   */
+  const job = {
+    id: "FM-8848",
+    date: "2026-10-04",
+    // From the real formatter, not hand-typed: `arrivalWindow` typesets the
+    // range with an en dash, and a fixture that quietly used a hyphen would
+    // let the GSM-7 assertion below pass on a message that ships as UCS-2.
+    window: arrivalWindow(8),
+    customer: "O\u2019Doyle, D.",
+    crew: "Crew A",
+  } as Job;
+  const bodies = {
+    "booking confirmation": bookingConfirmationText(job, "https://x.example"),
+    "review request": reviewRequestText(job, "https://x.example"),
+  };
+
+  for (const [name, body] of Object.entries(bodies)) {
+    it(`${name} stays in the GSM-7 alphabet`, () => {
+      // An em dash, curly quote or ellipsis here forces UCS-2 and cuts the
+      // segment size from 153 characters to 67 — roughly doubling the cost of
+      // every send. The failure message names the offending character.
+      const offenders = [...body].filter((c) => !isGsm7(c));
+      expect(
+        offenders.map((c) => `${c} (U+${c.codePointAt(0)!.toString(16)})`),
+      ).toEqual([]);
+      expect(isGsm7(body)).toBe(true);
+    });
+
+    it(`${name} tells the recipient how to opt out`, () => {
+      // Promised to the carriers in the A2P 10DLC campaign registration, and
+      // compared against live traffic. Dropping it risks the campaign.
+      expect(body).toContain("Reply STOP to opt out.");
+    });
+  }
+
+  it("keeps both messages inside two segments", () => {
+    // Not a correctness bound, a cost one: every customer gets both, so a
+    // third segment is a 50% rise in the per-customer cost of texting.
+    for (const body of Object.values(bodies)) {
+      expect(body.length).toBeLessThanOrEqual(306);
+    }
   });
 });

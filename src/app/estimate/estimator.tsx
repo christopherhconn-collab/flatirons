@@ -821,9 +821,32 @@ function StepConfirm({
             placeholder="303.555.0186"
             type="tel"
             autoComplete="tel"
+            aria-describedby="sms-consent"
             onChange={(e) => sendLater("phone", { phone: e.target.value })}
             className={INPUT}
           />
+          {/* The SMS consent disclosure, and a compliance artifact as much as
+              a courtesy. A2P 10DLC registration is vetted by a human who
+              opens this page looking for exactly this: what we send, how
+              often, that rates apply, how to stop, and a link to the policy.
+              Its wording is quoted verbatim in the campaign's Message Flow —
+              change one and change the other, or the campaign is rejected. */}
+          <p
+            id="sms-consent"
+            className="text-ink-muted mt-1.5 text-[11.5px] leading-[1.45]"
+          >
+            We&rsquo;ll text your booking confirmation and one follow-up after
+            your move — two messages, no marketing. Message and data rates may
+            apply. Reply STOP to opt out. See our{" "}
+            <Link href="/privacy" className="underline">
+              privacy policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/terms" className="underline">
+              terms
+            </Link>
+            .
+          </p>
         </Field>
         <Field label="Email" full>
           <input
