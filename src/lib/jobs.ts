@@ -127,6 +127,9 @@ export type Job = {
   /** What we are hired to do — see `ServiceType`. A labour-only half fixes
    * the crew at two and the minimum at two hours, and has only one address. */
   service: ServiceType;
+  /** Hours the customer named on a labour-only job; null when derived from
+   * an inventory. The crew needs it: such a booking may carry no items. */
+  quotedHours: number | null;
   /** Epoch ms of arrival on site. Null unless the clock is running. */
   clockIn: number | null;
   /** Billed hours, set when the job closes out. */

@@ -52,6 +52,7 @@ function job(overrides: Partial<Job> = {}): Job {
     elevator: false,
     packing: false,
     service: "full",
+    quotedHours: null,
     clockIn: null,
     hours: null,
     photos: 0,

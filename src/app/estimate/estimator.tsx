@@ -197,7 +197,14 @@ export function Estimator({ initial }: { initial: EstimateView }) {
           {view.step === 1 && (
             <StepAddresses view={view} send={send} sendLater={sendLater} />
           )}
-          {view.step === 2 && <StepInventory view={view} send={send} bump={bump} />}
+          {view.step === 2 && (
+            <StepInventory
+              view={view}
+              send={send}
+              sendLater={sendLater}
+              bump={bump}
+            />
+          )}
           {view.step === 3 && (
             <StepDateCrew
               view={view}
@@ -548,19 +555,81 @@ function StepAddresses({
 function StepInventory({
   view,
   send,
+  sendLater,
   bump,
 }: {
   view: EstimateView;
   send: (patch: Parameters<typeof updateEstimate>[0]) => void;
+  sendLater: (field: string, patch: Parameters<typeof updateEstimate>[0]) => void;
   bump: (name: string, delta: number) => void;
 }) {
   return (
     <section>
-      <h2 className="text-h2 mb-1.5">Room by room</h2>
+      <h2 className="text-h2 mb-1.5">
+        {view.hoursMode === "hours" ? "How long do you need?" : "Room by room"}
+      </h2>
       <p className="text-ink-body mb-[22px] max-w-[60ch] text-[14.5px] leading-[1.6]">
-        Rough counts are fine — the crew confirms on arrival. The estimate on
-        the right moves as you count.
+        {view.hoursMode === "hours"
+          ? "Billed by actual time on the day, to the quarter hour. This sets what the estimate says, not what you pay."
+          : "Rough counts are fine — the crew confirms on arrival. The estimate on the right moves as you count."}
       </p>
+
+      {/* Someone emptying a container usually knows they want three hours and
+          does not want to tick forty items to be told so. Offered only for
+          labour only: a full move is priced from what is being moved. */}
+      {view.canStateHours && (
+        <div className="border-line-seg mb-6 grid max-w-[520px] grid-cols-2 gap-px border bg-[rgb(22_40_63/0.22)]">
+          {(
+            [
+              ["inventory", "Count my items"],
+              ["hours", "I know the hours"],
+            ] as const
+          ).map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={view.hoursMode === mode}
+              onClick={() => send({ hoursMode: mode })}
+              className={`interactive py-3 text-center text-[13.5px] leading-none ${
+                view.hoursMode === mode
+                  ? "bg-olive text-paper font-semibold"
+                  : "bg-bg text-ink-body font-medium"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {view.hoursMode === "hours" ? (
+        <div className="max-w-[520px]">
+          <label className="block">
+            <span className="text-label text-ink-muted mb-1.5 block">
+              Hours of labor
+            </span>
+            <input
+              type="number"
+              inputMode="decimal"
+              min={CONFIG.laborOnly.minHours}
+              max={12}
+              step={0.25}
+              defaultValue={view.quotedHours}
+              onChange={(e) =>
+                sendLater("quotedHours", {
+                  quotedHours: Number(e.target.value),
+                })
+              }
+              className={INPUT}
+            />
+          </label>
+          <p className="text-ink-muted mt-2 text-[12.5px] leading-[1.5]">
+            {CONFIG.laborOnly.minHours}-hour minimum, then to the quarter hour.
+            Add items below if you want the crew to know what is coming — it
+            will not change the estimate.
+          </p>
+        </div>
+      ) : null}
 
       <div className="mb-5 flex flex-wrap gap-2">
         {view.roomTabs.map((tab) => (

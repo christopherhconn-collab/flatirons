@@ -26,7 +26,13 @@ import type {
   PipelineStage,
   Review,
 } from "./jobs";
-import type { CrewSize, Floor, ItemCounts, ServiceType } from "./pricing";
+import type {
+  CrewSize,
+  Floor,
+  HoursMode,
+  ItemCounts,
+  ServiceType,
+} from "./pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Types
@@ -47,6 +53,10 @@ export type QuoteDraft = {
   movers: CrewSize;
   packing: boolean;
   service: ServiceType;
+  /** "inventory" or "hours" — how this draft is priced. */
+  hoursMode: HoursMode;
+  /** Hours the customer named, when `hoursMode` is "hours". */
+  quotedHours: number | null;
   counts: ItemCounts;
   name: string;
   email: string;
@@ -93,6 +103,7 @@ function toJob(row: JobRow): Job {
     elevator: row.elevator,
     packing: row.packing,
     service: row.service as ServiceType,
+    quotedHours: row.quotedHours,
     clockIn: row.clockIn ? row.clockIn.getTime() : null,
     hours: row.hours,
     photos: row.photos,
@@ -196,6 +207,7 @@ export async function createJob(job: Job): Promise<Job> {
       elevator: job.elevator,
       packing: job.packing,
       service: job.service,
+      quotedHours: job.quotedHours,
       clockIn: job.clockIn ? new Date(job.clockIn) : null,
       hours: job.hours,
       photos: job.photos,
@@ -291,6 +303,7 @@ export async function updateJob(
         elevator: next.elevator,
         packing: next.packing,
         service: next.service,
+        quotedHours: next.quotedHours,
         clockIn: next.clockIn ? new Date(next.clockIn) : null,
         hours: next.hours,
         photos: next.photos,
@@ -441,6 +454,8 @@ function toDraft(row: DraftRow): QuoteDraft {
     movers: row.movers as CrewSize,
     packing: row.packing,
     service: row.service as ServiceType,
+    hoursMode: row.hoursMode as HoursMode,
+    quotedHours: row.quotedHours,
     counts: (row.counts ?? {}) as ItemCounts,
     name: row.name,
     email: row.email,
@@ -469,6 +484,8 @@ export async function saveDraft(draft: QuoteDraft): Promise<QuoteDraft> {
     movers: draft.movers,
     packing: draft.packing,
     service: draft.service,
+    hoursMode: draft.hoursMode,
+    quotedHours: draft.quotedHours,
     counts: draft.counts as Prisma.InputJsonValue,
     name: draft.name,
     email: draft.email,

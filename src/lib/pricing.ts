@@ -157,6 +157,17 @@ export type ServiceType = "full" | "loading" | "unloading";
 
 export const SERVICE_TYPES: ServiceType[] = ["full", "loading", "unloading"];
 
+/**
+ * How a labour-only estimate is arrived at.
+ *
+ * `inventory` walks the catalogue and derives the hours; `hours` takes the
+ * number the customer gives. Both bill by actual time on the day — this
+ * decides what the quote says, not what the invoice does.
+ */
+export type HoursMode = "inventory" | "hours";
+
+export const HOURS_MODES: HoursMode[] = ["inventory", "hours"];
+
 /** True when we bring hands but no truck. */
 export function isLaborOnly(service: ServiceType): boolean {
   return service !== "full";
@@ -216,6 +227,19 @@ export type QuoteInput = {
   elevator?: boolean;
   /** Packing crew the day before. */
   packing?: boolean;
+  /**
+   * Hours the customer has chosen themselves, instead of having them derived
+   * from an inventory.
+   *
+   * Labour-only only, and ignored otherwise: a full move is priced from what
+   * is being moved, and letting someone name the hours for one would be
+   * letting them name the price of a job we have not seen.
+   *
+   * Someone emptying a container usually knows they want three hours and does
+   * not want to tick forty items to be told so. Clamped to the minimum, and
+   * it collapses the range — see `Quote.low`.
+   */
+  manualHours?: number;
   /**
    * What we are being hired to do. Defaults to a full move.
    *
@@ -442,10 +466,23 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     elevator = false,
     packing = false,
     service = "full",
+    manualHours,
     miles,
   } = input;
   const includeSurcharges = options?.includeSurcharges ?? true;
   const cfg = options?.config ?? CONFIG;
+
+  // Hours the customer named are taken as given: no inventory to derive them
+  // from, and no stair multiplier either — they have looked at their own
+  // stairs and said how long they want. The minimum still binds.
+  const statedLaborOnly = isLaborOnly(service);
+  const stated =
+    statedLaborOnly && manualHours !== undefined && manualHours > 0
+      ? Math.max(
+          (options?.config ?? CONFIG).laborOnly.minHours,
+          manualHours,
+        )
+      : undefined;
 
   let units = 0;
   const extras: QuoteExtra[] = [];
@@ -454,7 +491,13 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     const n = counts[item.name] || 0;
     if (!n) continue;
     units += item.volumeUnits * n;
-    if (includeSurcharges && item.surcharge) {
+    // Item surcharges are dropped when the customer states the hours. Every
+    // draft starts carrying a 2-bed preset, so without this a customer who
+    // said "three hours of unloading" and never opened the inventory would be
+    // quoted a $40 crate for a television they never mentioned — and the
+    // estimator promises, in as many words, that adding items does not change
+    // a stated-hours estimate.
+    if (includeSurcharges && item.surcharge && stated === undefined) {
       extras.push({
         label: `${item.surchargeLabel} × ${n}`,
         amount: item.surcharge * n,
@@ -473,6 +516,7 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
   if (fromFloor !== "Ground" && !elevator) hours *= cfg.stairsPickup;
   if (toFloor !== "Ground" && !elevator) hours *= cfg.stairsDropoff;
   if (units) hours = Math.max(minHours, hours);
+  if (stated !== undefined) hours = stated;
 
   if (packing) {
     extras.push({
@@ -503,12 +547,21 @@ export function quote(input: QuoteInput, options?: QuoteOptions): Quote {
     movers: crew,
     extras,
     extrasTotal,
-    low: units
-      ? roundToIncrement(hours * cfg.range.low * rate + extrasTotal, cfg.roundTo)
-      : 0,
-    high: units
-      ? roundToIncrement(hours * cfg.range.high * rate + extrasTotal, cfg.roundTo)
-      : 0,
+    // The range is our uncertainty about how long a move will take. When the
+    // customer states the hours there is none to express, so both ends are
+    // the same number — and billing is by actual time either way.
+    low:
+      stated !== undefined
+        ? Math.round(hours * rate + extrasTotal)
+        : units
+          ? roundToIncrement(hours * cfg.range.low * rate + extrasTotal, cfg.roundTo)
+          : 0,
+    high:
+      stated !== undefined
+        ? Math.round(hours * rate + extrasTotal)
+        : units
+          ? roundToIncrement(hours * cfg.range.high * rate + extrasTotal, cfg.roundTo)
+          : 0,
     itemCount: itemCountOf(counts),
   };
 }

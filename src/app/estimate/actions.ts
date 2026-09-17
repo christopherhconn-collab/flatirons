@@ -183,6 +183,8 @@ export async function bookMove(): Promise<{ error: string } | never> {
     elevator: draft.elevator,
     packing: draft.packing,
     service: draft.service,
+    quotedHours:
+      draft.hoursMode === "hours" ? draft.quotedHours : null,
     clockIn: null,
     hours: null,
     photos: 0,
