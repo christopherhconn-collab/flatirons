@@ -14,6 +14,7 @@ import {
   type Floor,
   type HomeSize,
   type ItemCounts,
+  type ServiceType,
   invoiceFor,
   type InvoiceLine,
 } from "./pricing";
@@ -123,6 +124,9 @@ export type Job = {
   toFloor: Floor;
   elevator: boolean;
   packing: boolean;
+  /** What we are hired to do — see `ServiceType`. A labour-only half fixes
+   * the crew at two and the minimum at two hours, and has only one address. */
+  service: ServiceType;
   /** Epoch ms of arrival on site. Null unless the clock is running. */
   clockIn: number | null;
   /** Billed hours, set when the job closes out. */

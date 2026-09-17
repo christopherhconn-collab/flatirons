@@ -21,7 +21,15 @@ import { Check, ChevronLeft, ChevronRight } from "@/components/icons";
 import { LogoLockup } from "@/components/logo";
 import { PHONE, PHONE_HREF, SMS_CONSENT } from "@/lib/site";
 import type { DayCell, EstimateView } from "@/lib/estimate";
-import { FLOORS, type CrewSize, type Floor } from "@/lib/pricing";
+import {
+  CONFIG,
+  FLOORS,
+  SERVICE_LABEL,
+  SERVICE_NOTE,
+  SERVICE_TYPES,
+  type CrewSize,
+  type Floor,
+} from "@/lib/pricing";
 import { bookMove, updateEstimate } from "./actions";
 
 const STEP_LABELS = [
@@ -435,42 +443,86 @@ function StepAddresses({
   return (
     <section>
       <h2 className="text-h2 mb-1.5">Where to where</h2>
-      <p className="text-ink-body mb-[26px] max-w-[60ch] text-[14.5px] leading-[1.6]">
+      <p className="text-ink-body mb-[22px] max-w-[60ch] text-[14.5px] leading-[1.6]">
         Stairs and long carries change the clock more than distance does, so
-        tell us about the doors on both ends.
+        tell us about the doors at each end we work.
       </p>
 
-      <div className="grid max-w-[720px] grid-cols-2 gap-[22px] max-sm:grid-cols-1">
-        <Field label="Moving from">
-          <input
-            defaultValue={view.from}
-            placeholder="1420 Tennyson St, Denver"
-            autoComplete="street-address"
-            onChange={(e) => sendLater("from", { from: e.target.value })}
-            className={INPUT}
-          />
-        </Field>
-        <Field label="Moving to">
-          <input
-            defaultValue={view.to}
-            placeholder="Golden, CO 80401"
-            onChange={(e) => sendLater("to", { to: e.target.value })}
-            className={INPUT}
-          />
-        </Field>
+      {/* The service comes first because it decides which ends exist. An
+          unloading job has no origin to ask about, and asking anyway invites
+          an address the crew should not drive to. */}
+      <div className="mb-[26px] grid max-w-[720px] gap-2.5">
+        {SERVICE_TYPES.map((service) => {
+          const selected = view.service === service;
+          return (
+            <button
+              key={service}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => send({ service })}
+              className={`interactive flex items-baseline justify-between gap-4 border px-[18px] py-3.5 text-left ${
+                selected
+                  ? "border-olive bg-olive-wash"
+                  : "bg-paper border-[rgb(22_40_63/0.18)]"
+              }`}
+            >
+              <span>
+                <span className="block text-[15.5px] leading-[1.15] font-semibold">
+                  {SERVICE_LABEL[service]}
+                </span>
+                <span className="text-ink-muted mt-1 block text-[13px] leading-[1.4]">
+                  {SERVICE_NOTE[service]}
+                </span>
+              </span>
+              {service !== "full" && (
+                <span className="text-olive-dark flex-none text-[12.5px] leading-none font-medium">
+                  ${CONFIG.laborOnly.ratePerHour}/hr
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-        <Segmented<Floor>
-          label="Pickup access"
-          options={FLOORS}
-          value={view.fromFloor}
-          onPick={(fromFloor) => send({ fromFloor })}
-        />
-        <Segmented<Floor>
-          label="Drop-off access"
-          options={FLOORS}
-          value={view.toFloor}
-          onPick={(toFloor) => send({ toFloor })}
-        />
+      <div className="grid max-w-[720px] grid-cols-2 gap-[22px] max-sm:grid-cols-1">
+        {view.hasOrigin && (
+          <Field label={view.hasDestination ? "Moving from" : "Address"}>
+            <input
+              defaultValue={view.from}
+              placeholder="1420 Tennyson St, Denver"
+              autoComplete="street-address"
+              onChange={(e) => sendLater("from", { from: e.target.value })}
+              className={INPUT}
+            />
+          </Field>
+        )}
+        {view.hasDestination && (
+          <Field label={view.hasOrigin ? "Moving to" : "Address"}>
+            <input
+              defaultValue={view.to}
+              placeholder="Golden, CO 80401"
+              onChange={(e) => sendLater("to", { to: e.target.value })}
+              className={INPUT}
+            />
+          </Field>
+        )}
+
+        {view.hasOrigin && (
+          <Segmented<Floor>
+            label={view.hasDestination ? "Pickup access" : "Access"}
+            options={FLOORS}
+            value={view.fromFloor}
+            onPick={(fromFloor) => send({ fromFloor })}
+          />
+        )}
+        {view.hasDestination && (
+          <Segmented<Floor>
+            label={view.hasOrigin ? "Drop-off access" : "Access"}
+            options={FLOORS}
+            value={view.toFloor}
+            onPick={(toFloor) => send({ toFloor })}
+          />
+        )}
       </div>
 
       <CheckRow
@@ -726,12 +778,29 @@ function StepDateCrew({
           <h3 className="text-label text-ink-muted mb-2.5 tracking-[0.18em]">
             Crew size
           </h3>
-          <div className="grid gap-2.5">
+
+          {/* Chosen back on step 1, because it decides which addresses we
+              ask for. Restated here because this is where a customer looks
+              for the crew, and the answer is that the service fixes it. */}
+          {view.laborOnly && (
+            <p className="border-olive bg-olive-tint text-ink mb-3.5 border-l-2 p-3.5 text-[13.5px] leading-[1.5]">
+              <strong className="font-semibold">
+                {SERVICE_LABEL[view.service]}
+              </strong>{" "}
+              — {view.laborOnlyNote}. Change it on the first step.
+            </p>
+          )}
+
+          <div
+            className={`grid gap-2.5 ${view.laborOnly ? "pointer-events-none opacity-40" : ""}`}
+            aria-hidden={view.laborOnly}
+          >
             {view.moverOptions.map((option) => (
               <button
                 key={option.movers}
                 type="button"
                 aria-pressed={option.selected}
+                disabled={view.laborOnly}
                 onClick={() => send({ movers: option.movers as CrewSize })}
                 className={`interactive flex items-center justify-between gap-4 border px-[18px] py-4 text-left ${
                   option.selected

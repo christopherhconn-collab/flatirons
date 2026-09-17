@@ -291,3 +291,52 @@ describe("the booking gate", () => {
     expect(view(d, ["2026-08-22"]).blockedReason).toMatch(/filled up/);
   });
 });
+
+describe("choosing a service", () => {
+  const ctx = { bookedOut: [], today: "2026-09-20" };
+
+  it("drops the end that no longer exists", () => {
+    // A customer who typed a pickup address and then chose "unloading only"
+    // would otherwise book a job carrying an origin nobody asked about and
+    // the crew should not drive to.
+    const typed = applyPatch(
+      applyPatch(draft(), { from: "1420 Tennyson St, Denver" }),
+      { to: "Golden, CO" },
+    );
+    expect(applyPatch(typed, { service: "unloading" }).from).toBe("");
+    expect(applyPatch(typed, { service: "unloading" }).to).toBe("Golden, CO");
+    expect(applyPatch(typed, { service: "loading" }).to).toBe("");
+    expect(applyPatch(typed, { service: "loading" }).from).toBe(
+      "1420 Tennyson St, Denver",
+    );
+  });
+
+  it("forces the crew to two, so the screen matches the bill", () => {
+    // `quote()` overrides the crew for a labour-only service. If the draft
+    // kept a stale 4 the estimator would show a crew the price excludes.
+    const big = applyPatch(draft(), { movers: 4 });
+    expect(applyPatch(big, { service: "unloading" }).movers).toBe(
+      CONFIG.laborOnly.movers,
+    );
+  });
+
+  it("tells the view which ends to ask about", () => {
+    const view = (service: "full" | "loading" | "unloading") =>
+      buildView(applyPatch(draft(), { service }), ctx);
+    expect(view("full").hasOrigin).toBe(true);
+    expect(view("full").hasDestination).toBe(true);
+    expect(view("unloading").hasOrigin).toBe(false);
+    expect(view("unloading").hasDestination).toBe(true);
+    expect(view("loading").hasOrigin).toBe(true);
+    expect(view("loading").hasDestination).toBe(false);
+  });
+
+  it("ignores a service it does not recognise", () => {
+    // `applyPatch` is the trust boundary: a Server Function takes whatever is
+    // posted, not whatever our own buttons offered.
+    const patched = applyPatch(draft(), {
+      service: "helicopter" as never,
+    });
+    expect(patched.service).toBe("full");
+  });
+});

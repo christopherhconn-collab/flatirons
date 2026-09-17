@@ -13,6 +13,11 @@
 import {
   CATALOG,
   CONFIG,
+  SERVICE_TYPES,
+  type ServiceType,
+  hasDestination,
+  hasOrigin,
+  isLaborOnly,
   type CrewSize,
   DEFAULT_CREW,
   FLOORS,
@@ -57,6 +62,7 @@ export function emptyDraft(id: string, ref: string): QuoteDraft {
     date: "",
     movers: DEFAULT_CREW["2 bed"],
     packing: false,
+    service: "full",
     counts: { ...PRESETS["2 bed"] },
     name: "",
     email: "",
@@ -81,6 +87,7 @@ export type EstimatePatch = {
   date?: string;
   movers?: number;
   packing?: boolean;
+  service?: ServiceType;
   name?: string;
   email?: string;
   phone?: string;
@@ -140,6 +147,22 @@ export function applyPatch(draft: QuoteDraft, patch: EstimatePatch): QuoteDraft 
   if (isFloor(patch.toFloor)) next.toFloor = patch.toFloor;
   if (typeof patch.elevator === "boolean") next.elevator = patch.elevator;
   if (typeof patch.packing === "boolean") next.packing = patch.packing;
+  if (SERVICE_TYPES.includes(patch.service as ServiceType)) {
+    const service = patch.service as ServiceType;
+    next.service = service;
+    if (isLaborOnly(service)) {
+      // The labour-only services fix the crew at two. Leaving a stale 3 or 4
+      // in the draft would show a crew the price does not include: `quote()`
+      // overrides it, so the number on screen and the number billed disagree.
+      next.movers = CONFIG.laborOnly.movers;
+    }
+    // The end that no longer exists is cleared rather than left behind. A
+    // customer who typed a pickup address and then chose "unloading only"
+    // would otherwise book a job carrying an origin nobody asked for and the
+    // crew should not drive to.
+    if (!hasOrigin(service)) next.from = "";
+    if (!hasDestination(service)) next.to = "";
+  }
   if (isRoom(patch.room)) next.room = patch.room;
   if (isCrewSize(patch.movers)) next.movers = patch.movers;
   if (patch.date !== undefined && (patch.date === "" || ISO_DATE.test(patch.date))) {
@@ -230,6 +253,15 @@ export type EstimateView = {
   itemRows: ItemRow[];
   roomTabs: RoomTab[];
   moverOptions: MoverOption[];
+  /** What we are being hired to do. Decides which ends step 1 asks about. */
+  service: ServiceType;
+  /** True for the two labour-only halves. */
+  laborOnly: boolean;
+  /** Whether each end exists for this service at all. */
+  hasOrigin: boolean;
+  hasDestination: boolean;
+  /** What labour-only costs, for the option's own label. */
+  laborOnlyNote: string;
   calendar: CalendarView;
   confirmRows: { label: string; value: string }[];
   bookNote: string;
@@ -326,6 +358,7 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     toFloor: draft.toFloor,
     elevator: draft.elevator,
     packing: draft.packing,
+    service: draft.service,
   });
   const hasItems = priced.units > 0;
   const date = draft.date || firstOpenDate(context.today, context.bookedOut);
@@ -373,7 +406,9 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
       rate: `$${CONFIG.rates[movers]}/hr`,
       note: MOVER_NOTE[movers],
       estimate: hasItems ? `≈ ${alt.hours.toFixed(1)} hrs` : "Add items",
-      selected: draft.movers === movers,
+      // Labour-only fixes the crew at two, so no card is the chosen one while
+      // it is on: the choice being made is the service, not the crew size.
+      selected: !isLaborOnly(draft.service) && draft.movers === movers,
     };
   });
 
@@ -444,6 +479,14 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     itemRows,
     roomTabs,
     moverOptions,
+    service: draft.service,
+    laborOnly: isLaborOnly(draft.service),
+    hasOrigin: hasOrigin(draft.service),
+    hasDestination: hasDestination(draft.service),
+    laborOnlyNote:
+      `${CONFIG.laborOnly.movers} movers, no truck · ` +
+      `$${CONFIG.laborOnly.ratePerHour}/hr · ` +
+      `${CONFIG.laborOnly.minHours}-hour minimum · Denver metro`,
     calendar: buildCalendar(date, context),
     confirmRows: [
       { label: "Move date", value: dateLabel(date) },
