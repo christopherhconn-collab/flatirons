@@ -66,7 +66,19 @@ type SeedSpec = {
   messages?: { who: string; text: string; mine: boolean; minutesAgo: number }[];
 };
 
-const SPECS: SeedSpec[] = [
+/**
+ * Every phone number below is in 555-0100..555-0199.
+ *
+ * That hundred-number block is the only range reserved for fiction; the rest
+ * of the 555 exchange is assignable, and much of it is assigned. This mattered
+ * the day Twilio went live: the daily review-request cron read a seeded
+ * "complete" job straight out of this file and sent a real SMS to a number
+ * nobody here owns. Seed data stops being inert the moment a messaging
+ * provider is configured.
+ *
+ * `seed.test.ts` fails on any number outside the block.
+ */
+export const SPECS: SeedSpec[] = [
   {
     id: "FM-8841",
     customer: "Doyle, D.",
@@ -120,7 +132,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8842",
     customer: "Whitfield, R.",
-    phone: "303.555.9021",
+    phone: "303.555.0121",
     email: "r.whitfield@example.com",
     size: "2 bed",
     from: "Wash Park, Denver",
@@ -155,7 +167,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8843",
     customer: "Reyes Design",
-    phone: "720.555.3390",
+    phone: "720.555.0190",
     email: "ops@reyes.design",
     size: "Office",
     from: "Commerce City",
@@ -178,7 +190,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8844",
     customer: "Kaplan, D.",
-    phone: "303.555.4412",
+    phone: "303.555.0112",
     email: "dkaplan@example.com",
     size: "3+ bed",
     from: "Littleton",
@@ -194,7 +206,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8845",
     customer: "Okonjo, A.",
-    phone: "720.555.1180",
+    phone: "720.555.0180",
     email: "a.okonjo@example.com",
     size: "Studio",
     from: "Denver",
@@ -210,7 +222,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8839",
     customer: "Brenner, D.",
-    phone: "303.555.7719",
+    phone: "303.555.0119",
     email: "d.brenner@example.com",
     size: "1 bed",
     from: "Denver",
@@ -236,7 +248,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8846",
     customer: "Nyland, S.",
-    phone: "303.555.7734",
+    phone: "303.555.0134",
     email: "s.nyland@example.com",
     size: "1 bed",
     from: "Aurora",
@@ -252,7 +264,7 @@ const SPECS: SeedSpec[] = [
   {
     id: "FM-8847",
     customer: "Baumann Dental",
-    phone: "303.555.6600",
+    phone: "303.555.0100",
     email: "office@baumanndental.com",
     size: "Office",
     from: "Denver",
