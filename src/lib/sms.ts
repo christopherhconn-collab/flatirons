@@ -22,7 +22,6 @@
  */
 
 import type { Job } from "./jobs";
-import { referralCode } from "./jobs";
 
 /**
  * The three Twilio values, trimmed.
@@ -106,19 +105,31 @@ export function bookingConfirmationText(job: Job, origin: string): string {
   );
 }
 
-/** The morning-after review request, with the referral code, per step 10. */
+/**
+ * The morning-after review request.
+ *
+ * NO REFERRAL OFFER, DELIBERATELY. Step 10 specified the referral code here,
+ * and a carrier rejected the sample for it: "$50 off" is promotional content,
+ * and this campaign is registered as transactional — a booking confirmation
+ * and one post-move follow-up. An incentive inside a transactional message is
+ * a use-case mismatch, and the fix is to take the incentive out rather than
+ * re-register the campaign as marketing, which carries heavier vetting and
+ * stricter consent for no benefit to a two-message-per-move sender.
+ *
+ * Nothing is lost. The link lands on the portal, and the portal has a
+ * referral section with the code and a copy button a few inches below the
+ * review form — so the customer still gets it, on a page where an offer
+ * belongs.
+ *
+ * `job.crew` is the one unbounded field here, which is why the copy is
+ * tighter than it reads: it has to stay inside two segments for a crew name
+ * longer than "Crew A".
+ */
 export function reviewRequestText(job: Job, origin: string): string {
   return toGsm7(
-    // Tightened deliberately. `job.crew` is the one unbounded field in this
-    // message, and with the fuller phrasing a crew name of ordinary length
-    // pushed it to 307 characters — one over the two-segment cap, on every
-    // send. The copy lost a little warmth and gained about thirty characters
-    // of headroom, which is the better trade for a message nobody reads
-    // twice.
     `Flatirons Movers: thanks for moving with us${job.crew ? ` and ${job.crew}` : ""}. ` +
     `A quick review helps more than you'd think: ` +
-    `${origin}/move/${job.id}#review - code ${referralCode(job)} gives ` +
-    `a friend $50 off. ${COMPLIANCE_TAIL}`
+    `${origin}/move/${job.id}#review ${COMPLIANCE_TAIL}`
   );
 }
 

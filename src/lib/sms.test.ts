@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { arrivalWindow } from "./format";
 import type { Job } from "./jobs";
+import { referralCode } from "./jobs";
 import {
   bookingConfirmationText,
   isGsm7,
@@ -47,11 +48,19 @@ describe("message templates", () => {
     expect(text).toContain("No deposit");
   });
 
-  it("review request carries the portal link and the referral code", () => {
+  it("review request carries the portal link and the crew", () => {
     const text = reviewRequestText(job, "https://flatirons.example");
     expect(text).toContain("https://flatirons.example/move/FM-8839#review");
-    expect(text).toContain("FLAT-8839");
     expect(text).toContain("Crew D");
+  });
+
+  it("review request carries no promotional offer", () => {
+    // A carrier rejected this sample for the referral code: "$50 off" is
+    // promotional content, and the campaign is registered as transactional.
+    // The incentive lives on the portal the link lands on, not in the text.
+    const text = reviewRequestText(job, "https://flatirons.example");
+    expect(text).not.toContain(referralCode(job));
+    expect(text).not.toMatch(/\$\d|discount|off\b|free\b|deal|offer/i);
   });
 
   it("review request survives a crewless job", () => {
