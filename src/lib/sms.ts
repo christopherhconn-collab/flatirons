@@ -106,6 +106,22 @@ export function bookingConfirmationText(job: Job, origin: string): string {
 }
 
 /**
+ * The quote a customer was sent after a phone enquiry.
+ *
+ * Transactional, like the other two: it is the reply to something they asked
+ * for. It states a price and a day and links to the quote — no incentive, no
+ * urgency, nothing that would make this a marketing message on a campaign
+ * registered as transactional.
+ */
+export function quoteText(job: Job, origin: string): string {
+  return toGsm7(
+    `Flatirons Movers: your estimate for ${job.date} is ` +
+    `$${job.low.toLocaleString("en-US")}-$${job.high.toLocaleString("en-US")}. ` +
+    `See it and book at ${origin}/quote/${job.id}. ${COMPLIANCE_TAIL}`
+  );
+}
+
+/**
  * The morning-after review request.
  *
  * NO REFERRAL OFFER, DELIBERATELY. Step 10 specified the referral code here,
