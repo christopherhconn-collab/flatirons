@@ -9,9 +9,10 @@
 
 import { describe, expect, it } from "vitest";
 
-import { bookingConfirmationEmail } from "./email";
-import type { Job } from "./jobs";
+import { bookingConfirmationEmail, quoteEmail } from "./email";
+import { type Job, priceRange } from "./jobs";
 import { CONFIG } from "./pricing";
+import { officeJob, quoteFacts } from "./quotes";
 
 const job = {
   id: "FM-8848",
@@ -76,6 +77,75 @@ describe("bookingConfirmationEmail", () => {
   it("escapes customer-supplied values in the HTML", () => {
     const hostile = bookingConfirmationEmail(
       { ...job, to: '"><script>alert(1)</script>' } as Job,
+      ORIGIN,
+    );
+    expect(hostile.html).not.toContain("<script>");
+    expect(hostile.html).toContain("&lt;script&gt;");
+  });
+});
+
+describe("quoteEmail", () => {
+  // Built by the real domain function rather than a cast literal: the email
+  // renders `quoteFacts`, and a hand-written fixture could assert a row the
+  // office's own form would never produce.
+  const quoted = officeJob(
+    {
+      customer: "Dana Doyle",
+      phone: "303.555.0186",
+      email: "d@example.com",
+      size: "2 bed",
+      service: "full",
+      from: "1420 Tennyson St, Denver",
+      to: "Golden, CO 80401",
+      date: "2026-08-22",
+      movers: 3,
+      fromFloor: "Ground",
+      toFloor: "Ground",
+      elevator: false,
+      packing: false,
+      hours: null,
+      windowHour: 8,
+      note: "",
+    },
+    "quote",
+    "FM-8848",
+    Date.UTC(2026, 7, 1),
+  );
+  const email = quoteEmail(quoted, ORIGIN);
+
+  it("leads with the price and the day", () => {
+    expect(email.subject).toBe(
+      `Your estimate — ${priceRange(quoted)}, 2026-08-22`,
+    );
+  });
+
+  it("links the quote page, where the accept button is", () => {
+    expect(email.html).toContain(`${ORIGIN}/quote/FM-8848`);
+    expect(email.text).toContain(`${ORIGIN}/quote/FM-8848`);
+  });
+
+  it("says twice that nothing is held", () => {
+    // The single most misunderstood thing about a quote, and the one that
+    // costs a customer their moving day when they get it wrong.
+    for (const body of [email.text, email.html]) {
+      expect(body).toContain("not a booking");
+      expect(body).toContain("not held");
+    }
+  });
+
+  it("promises no charge today", () => {
+    expect(email.text).toContain("nothing is charged today");
+  });
+
+  it("carries every fact of the quote in the plain text part", () => {
+    for (const [label, value] of quoteFacts(quoted)) {
+      expect(email.text).toContain(`${label}: ${value}`);
+    }
+  });
+
+  it("escapes customer-supplied values in the HTML", () => {
+    const hostile = quoteEmail(
+      { ...quoted, to: '"><script>alert(1)</script>' },
       ORIGIN,
     );
     expect(hostile.html).not.toContain("<script>");

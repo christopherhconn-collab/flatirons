@@ -34,9 +34,11 @@ Routes:
 | `/estimate` | The four-step estimator with the persistent price rail |
 | `/track` | Reference lookup into the portal |
 | `/move/[id]` | The customer's tracking portal |
+| `/quote/[id]` | A quote the office sent, with the button that accepts it |
 | `/login` | Sign-in — magic link for customers, GitHub for staff |
 | `/dispatch` | Staff: the dispatch board — kanban, crew assignment, status machine, routing map |
 | `/office` | Staff: the lead pipeline — search, stage chips, capacity strip, next action |
+| `/office/new` | Staff: enter a move by hand — send a quote, or book it outright |
 | `/tokens` | Design-token reference, for checking against the prototype |
 
 ## Local setup
@@ -202,6 +204,43 @@ from the quotes.
 are reachable by direct POST, not only through our UI, so every field is
 re-checked against its domain there and anything that does not typecheck is
 dropped rather than stored.
+
+## The two ways a job enters the system
+
+Self-service, and by phone. Both end in the same kind of record, priced by the
+same engine.
+
+**Self-service.** The estimator collects a room-by-room inventory and books it
+in one pass. The job is created `unassigned` / `Booked` and the confirmation
+goes out.
+
+**By phone.** `/office/new` is the office's own estimator, deliberately
+coarser: a caller gives a home size and the doors at both ends, not forty
+ticked items, and a form that asked for one would put invented precision on a
+number quoted back down a telephone. It has two endings, chosen by which
+button the office presses:
+
+| | Record | Holds a day | Message |
+| --- | --- | --- | --- |
+| Send the quote | `lead` / `Quoted`, `window: "Not set"` | No | The quote, linking to `/quote/<id>` |
+| Book it now | `unassigned` / `Booked`, chosen window | Yes | The booking confirmation |
+
+The quote is the record that filled `New`, `Survey set` and `Quoted` — three
+pipeline stages that existed in the schema and on the office board and which,
+before this, no code path could reach.
+
+Accepting a quote at `/quote/<id>` promotes it to `unassigned` / `Booked` and
+sends the confirmation, so from the crew's side there is one kind of booked
+job however it arrived. `acceptQuote` returns anything that is not an open
+quote untouched, and the action compares by identity — so a link opened twice,
+or opened after the office booked it by phone, cannot double-book a day or
+send a second confirmation.
+
+`src/lib/quotes.ts` holds all of it and is pure; `src/lib/notify.ts` is the
+one place that decides which of the two messages a customer gets, and reports
+back which channels actually landed. A send never fails the thing it
+announces — but the office board says in as many words when nothing reached
+the customer, because silence is the failure mode that costs a job.
 
 ## What is deliberately not here
 
@@ -385,6 +424,17 @@ Each of these is a decision, not an oversight.
 
 ## Known gaps worth a decision
 
+- **A booked move cannot be edited.** `/office/new` lets the office choose the
+  arrival window when it books, which is the first time that field was ever
+  anything but 8:00–8:30 AM. Nothing can change it — or the date, or the crew
+  size — afterwards. The office's answer today is to cancel and re-enter, which
+  loses the message thread and the checklist. An edit form over `updateJob` is
+  the obvious next piece of the office app.
+- **A quote never expires.** It holds no day, so nothing is lost while it sits
+  there, but a price quoted in March is still acceptable in September at March's
+  rates. `officeJob` stamps `createdAt`; a `validUntil` and a sweep are not
+  written. Decide the window before `CONFIG` is re-tuned, because that is the
+  day old quotes start being wrong.
 - **The quoted range excludes travel — because nothing can measure it yet.**
   `quote()` *can* price travel: pass `miles` and it adds a Travel line from
   `CONFIG.travel` ($45 flat, then $1.15 per loaded mile beyond a 25-mile metro

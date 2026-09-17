@@ -31,6 +31,7 @@ import {
   ROOMS,
   type RoomName,
   catalogItem,
+  clampStatedHours,
   quote,
 } from "./pricing";
 import {
@@ -191,13 +192,7 @@ export function applyPatch(draft: QuoteDraft, patch: EstimatePatch): QuoteDraft 
   }
 
   if (typeof patch.quotedHours === "number") {
-    // Clamped at both ends rather than rejected: the field is a number input
-    // a customer types into, and 0.5 or 99 are typos, not attacks. Quarter
-    // hours because that is how the invoice bills.
-    const hours = Math.round(patch.quotedHours * 4) / 4;
-    next.quotedHours = Number.isFinite(hours)
-      ? Math.min(12, Math.max(CONFIG.laborOnly.minHours, hours))
-      : CONFIG.laborOnly.minHours;
+    next.quotedHours = clampStatedHours(patch.quotedHours);
   }
   if (isRoom(patch.room)) next.room = patch.room;
   if (isCrewSize(patch.movers)) next.movers = patch.movers;

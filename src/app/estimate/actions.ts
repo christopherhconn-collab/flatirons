@@ -15,8 +15,7 @@
 import { redirect } from "next/navigation";
 
 import { siteOrigin } from "@/lib/site-url";
-import { bookingConfirmationEmail, emailEnabled, sendEmail } from "@/lib/email";
-import { bookingConfirmationText, sendSms, smsEnabled } from "@/lib/sms";
+import { notify } from "@/lib/notify";
 
 import {
   type EstimatePatch,
@@ -26,7 +25,7 @@ import {
   firstOpenDate,
 } from "@/lib/estimate";
 import { arrivalWindow, place } from "@/lib/format";
-import type { CustomerTask, Job } from "@/lib/jobs";
+import { type Job, seedTasks } from "@/lib/jobs";
 import { inventoryFor, quote } from "@/lib/pricing";
 import {
   bookedOutDates,
@@ -90,47 +89,6 @@ export async function startEstimate(formData: FormData): Promise<void> {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /** The checklist a new booking seeds, from the move's own shape. */
-function seedTasks(draft: {
-  elevator: boolean;
-  packing: boolean;
-  counts: Record<string, number>;
-}): CustomerTask[] {
-  const tasks: CustomerTask[] = [
-    {
-      label: "Confirm parking for a 26-foot truck",
-      note: "Both ends — permits take a day",
-      done: false,
-    },
-    {
-      label: "Set aside anything you’re taking yourself",
-      note: "Meds, documents, valuables",
-      done: false,
-    },
-  ];
-  if (draft.elevator) {
-    tasks.unshift({
-      label: "Reserve the freight elevator",
-      note: "Most buildings need a two-hour window booked in advance",
-      done: false,
-    });
-  }
-  if (draft.counts["Filing cabinet"]) {
-    tasks.push({
-      label: "Empty the filing cabinet",
-      note: "We can’t move loaded cabinets safely",
-      done: false,
-    });
-  }
-  if (draft.packing) {
-    tasks.push({
-      label: "Leave the cupboards packed as they are",
-      note: "The packing crew works the day before — don’t start without us",
-      done: false,
-    });
-  }
-  return tasks;
-}
-
 /**
  * Book the move.
  *
@@ -221,21 +179,9 @@ export async function bookMove(): Promise<{ error: string } | never> {
   await rememberMove(job.id);
 
   // The confirmation, by both channels the customer gave us. Neither send can
-  // fail the booking — both helpers return false rather than throwing, and
-  // the customer still lands on their portal, which says everything the
-  // confirmation would have.
-  //
-  // Sent together rather than in sequence: they are independent, and a
-  // booking redirect should not wait out two round trips back to back.
-  const origin = siteOrigin();
-  await Promise.all([
-    smsEnabled()
-      ? sendSms(job.phone, bookingConfirmationText(job, origin))
-      : null,
-    emailEnabled()
-      ? sendEmail(job.email, bookingConfirmationEmail(job, origin))
-      : null,
-  ]);
+  // fail the booking — see `notify` — and the customer lands on their portal
+  // regardless, which says everything the confirmation would have.
+  await notify(job, "booking", siteOrigin());
 
   redirect(`/move/${job.id}`);
 }

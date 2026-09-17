@@ -19,8 +19,9 @@
  */
 
 import { money } from "./format";
-import type { Job } from "./jobs";
+import { type Job, priceRange } from "./jobs";
 import { CONFIG } from "./pricing";
+import { quoteFacts } from "./quotes";
 import { ADDRESS, PHONE } from "./site";
 
 /**
@@ -116,7 +117,7 @@ export function bookingConfirmationEmail(job: Job, origin: string): Email {
     `From: ${job.from}`,
     `To: ${job.to}`,
     `Crew: ${job.movers} movers`,
-    `Estimate: ${money(job.low)}–${money(job.high)}`,
+    `Estimate: ${priceRange(job)}`,
     ``,
     `Put a card on file (nothing is charged now):`,
     card,
@@ -146,7 +147,7 @@ export function bookingConfirmationEmail(job: Job, origin: string): Email {
           ["From", job.from],
           ["To", job.to],
           ["Crew", `${job.movers} movers`],
-          ["Estimate", `${money(job.low)}–${money(job.high)}`],
+          ["Estimate", priceRange(job)],
         ]
           .map(
             ([label, value]) =>
@@ -171,6 +172,67 @@ export function bookingConfirmationEmail(job: Job, origin: string): Email {
     text,
     html,
   };
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The quote
+
+   Sent when the office prices a phone enquiry and the customer wants to think
+   about it. Says what it is, what it costs, which day it is for, and — twice,
+   because it is the thing most often misunderstood about a quote — that
+   nothing is held until they accept.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+export function quoteEmail(job: Job, origin: string): Email {
+  const link = `${origin}/quote/${job.id}`;
+  const price = priceRange(job);
+  const rows = quoteFacts(job);
+  const held =
+    "This is an estimate, not a booking. The day is not held until you " +
+    "accept, and nothing is charged today.";
+
+  const text = [
+    `Your estimate from Flatirons Movers.`,
+    ``,
+    ...rows.map(([label, value]) => `${label}: ${value}`),
+    ``,
+    held,
+    ``,
+    `See the full estimate and accept it:`,
+    link,
+    ``,
+    `Questions? Call ${PHONE}.`,
+    `Flatirons Movers · ${ADDRESS} · PUC 00412`,
+  ].join("\n");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:24px;background:#f1efe9;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#16283f">
+  <div style="max-width:520px;margin:0 auto;background:#fbfaf7;border:1px solid rgba(22,40,63,0.12)">
+    <div style="background:#16283f;color:#fbfaf7;padding:22px">
+      <p style="margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#c9d6b4">Flatirons Movers</p>
+      <h1 style="margin:10px 0 0;font-size:26px;line-height:1.1;font-weight:600">Your estimate</h1>
+      <p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#d8d5cc">${escapeHtml(price)} — reference ${escapeHtml(job.id)}</p>
+    </div>
+    <div style="padding:22px">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.5">
+        ${rows
+          .map(
+            ([label, value]) =>
+              `<tr><td style="padding:6px 0;color:rgba(22,40,63,0.6)">${escapeHtml(label)}</td><td style="padding:6px 0;text-align:right;font-weight:600">${escapeHtml(value)}</td></tr>`,
+          )
+          .join("")}
+      </table>
+
+      <a href="${escapeHtml(link)}" style="display:block;margin:22px 0 10px;padding:14px;background:#16283f;color:#fbfaf7;text-align:center;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase">See the estimate</a>
+      <p style="margin:0;font-size:12.5px;line-height:1.5;color:rgba(22,40,63,0.6)">${escapeHtml(held)}</p>
+    </div>
+    <div style="border-top:1px solid rgba(22,40,63,0.12);padding:16px 22px;font-size:11.5px;line-height:1.5;color:rgba(22,40,63,0.6)">
+      Questions? Call ${escapeHtml(PHONE)}.<br>Flatirons Movers · ${escapeHtml(ADDRESS)} · PUC 00412
+    </div>
+  </div>
+</body></html>`;
+
+  return { subject: `Your estimate — ${price}, ${job.date}`, text, html };
 }
 
 /**

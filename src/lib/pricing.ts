@@ -168,6 +168,31 @@ export type HoursMode = "inventory" | "hours";
 
 export const HOURS_MODES: HoursMode[] = ["inventory", "hours"];
 
+/** The longest day anyone may state up front. Past this it is two jobs, or a
+ * conversation — not a number typed into a box. */
+export const MAX_STATED_HOURS = 12;
+
+/**
+ * Clamp a stated hour count to something billable.
+ *
+ * Clamped at both ends rather than rejected: this arrives from a number input
+ * — one a customer types into on the estimator, one the office types into on
+ * the phone — and `0.5` and `99` are typos, not attacks. Quarter hours,
+ * because that is the unit the invoice bills in.
+ *
+ * Shared so that the two ways a job is priced by its hours cannot drift into
+ * disagreeing about what an hour count means.
+ */
+export function clampStatedHours(
+  hours: number,
+  config: PricingConfig = CONFIG,
+): number {
+  const quarters = Math.round(hours * 4) / 4;
+  return Number.isFinite(quarters)
+    ? Math.min(MAX_STATED_HOURS, Math.max(config.laborOnly.minHours, quarters))
+    : config.laborOnly.minHours;
+}
+
 /** True when we bring hands but no truck. */
 export function isLaborOnly(service: ServiceType): boolean {
   return service !== "full";

@@ -8,6 +8,9 @@
  * tested.
  */
 
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { CONFIG, PRESETS, inventoryFor } from "./pricing";
@@ -18,6 +21,7 @@ import {
   arrivalInstant,
   assignCrew,
   cancelJob,
+  priceRange,
   cancellationFor,
   initialsOf,
   invoiceOf,
@@ -288,5 +292,43 @@ describe("cancelJob", () => {
   it("cannot be advanced back onto the board", () => {
     const j = cancelJob(job({ status: "scheduled" }), NOW, 0);
     expect(advanceStatus(j, NOW + 1000)).toBe(j);
+  });
+});
+
+describe("priceRange", () => {
+  it("writes a range when there is one", () => {
+    expect(priceRange({ low: 860, high: 1100 })).toBe("$860–$1,100");
+  });
+
+  it("collapses to one number when the ends agree", () => {
+    // A labour-only job priced from stated hours. `$447–$447` is not a range,
+    // it is a bug wearing a dash — and it was on the office board, the
+    // dispatch strip and the confirmation email before this existed.
+    expect(priceRange({ low: 447, high: 447 })).toBe("$447");
+  });
+
+  it("is the only way a job's price gets written", () => {
+    // Every surface that shows it has to agree. One of them interpolating
+    // `money(job.low)–money(job.high)` by hand is exactly how `$447–$447`
+    // reached the office board, the dispatch strip and the confirmation email
+    // while the estimator alone had it right.
+    //
+    // `jobs.ts` is not in the list because it is where `priceRange` lives —
+    // the one place the two ends are allowed to be printed by hand.
+    const consumers = [
+      "src/app/office/page.tsx",
+      "src/app/dispatch/page.tsx",
+      "src/app/quote/[id]/page.tsx",
+      "src/lib/email.ts",
+      "src/lib/sms.ts",
+      "src/lib/quotes.ts",
+    ];
+    for (const path of consumers) {
+      const source = readFileSync(resolve(path), "utf8");
+      expect({ path, raw: /money\(\w+\.low\)/.test(source) }).toEqual({
+        path,
+        raw: false,
+      });
+    }
   });
 });
