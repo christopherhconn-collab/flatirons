@@ -126,6 +126,9 @@ export function SiteFooter() {
             <Link href="/privacy" className="hover:text-olive-pale">
               Privacy policy
             </Link>
+            <Link href="/terms" className="hover:text-olive-pale">
+              Terms &amp; conditions
+            </Link>
             <a href={PHONE_HREF} className="hover:text-olive-pale">
               {PHONE}
             </a>
