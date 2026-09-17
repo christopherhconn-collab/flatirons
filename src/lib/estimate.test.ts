@@ -17,6 +17,7 @@ import {
   firstOpenDate,
   LEAD_DAYS,
 } from "./estimate";
+import { money } from "./format";
 import { CONFIG, PRESETS, quote } from "./pricing";
 
 const TODAY = "2026-08-15";
@@ -338,5 +339,91 @@ describe("choosing a service", () => {
       service: "helicopter" as never,
     });
     expect(patched.service).toBe("full");
+  });
+});
+
+describe("stating the hours instead of counting items", () => {
+  const ctx = { bookedOut: [], today: "2026-09-20" };
+  const laborDraft = () => applyPatch(draft(), { service: "unloading" });
+
+  it("is offered for labour only and nowhere else", () => {
+    expect(buildView(laborDraft(), ctx).canStateHours).toBe(true);
+    expect(buildView(draft(), ctx).canStateHours).toBe(false);
+    // A full move is priced from what is being moved. Letting someone name
+    // the hours for one is letting them name the price of a job unseen.
+    expect(applyPatch(draft(), { hoursMode: "hours" }).hoursMode).toBe(
+      "inventory",
+    );
+  });
+
+  it("clamps to the minimum and to the quarter hour", () => {
+    const set = (quotedHours: number) =>
+      applyPatch(applyPatch(laborDraft(), { hoursMode: "hours" }), {
+        quotedHours,
+      }).quotedHours;
+    expect(set(0.5)).toBe(CONFIG.laborOnly.minHours);
+    expect(set(3.1)).toBe(3);
+    expect(set(3.13)).toBe(3.25);
+    expect(set(999)).toBe(12);
+  });
+
+  it("does not price the preset inventory a draft starts with", () => {
+    // Every draft opens carrying a 2-bed preset, television included. Without
+    // this a customer who said "three hours of unloading" and never opened
+    // step 2 would be quoted a $40 crate for a set they never mentioned — and
+    // the estimator tells them, in as many words, that items do not change a
+    // stated-hours estimate.
+    const stated = applyPatch(
+      applyPatch(laborDraft(), { hoursMode: "hours" }),
+      { quotedHours: 3 },
+    );
+    const q = quote({
+      counts: stated.counts,
+      movers: stated.movers,
+      service: stated.service,
+      manualHours: 3,
+    });
+    expect(Object.keys(stated.counts).length).toBeGreaterThan(0);
+    expect(q.extras).toEqual([]);
+    expect(q.low).toBe(3 * CONFIG.laborOnly.ratePerHour);
+  });
+
+  it("books without an inventory", () => {
+    // Demanding items as well would demand the work the mode exists to skip.
+    const stated = applyPatch(
+      applyPatch(
+        applyPatch(applyPatch(laborDraft(), { hoursMode: "hours" }), {
+          quotedHours: 3,
+        }),
+        { name: "Dana Doyle", phone: "303.555.0186" },
+      ),
+      { email: "d@example.com" },
+    );
+    const v = buildView(stated, ctx);
+    expect(v.blockedReason).toBeNull();
+    expect(v.priceRange).toBe(money(3 * CONFIG.laborOnly.ratePerHour));
+  });
+
+  it("quotes one number, not a range", () => {
+    // The range is our uncertainty about how long a move takes. The customer
+    // named it, so there is none to express.
+    const q = quote({
+      counts: {},
+      movers: 2,
+      service: "unloading",
+      manualHours: 3,
+    });
+    expect(q.low).toBe(q.high);
+    expect(q.hours).toBe(3);
+  });
+
+  it("is dropped when the service goes back to a full move", () => {
+    const stated = applyPatch(
+      applyPatch(laborDraft(), { hoursMode: "hours" }),
+      { quotedHours: 5 },
+    );
+    const back = applyPatch(stated, { service: "full" });
+    expect(back.hoursMode).toBe("inventory");
+    expect(back.quotedHours).toBeNull();
   });
 });

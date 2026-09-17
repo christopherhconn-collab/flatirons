@@ -7,7 +7,7 @@ import { RouteMap } from "@/components/route-map";
 import { authEnabled, requireStaffAccess } from "@/lib/auth";
 import { dateLabel, money } from "@/lib/format";
 import type { Job } from "@/lib/jobs";
-import { cancellationFor, invoiceOf, isLive } from "@/lib/jobs";
+import { cancellationFor, invoiceOf, isLive, priceRange } from "@/lib/jobs";
 import { todayISO } from "@/lib/session";
 import {
   assignedToday,
@@ -126,7 +126,7 @@ function JobCard({
         {complete
           ? ` · ${(job.hours ?? 0).toFixed(1)} hrs · ${money(invoiceOf(job).total)}`
           : job.low
-            ? ` · ${money(job.low)}–${money(job.high)}`
+            ? ` · ${priceRange(job)}`
             : ""}
       </p>
 

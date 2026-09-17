@@ -104,6 +104,10 @@ model Job {
   /// labour-only halves fix the crew at two and the minimum at two hours,
   /// and each has only one address that means anything.
   service   String  @default("full")
+  /// Hours the customer chose themselves instead of an inventory, on a
+  /// labour-only job. Null means the estimate came from what is being moved.
+  /// The crew needs this: a manual-hours booking may carry no inventory.
+  quotedHours Float?
 
   /// Set when the crew arrives on site, cleared when the job closes out.
   clockIn  DateTime?
@@ -252,6 +256,9 @@ model QuoteDraft {
   packing     Boolean @default(false)
   /// See the note on the Job column.
   service     String  @default("full")
+  /// "inventory" or "hours" — which way this draft is being priced.
+  hoursMode   String  @default("inventory")
+  quotedHours Float?
   counts      Json
 
   name  String @default("")

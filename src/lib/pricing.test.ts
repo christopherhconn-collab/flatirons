@@ -5,10 +5,12 @@ import { describe, expect, it } from "vitest";
 import {
   CATALOG_ITEMS,
   CONFIG,
+  MAX_STATED_HOURS,
   DEFAULT_CREW,
   HOME_SIZES,
   PRESETS,
   catalogItem,
+  clampStatedHours,
   inventoryFor,
   invoiceFor,
   quote,
@@ -570,5 +572,45 @@ describe("labour only", () => {
     expect(before.movers).toBe(3);
     expect(before.rate).toBe(CONFIG.rates[3]);
     expect(before.hours).toBeGreaterThanOrEqual(CONFIG.minHours);
+  });
+});
+
+describe("clampStatedHours", () => {
+  it("bills in quarter hours", () => {
+    expect(clampStatedHours(3.1)).toBe(3);
+    expect(clampStatedHours(3.2)).toBe(3.25);
+    expect(clampStatedHours(3.9)).toBe(4);
+  });
+
+  it("clamps typos at both ends rather than rejecting them", () => {
+    // A number input a customer types into, and the office after them. `0.5`
+    // and `99` are mistakes, not attacks.
+    expect(clampStatedHours(0.5)).toBe(CONFIG.laborOnly.minHours);
+    expect(clampStatedHours(-4)).toBe(CONFIG.laborOnly.minHours);
+    expect(clampStatedHours(99)).toBe(MAX_STATED_HOURS);
+  });
+
+  it("treats garbage as the minimum, not the maximum", () => {
+    // `Number("")` is NaN and `Number("1e999")` is Infinity — both reachable
+    // from a text field. Neither is a number of hours anyone meant, so both
+    // land on the cheapest defensible answer rather than on a twelve-hour
+    // day nobody asked for.
+    expect(clampStatedHours(Number.NaN)).toBe(CONFIG.laborOnly.minHours);
+    expect(clampStatedHours(Number.POSITIVE_INFINITY)).toBe(
+      CONFIG.laborOnly.minHours,
+    );
+  });
+
+  it("is the one rule both entry points use", () => {
+    // The estimator and the office form both clamp through this function. If
+    // one grows its own copy, a customer can be quoted an hour count the
+    // other would have refused — same job, two prices.
+    const sources = [
+      readFileSync("src/lib/estimate.ts", "utf8"),
+      readFileSync("src/lib/quotes.ts", "utf8"),
+    ];
+    for (const source of sources) {
+      expect(source).toContain("clampStatedHours");
+    }
   });
 });

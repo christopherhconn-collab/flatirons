@@ -21,7 +21,7 @@
  * form-encoded, basic auth. A dependency is not worth one endpoint.
  */
 
-import type { Job } from "./jobs";
+import { type Job, priceRange } from "./jobs";
 
 /**
  * The three Twilio values, trimmed.
@@ -102,6 +102,26 @@ export function bookingConfirmationText(job: Job, origin: string): string {
     `Flatirons Movers: you're booked - ${job.id}, ${job.date}, ` +
     `arrival ${job.window}. Track your move and put a card on file at ` +
     `${origin}/move/${job.id}. No deposit; we bill after the move. ${COMPLIANCE_TAIL}`
+  );
+}
+
+/**
+ * The quote the office sent after a phone enquiry.
+ *
+ * Transactional, like the other two: the reply to something the customer just
+ * asked for on the phone. It states a price, a day and a link — no incentive,
+ * no urgency, nothing that would make this a marketing message on a campaign
+ * registered as transactional.
+ *
+ * It says the day is not held, because that is the single thing a customer is
+ * most likely to get wrong about a quote, and a text is what they will still
+ * have on the phone in their hand a week later.
+ */
+export function quoteText(job: Job, origin: string): string {
+  return toGsm7(
+    `Flatirons Movers: your estimate for ${job.date} is ${priceRange(job)}. ` +
+    `The day is not held until you accept: ${origin}/quote/${job.id}. ` +
+    `${COMPLIANCE_TAIL}`
   );
 }
 

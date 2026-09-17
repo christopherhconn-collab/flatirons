@@ -92,19 +92,6 @@ export function staffEmails(): ReadonlySet<string> {
 }
 
 /**
- * The gate. Call it before rendering `/move/[id]` and at the top of every
- * Server Function that mutates a job — actions are reachable by direct POST,
- * so the page guarding itself protects nothing.
- *
- * Returns the job on success, so callers replace their own `getJob`.
- *
- *   Signed out            → redirect to /login, carrying the way back
- *   Signed in, wrong user → 404, indistinguishable from a reference that
- *                           does not exist — a guessed reference must not
- *                           confirm itself by behaving differently
- *   Auth not configured   → open, prototype behavior (see header comment)
- */
-/**
  * The gate on the staff surfaces — the dispatch board and the office
  * pipeline. Same contract as `requireMoveAccess`, applied to a whole page:
  *
@@ -122,14 +109,34 @@ export async function requireStaffAccess(nextPath: string): Promise<void> {
   if (!staffEmails().has(email.trim().toLowerCase())) notFound();
 }
 
-export async function requireMoveAccess(id: string): Promise<Job> {
+/**
+ * The gate. Call it before rendering `/move/[id]` and at the top of every
+ * Server Function that mutates a job — actions are reachable by direct POST,
+ * so the page guarding itself protects nothing.
+ *
+ * Returns the job on success, so callers replace their own `getJob`.
+ *
+ *   Signed out            → redirect to /login, carrying the way back
+ *   Signed in, wrong user → 404, indistinguishable from a reference that
+ *                           does not exist — a guessed reference must not
+ *                           confirm itself by behaving differently
+ *   Auth not configured   → open, prototype behavior (see header comment)
+ *
+ * `nextPath` is where /login sends them back to. It defaults to the portal
+ * and is overridden by `/quote/[id]`, which is the same job seen from
+ * before it was booked.
+ */
+export async function requireMoveAccess(
+  id: string,
+  nextPath = `/move/${id}`,
+): Promise<Job> {
   const job = await getJob(id);
   if (!job) notFound();
 
   if (!authEnabled()) return job;
 
   const email = await sessionEmail();
-  if (!email) redirect(`/login?next=${encodeURIComponent(`/move/${id}`)}`);
+  if (!email) redirect(`/login?next=${encodeURIComponent(nextPath)}`);
   if (!canOpenMove(email, job.email, staffEmails())) notFound();
 
   return job;

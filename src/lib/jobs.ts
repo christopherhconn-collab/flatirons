@@ -127,6 +127,9 @@ export type Job = {
   /** What we are hired to do — see `ServiceType`. A labour-only half fixes
    * the crew at two and the minimum at two hours, and has only one address. */
   service: ServiceType;
+  /** Hours the customer named on a labour-only job; null when derived from
+   * an inventory. The crew needs it: such a booking may carry no items. */
+  quotedHours: number | null;
   /** Epoch ms of arrival on site. Null unless the clock is running. */
   clockIn: number | null;
   /** Billed hours, set when the job closes out. */
@@ -171,6 +174,25 @@ export type Crew = { name: string; roster: string; size: CrewSize };
    Derived views
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * The job's price, as one string.
+ *
+ * Collapses to a single number when the two ends agree, which they do on a
+ * labour-only job priced from stated hours: the range expresses *our*
+ * uncertainty about how long a move takes, and a customer who named the hours
+ * left none to express. Printing `$447–$447` is not a range, it is a bug
+ * wearing a dash.
+ *
+ * Every surface that shows a job's money goes through here — the office board,
+ * the dispatch strip, the portal timeline, the confirmation email and the
+ * quote — so none of them can disagree about how a price is written.
+ */
+export function priceRange(job: Pick<Job, "low" | "high">): string {
+  return job.low === job.high
+    ? money(job.low)
+    : `${money(job.low)}\u2013${money(job.high)}`;
+}
+
 export function loadedCount(job: Job): number {
   return job.items.filter((i) => i.done).length;
 }
@@ -208,7 +230,7 @@ export function timelineFor(job: Job): TimelineStage[] {
   return [
     {
       label: "Estimate accepted",
-      note: `${money(job.low)}–${money(job.high)} range locked`,
+      note: `${priceRange(job)} range locked`,
       at: 1,
     },
     {
@@ -426,4 +448,53 @@ export function cancelJob(job: Job, now: number, feeCents: number): Job {
       },
     ],
   };
+}
+
+/**
+ * The checklist a booked move opens with.
+ *
+ * Shared by the two ways a booking is made — the customer's estimator and the
+ * office's form — so that a move booked over the phone arrives carrying the
+ * same preparation as one booked on the site. A quote gets none of it: the
+ * deadlines are all relative to a day nobody has reserved yet.
+ */
+export function seedTasks(move: {
+  elevator: boolean;
+  packing: boolean;
+  counts: ItemCounts;
+}): CustomerTask[] {
+  const tasks: CustomerTask[] = [
+    {
+      label: "Confirm parking for a 26-foot truck",
+      note: "Both ends — permits take a day",
+      done: false,
+    },
+    {
+      label: "Set aside anything you’re taking yourself",
+      note: "Meds, documents, valuables",
+      done: false,
+    },
+  ];
+  if (move.elevator) {
+    tasks.unshift({
+      label: "Reserve the freight elevator",
+      note: "Most buildings need a two-hour window booked in advance",
+      done: false,
+    });
+  }
+  if (move.counts["Filing cabinet"]) {
+    tasks.push({
+      label: "Empty the filing cabinet",
+      note: "We can’t move loaded cabinets safely",
+      done: false,
+    });
+  }
+  if (move.packing) {
+    tasks.push({
+      label: "Leave the cupboards packed as they are",
+      note: "The packing crew works the day before — don’t start without us",
+      done: false,
+    });
+  }
+  return tasks;
 }

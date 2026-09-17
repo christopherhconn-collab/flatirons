@@ -13,7 +13,9 @@
 import {
   CATALOG,
   CONFIG,
+  HOURS_MODES,
   SERVICE_TYPES,
+  type HoursMode,
   type ServiceType,
   hasDestination,
   hasOrigin,
@@ -29,6 +31,7 @@ import {
   ROOMS,
   type RoomName,
   catalogItem,
+  clampStatedHours,
   quote,
 } from "./pricing";
 import {
@@ -63,6 +66,8 @@ export function emptyDraft(id: string, ref: string): QuoteDraft {
     movers: DEFAULT_CREW["2 bed"],
     packing: false,
     service: "full",
+    hoursMode: "inventory",
+    quotedHours: null,
     counts: { ...PRESETS["2 bed"] },
     name: "",
     email: "",
@@ -88,6 +93,8 @@ export type EstimatePatch = {
   movers?: number;
   packing?: boolean;
   service?: ServiceType;
+  hoursMode?: HoursMode;
+  quotedHours?: number;
   name?: string;
   email?: string;
   phone?: string;
@@ -162,6 +169,30 @@ export function applyPatch(draft: QuoteDraft, patch: EstimatePatch): QuoteDraft 
     // crew should not drive to.
     if (!hasOrigin(service)) next.from = "";
     if (!hasDestination(service)) next.to = "";
+    // Naming your own hours is a labour-only affordance. Going back to a full
+    // move drops it, so a draft cannot carry a stated duration for a job
+    // priced from its inventory.
+    if (!isLaborOnly(service)) {
+      next.hoursMode = "inventory";
+      next.quotedHours = null;
+    }
+  }
+
+  if (HOURS_MODES.includes(patch.hoursMode as HoursMode)) {
+    const mode = patch.hoursMode as HoursMode;
+    // Only offered for labour only: a full move is priced from what is being
+    // moved, and letting someone name the hours for one is letting them name
+    // the price of a job we have not seen.
+    if (isLaborOnly(next.service)) {
+      next.hoursMode = mode;
+      if (mode === "hours" && next.quotedHours === null) {
+        next.quotedHours = CONFIG.laborOnly.minHours;
+      }
+    }
+  }
+
+  if (typeof patch.quotedHours === "number") {
+    next.quotedHours = clampStatedHours(patch.quotedHours);
   }
   if (isRoom(patch.room)) next.room = patch.room;
   if (isCrewSize(patch.movers)) next.movers = patch.movers;
@@ -262,6 +293,12 @@ export type EstimateView = {
   hasDestination: boolean;
   /** What labour-only costs, for the option's own label. */
   laborOnlyNote: string;
+  /** Whether this draft is priced from an inventory or from stated hours. */
+  hoursMode: HoursMode;
+  /** The stated hours, when that is the mode. */
+  quotedHours: number;
+  /** True when the customer may choose between the two. */
+  canStateHours: boolean;
   calendar: CalendarView;
   confirmRows: { label: string; value: string }[];
   bookNote: string;
@@ -359,15 +396,19 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     elevator: draft.elevator,
     packing: draft.packing,
     service: draft.service,
+    manualHours:
+      draft.hoursMode === "hours" ? (draft.quotedHours ?? undefined) : undefined,
   });
   const hasItems = priced.units > 0;
+  const statedHours =
+    isLaborOnly(draft.service) && draft.hoursMode === "hours";
   const date = draft.date || firstOpenDate(context.today, context.bookedOut);
 
   const priceLines: PriceLine[] = [
     { label: "Labor & truck", value: `$${priced.rate}/hr` },
     {
       label: "Estimated hours",
-      value: hasItems ? `${priced.hours.toFixed(1)} hrs` : "—",
+      value: hasItems || statedHours ? `${priced.hours.toFixed(1)} hrs` : "—",
     },
     ...priced.extras.map((extra) => ({
       label: extra.label,
@@ -434,10 +475,26 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     };
   });
 
-  const range = hasItems ? `${money(priced.low)}–${money(priced.high)}` : "Add items";
+  const range =
+    statedHours && (draft.quotedHours ?? 0) > 0
+      // One number, not a range: see the note on `Quote.low`.
+      ? money(priced.low)
+      : hasItems
+        ? `${money(priced.low)}–${money(priced.high)}`
+        : "Add items";
 
-  const blockedReason = !hasItems
-    ? "Add a few items first — step 2."
+  // Stated hours are an inventory's worth of information for a labour-only
+  // job: the price is settled and the crew knows how long to allow. Demanding
+  // items as well would be demanding the work the mode exists to skip.
+  const pricedByHours = statedHours && (draft.quotedHours ?? 0) > 0;
+
+  const blockedReason = !hasItems && !pricedByHours
+    ? // Only mention the other way out when it is on offer. Stating hours is
+      // a labour-only affordance, and naming it on a full move would send the
+      // customer looking for a control that is not there.
+      isLaborOnly(draft.service)
+      ? "Add a few items first — step 2, or tell us how many hours you need."
+      : "Add a few items first — step 2."
     : !draft.name.trim()
       ? "Add your name so we know who to call."
       : !draft.phone.trim()
@@ -483,6 +540,9 @@ export function buildView(draft: QuoteDraft, context: ViewContext): EstimateView
     laborOnly: isLaborOnly(draft.service),
     hasOrigin: hasOrigin(draft.service),
     hasDestination: hasDestination(draft.service),
+    hoursMode: draft.hoursMode,
+    quotedHours: draft.quotedHours ?? CONFIG.laborOnly.minHours,
+    canStateHours: isLaborOnly(draft.service),
     laborOnlyNote:
       `${CONFIG.laborOnly.movers} movers, no truck · ` +
       `$${CONFIG.laborOnly.ratePerHour}/hr · ` +

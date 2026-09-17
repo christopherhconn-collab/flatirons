@@ -4,11 +4,14 @@ import Link from "next/link";
 import { LogoLockup } from "@/components/logo";
 import { authEnabled, requireStaffAccess } from "@/lib/auth";
 import { dateLabel, money } from "@/lib/format";
-import type { Job } from "@/lib/jobs";
+import { type Job, priceRange } from "@/lib/jobs";
+import { type Channel, channelLabel } from "@/lib/notify";
 import { todayISO } from "@/lib/session";
 import { nextAction, officeStats, weekCapacity, assignedToday } from "@/lib/staff";
 import { listCrews, listJobs } from "@/lib/store";
+import { resendableNotice } from "@/lib/quotes";
 import { advanceJobStage } from "../dispatch/actions";
+import { resendNotice } from "./actions";
 
 export const metadata: Metadata = {
   title: "Office — Flatirons Movers",
@@ -49,6 +52,11 @@ export default async function OfficePage(props: PageProps<"/office">) {
   const filter = (FILTERS as readonly string[]).includes(rawFilter)
     ? rawFilter
     : "All";
+  // What just happened, carried back from /office/new or from a re-send, so
+  // the board can say so — and, more to the point, say when the customer was
+  // NOT told. A quote nobody received is worse than no quote at all: the
+  // board looks like a customer considering it, and nobody chases.
+  const notice = bannerFor(params);
 
   const [jobs, crews] = await Promise.all([listJobs(), listCrews()]);
   const today = todayISO();
@@ -88,6 +96,12 @@ export default async function OfficePage(props: PageProps<"/office">) {
             />
           </form>
           <Link
+            href="/office/new"
+            className="bg-olive text-paper interactive px-3 py-2 text-[10.5px] leading-none font-medium tracking-[0.14em] uppercase"
+          >
+            New move
+          </Link>
+          <Link
             href="/dispatch"
             className="border-line-strong text-ink border px-3 py-2 text-[10.5px] leading-none font-medium tracking-[0.14em] uppercase"
           >
@@ -105,6 +119,39 @@ export default async function OfficePage(props: PageProps<"/office">) {
           )}
         </div>
       </header>
+
+      {notice && (
+        <p
+          role="status"
+          className="border-line-strong bg-olive-tint text-ink mb-4 border p-3 text-[13.5px] leading-[1.55]"
+        >
+          <strong className="font-semibold">{notice.id}</strong>{" "}
+          {notice.verb}
+          {notice.sent ? (
+            <> — {notice.sent}.</>
+          ) : (
+            <>
+              {" — "}
+              <strong className="font-semibold">
+                but nothing reached the customer.
+              </strong>{" "}
+              Email and SMS are off, or no address and no mobile were given.
+              Tell them yourself.
+            </>
+          )}{" "}
+          <Link href={notice.href} className="underline">
+            Open it
+          </Link>
+          {notice.booked && (
+            <>
+              {" · "}
+              <Link href="/dispatch" className="underline">
+                Assign a crew
+              </Link>
+            </>
+          )}
+        </p>
+      )}
 
       <div className="grid grid-cols-[1fr_300px] gap-5 max-lg:grid-cols-1">
         {/* ── Left: filter, table, stats ─────────────────────────────────── */}
@@ -131,8 +178,8 @@ export default async function OfficePage(props: PageProps<"/office">) {
             ))}
           </div>
 
-          <div className="bg-grid border-line-strong grid grid-cols-[1.4fr_1.6fr_0.9fr_0.9fr_0.8fr] gap-px border max-md:hidden">
-            {["Customer", "Move", "Date", "Estimate", "Stage"].map((h) => (
+          <div className="bg-grid border-line-strong grid grid-cols-[1.3fr_1.5fr_0.85fr_0.9fr_0.75fr_0.7fr] gap-px border max-md:hidden">
+            {["Customer", "Move", "Date", "Estimate", "Stage", "Send"].map((h) => (
               <div
                 key={h}
                 className="bg-surface text-ink px-3 py-2.5 text-[10.5px] leading-none font-semibold tracking-[0.14em] uppercase"
@@ -154,8 +201,11 @@ export default async function OfficePage(props: PageProps<"/office">) {
           </div>
           {rows.length === 0 && (
             <p className="border-line text-ink-muted mt-3 border border-dashed p-6 text-center text-[13px]">
-              No leads match{q ? ` “${q}”` : ""} — clear the search or add one
-              by phone: every call is a lead.
+              No leads match{q ? ` “${q}”` : ""} — clear the search, or{" "}
+              <Link href="/office/new" className="underline">
+                add one by phone
+              </Link>
+              : every call is a lead.
             </p>
           )}
 
@@ -281,6 +331,51 @@ export default async function OfficePage(props: PageProps<"/office">) {
   );
 }
 
+/**
+ * The one-line banner, read out of the query string.
+ *
+ * Both write paths land back here — the form on `/office/new` and the re-send
+ * button on a row — and both say the same two things: which job, and whether
+ * the customer actually heard about it. `id` is pattern-checked because it
+ * goes straight into a link.
+ */
+function bannerFor(params: Record<string, string | string[] | undefined>): {
+  id: string;
+  verb: string;
+  href: string;
+  booked: boolean;
+  sent: string | null;
+} | null {
+  const created = typeof params.new === "string" ? params.new : null;
+  const resent = typeof params["sent-to"] === "string" ? params["sent-to"] : null;
+  const id = created ?? resent;
+  if (!id || !/^FM-\d+$/.test(id)) return null;
+
+  // `/office/new` reports the button that was pressed; a re-send reports the
+  // message it chose. Both arrive as `as`, and both say the same thing about
+  // where the job now is.
+  const booked = params.as === "book" || params.as === "booking";
+  const sent = channelLabel(
+    (typeof params.sent === "string" ? params.sent.split(",") : []).filter(
+      (c): c is Channel => c === "email" || c === "text",
+    ),
+  );
+
+  return {
+    id,
+    verb: created
+      ? booked
+        ? "is booked"
+        : "has been quoted"
+      : booked
+        ? "— confirmation re-sent"
+        : "— quote re-sent",
+    href: booked ? `/move/${id}` : `/quote/${id}`,
+    booked,
+    sent,
+  };
+}
+
 /** One table row (or stacked card on mobile). */
 function Job({ job, stacked = false }: { job: Job; stacked?: boolean }) {
   const cells = (
@@ -298,9 +393,9 @@ function Job({ job, stacked = false }: { job: Job; stacked?: boolean }) {
         {job.date ? dateLabel(job.date) : "Not set"}
       </div>
       <div className={`text-ink-body text-[12.5px] ${stacked ? "mt-1" : "bg-paper px-3 py-2.5"}`}>
-        {job.low ? `${money(job.low)}–${money(job.high)}` : "—"}
+        {job.low ? priceRange(job) : "—"}
       </div>
-      <div className={stacked ? "mt-2" : "bg-paper px-3 py-2.5"}>
+      <div className={stacked ? "mt-2 flex gap-2" : "bg-paper px-3 py-2.5"}>
         <form action={advanceJobStage}>
           <input type="hidden" name="id" value={job.id} />
           <button
@@ -317,8 +412,45 @@ function Job({ job, stacked = false }: { job: Job; stacked?: boolean }) {
             {job.stage}
           </button>
         </form>
+        {/* On mobile the two controls share the row; on the table they are
+            separate columns, and this second form is rendered below. */}
+        {stacked && <Resend job={job} />}
       </div>
+      {!stacked && (
+        <div className="bg-paper px-3 py-2.5">
+          <Resend job={job} />
+        </div>
+      )}
     </>
   );
   return cells;
+}
+
+/**
+ * Send the customer their quote or confirmation again.
+ *
+ * Rendered only where there is something true to send — `resendableNotice`
+ * decides, and returns null for a finished or cancelled move, where "you're
+ * booked" would be a lie. The label says which message it is, because those
+ * are the words the office will use on the phone.
+ */
+function Resend({ job }: { job: Job }) {
+  const notice = resendableNotice(job);
+  if (!notice) return <span className="text-ink-disabled text-[12px]">—</span>;
+  return (
+    <form action={resendNotice}>
+      <input type="hidden" name="id" value={job.id} />
+      <button
+        type="submit"
+        title={
+          notice === "quote"
+            ? "Email and text the quote again"
+            : "Email and text the booking confirmation again"
+        }
+        className="border-line-strong text-ink-muted interactive border px-2 py-1.5 text-[10px] leading-none font-medium tracking-[0.1em] uppercase"
+      >
+        {notice === "quote" ? "Quote" : "Confirm"}
+      </button>
+    </form>
+  );
 }

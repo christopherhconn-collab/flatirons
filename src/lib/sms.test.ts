@@ -6,6 +6,7 @@ import { referralCode } from "./jobs";
 import {
   bookingConfirmationText,
   isGsm7,
+  quoteText,
   reviewRequestText,
   toE164,
 } from "./sms";
@@ -48,6 +49,39 @@ describe("message templates", () => {
     expect(text).toContain("No deposit");
   });
 
+  it("quote carries the price, the day and the accept link", () => {
+    const text = quoteText({ ...job, low: 860, high: 1100 } as Job, "https://flatirons.example");
+    expect(text).toContain("$860-$1,100");
+    expect(text).toContain("2026-08-16");
+    expect(text).toContain("https://flatirons.example/quote/FM-8839");
+    // The single thing a customer is most likely to get wrong about a quote,
+    // and the reason this message exists at all rather than just the email.
+    expect(text).toContain("not held");
+  });
+
+  it("quote states one price when the hours were stated", () => {
+    // No range to express: the customer named the hours, so there is no
+    // uncertainty of ours left to quote around.
+    const text = quoteText(
+      { ...job, low: 447, high: 447, quotedHours: 3 } as Job,
+      "https://flatirons.example",
+    );
+    expect(text).toContain("is $447.");
+    expect(text).not.toContain("-$");
+  });
+
+  it("quote carries no offer or urgency", () => {
+    // Same reason the review request carries none: the campaign is registered
+    // transactional, and an incentive or a deadline inside one of its messages
+    // is a use-case mismatch a carrier will flag.
+    const text = quoteText({ ...job, low: 860, high: 1100 } as Job, "https://x.example");
+    // Word boundaries, not substrings: "off" lives inside "office", and a
+    // guard that fails on the company's own address is a guard someone deletes.
+    for (const pattern of [/\boff\b/i, /\bsave\b/i, /\bexpires?\b/i, /\blimited\b/i, /%/]) {
+      expect(text).not.toMatch(pattern);
+    }
+  });
+
   it("review request carries the portal link and the crew", () => {
     const text = reviewRequestText(job, "https://flatirons.example");
     expect(text).toContain("https://flatirons.example/move/FM-8839#review");
@@ -88,6 +122,13 @@ describe("SMS compliance and cost", () => {
   const bodies = {
     "booking confirmation": bookingConfirmationText(job, "https://x.example"),
     "review request": reviewRequestText(job, "https://x.example"),
+    // Worst case on purpose: the real production origin, and a five-figure
+    // range, which is the widest the price can print. A quote priced at
+    // `$860–$1,100` would pass a bound this one has to clear.
+    quote: quoteText(
+      { ...job, low: 12_345, high: 14_999 } as Job,
+      "https://www.flatironsmoves.com",
+    ),
   };
 
   for (const [name, body] of Object.entries(bodies)) {
