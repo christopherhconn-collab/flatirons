@@ -9,9 +9,10 @@
 
 import { describe, expect, it } from "vitest";
 
-import { bookingConfirmationEmail, quoteEmail } from "./email";
+import { bookingConfirmationEmail, fromAddress, quoteEmail } from "./email";
 import { type Job, priceRange } from "./jobs";
 import { CONFIG } from "./pricing";
+import { CANONICAL_ORIGIN } from "./site-url";
 import { officeJob, quoteFacts } from "./quotes";
 
 const job = {
@@ -150,5 +151,30 @@ describe("quoteEmail", () => {
     );
     expect(hostile.html).not.toContain("<script>");
     expect(hostile.html).toContain("&lt;script&gt;");
+  });
+});
+
+describe("the From address", () => {
+  it("is on the domain the site actually lives on", () => {
+    // It was `flatironsmovers.com` — with an r — against a company that owns
+    // `flatironsmoves.com`. Resend rejects a From on an unverified domain, so
+    // the symptom is not an error anywhere: `sendEmail` returns false and the
+    // customer simply never hears. Derived from CANONICAL_ORIGIN now, and
+    // this fails the moment the two come apart.
+    delete process.env.RESEND_FROM;
+    const host = new URL(CANONICAL_ORIGIN).hostname.replace(/^www\./, "");
+    expect(fromAddress()).toContain(`@${host}`);
+    expect(fromAddress()).not.toContain("flatironsmovers.com");
+  });
+
+  it("is overridden by RESEND_FROM", () => {
+    process.env.RESEND_FROM = "Flatirons <hello@example.com>";
+    expect(fromAddress()).toBe("Flatirons <hello@example.com>");
+    delete process.env.RESEND_FROM;
+  });
+
+  it("addresses a mailbox, not a website", () => {
+    // `www.` is for browsers. Resend verifies the bare domain.
+    expect(fromAddress()).not.toContain("@www.");
   });
 });
