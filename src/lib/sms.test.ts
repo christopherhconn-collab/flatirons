@@ -93,16 +93,34 @@ describe("SMS compliance and cost", () => {
       expect(isGsm7(body)).toBe(true);
     });
 
-    it(`${name} tells the recipient how to opt out`, () => {
-      // Promised to the carriers in the A2P 10DLC campaign registration, and
-      // compared against live traffic. Dropping it risks the campaign.
-      expect(body).toContain("Reply STOP to opt out.");
+    it(`${name} carries the full compliance tail`, () => {
+      // All three are promised to the carriers in the A2P 10DLC campaign
+      // registration, and the registered samples are compared against live
+      // traffic. A message carrying some of them is the one that gets
+      // flagged, so they are asserted together.
+      expect(body).toContain("Msg&data rates may apply.");
+      expect(body).toContain("Reply HELP for help, STOP to opt out.");
     });
   }
 
+  it("stays inside two segments for the longest realistic crew name", () => {
+    // The review request has ~20 characters of headroom, and the only
+    // variable-length field in it is the crew name. A fixture using "Crew A"
+    // proves nothing about a crew called "Commercial Team Two" — which is
+    // exactly how the en-dash bug got past its own test.
+    const longest = reviewRequestText(
+      { ...job, crew: "the Commercial Team Two crew" } as Job,
+      "https://www.flatironsmoves.com",
+    );
+    expect(isGsm7(longest)).toBe(true);
+    expect(longest.length).toBeLessThanOrEqual(306);
+  });
+
   it("keeps both messages inside two segments", () => {
     // Not a correctness bound, a cost one: every customer gets both, so a
-    // third segment is a 50% rise in the per-customer cost of texting.
+    // third segment is a 50% rise in the per-customer cost of texting. The
+    // compliance tail was sized to fit here — spelling out "Message and data"
+    // instead of "Msg&data" pushes the review request over.
     for (const body of Object.values(bodies)) {
       expect(body.length).toBeLessThanOrEqual(306);
     }

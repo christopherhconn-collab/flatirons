@@ -74,7 +74,26 @@ export function toE164(raw: string): string | null {
  * no error we can see.
  */
 
-const OPT_OUT = "Reply STOP to opt out.";
+/**
+ * The compliance tail every message carries.
+ *
+ * Five elements are expected on a message that confirms an opt-in: the brand,
+ * what the recipient signed up for, that rates apply, how to get help, and
+ * how to stop. The first two are the body of each message; these are the
+ * other three, and they are one constant because a message that carries some
+ * of them is the one a carrier flags.
+ *
+ * `Msg&data` rather than `Message and data` is not shorthand for its own
+ * sake: the phrase is carrier-conventional and it keeps both bodies inside
+ * two segments, where spelling it out would push the review request into a
+ * third on every send.
+ *
+ * `/privacy` and `/terms` both tell customers they may reply HELP. We run no
+ * inbound webhook, so that promise is kept by Twilio's opt-out management —
+ * which must have HELP enabled for it to be true.
+ */
+const COMPLIANCE_TAIL =
+  "Msg&data rates may apply. Reply HELP for help, STOP to opt out.";
 
 /** The booking confirmation. Short enough for one SMS segment matters less
  * than saying the three things that stop the "did it work?" callback: the
@@ -83,17 +102,23 @@ export function bookingConfirmationText(job: Job, origin: string): string {
   return toGsm7(
     `Flatirons Movers: you're booked - ${job.id}, ${job.date}, ` +
     `arrival ${job.window}. Track your move and put a card on file at ` +
-    `${origin}/move/${job.id}. No deposit; we bill after the move. ${OPT_OUT}`
+    `${origin}/move/${job.id}. No deposit; we bill after the move. ${COMPLIANCE_TAIL}`
   );
 }
 
 /** The morning-after review request, with the referral code, per step 10. */
 export function reviewRequestText(job: Job, origin: string): string {
   return toGsm7(
+    // Tightened deliberately. `job.crew` is the one unbounded field in this
+    // message, and with the fuller phrasing a crew name of ordinary length
+    // pushed it to 307 characters — one over the two-segment cap, on every
+    // send. The copy lost a little warmth and gained about thirty characters
+    // of headroom, which is the better trade for a message nobody reads
+    // twice.
     `Flatirons Movers: thanks for moving with us${job.crew ? ` and ${job.crew}` : ""}. ` +
-    `Two minutes to leave a review helps more than you'd think: ` +
-    `${origin}/move/${job.id}#review - and code ${referralCode(job)} gives ` +
-    `a friend $50 off their move. ${OPT_OUT}`
+    `A quick review helps more than you'd think: ` +
+    `${origin}/move/${job.id}#review - code ${referralCode(job)} gives ` +
+    `a friend $50 off. ${COMPLIANCE_TAIL}`
   );
 }
 
