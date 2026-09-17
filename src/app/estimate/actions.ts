@@ -15,6 +15,7 @@
 import { redirect } from "next/navigation";
 
 import { siteOrigin } from "@/lib/site-url";
+import { bookingConfirmationEmail, emailEnabled, sendEmail } from "@/lib/email";
 import { bookingConfirmationText, sendSms, smsEnabled } from "@/lib/sms";
 
 import {
@@ -189,6 +190,14 @@ export async function bookMove(): Promise<{ error: string } | never> {
     // Written by the Stripe webhook when the invoice is paid; nothing about a
     // card exists before then.
     cardLast4: null,
+    // No card is saved at booking either — the confirmation invites the
+    // customer to add one, and the webhook writes these when they do.
+    stripeCustomerId: null,
+    stripePaymentMethodId: null,
+    cardOnFileAt: null,
+    // Not cancelled, obviously; the fee stays null until one is charged.
+    cancelledAt: null,
+    cancellationFeeCents: null,
     items: inventoryFor(draft.counts),
     tasks: seedTasks(draft),
     messages: [
@@ -207,12 +216,22 @@ export async function bookMove(): Promise<{ error: string } | never> {
   await clearDraftCookie();
   await rememberMove(job.id);
 
-  // The confirmation text, when Twilio is configured. A failed send never
-  // fails the booking — sendSms returns false and the customer still lands
-  // on their portal, which says everything the text would have.
-  if (smsEnabled()) {
-    await sendSms(job.phone, bookingConfirmationText(job, siteOrigin()));
-  }
+  // The confirmation, by both channels the customer gave us. Neither send can
+  // fail the booking — both helpers return false rather than throwing, and
+  // the customer still lands on their portal, which says everything the
+  // confirmation would have.
+  //
+  // Sent together rather than in sequence: they are independent, and a
+  // booking redirect should not wait out two round trips back to back.
+  const origin = siteOrigin();
+  await Promise.all([
+    smsEnabled()
+      ? sendSms(job.phone, bookingConfirmationText(job, origin))
+      : null,
+    emailEnabled()
+      ? sendEmail(job.email, bookingConfirmationEmail(job, origin))
+      : null,
+  ]);
 
   redirect(`/move/${job.id}`);
 }

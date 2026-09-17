@@ -98,6 +98,11 @@ function toJob(row: JobRow): Job {
     reviewed: row.reviewed,
     late: row.late,
     cardLast4: row.cardLast4,
+    stripeCustomerId: row.stripeCustomerId,
+    stripePaymentMethodId: row.stripePaymentMethodId,
+    cardOnFileAt: row.cardOnFileAt?.getTime() ?? null,
+    cancelledAt: row.cancelledAt?.getTime() ?? null,
+    cancellationFeeCents: row.cancellationFeeCents,
     items: row.items.map((i) => ({
       name: i.name,
       handling: i.handling,
@@ -195,6 +200,11 @@ export async function createJob(job: Job): Promise<Job> {
       reviewed: job.reviewed,
       late: job.late,
       cardLast4: job.cardLast4,
+      stripeCustomerId: job.stripeCustomerId,
+      stripePaymentMethodId: job.stripePaymentMethodId,
+      cardOnFileAt: job.cardOnFileAt ? new Date(job.cardOnFileAt) : null,
+      cancelledAt: job.cancelledAt ? new Date(job.cancelledAt) : null,
+      cancellationFeeCents: job.cancellationFeeCents,
       createdAt: new Date(job.createdAt),
       items: {
         create: job.items.map((item, position) => ({ ...item, position })),
@@ -284,6 +294,11 @@ export async function updateJob(
         reviewed: next.reviewed,
         late: next.late,
         cardLast4: next.cardLast4,
+        stripeCustomerId: next.stripeCustomerId,
+        stripePaymentMethodId: next.stripePaymentMethodId,
+        cardOnFileAt: next.cardOnFileAt ? new Date(next.cardOnFileAt) : null,
+        cancelledAt: next.cancelledAt ? new Date(next.cancelledAt) : null,
+        cancellationFeeCents: next.cancellationFeeCents,
         items: {
           create: next.items.map((item: InventoryLine, position: number) => ({
             ...item,

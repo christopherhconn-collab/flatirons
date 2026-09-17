@@ -304,6 +304,11 @@ function jobFrom(spec: SeedSpec, base: Date, now: number): Job {
     reviewed: false,
     late: spec.late ?? null,
     cardLast4: null,
+    stripeCustomerId: null,
+    stripePaymentMethodId: null,
+    cardOnFileAt: null,
+    cancelledAt: null,
+    cancellationFeeCents: null,
     items,
     tasks: spec.tasks ?? [],
     messages: (spec.messages ?? []).map((m) => ({

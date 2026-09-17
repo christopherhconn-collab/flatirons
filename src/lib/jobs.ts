@@ -17,7 +17,7 @@ import {
   invoiceFor,
   type InvoiceLine,
 } from "./pricing";
-import { money, place } from "./format";
+import { denverInstant, money, place, windowStartHour } from "./format";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Types
@@ -30,7 +30,8 @@ export type JobStatus =
   | "scheduled"
   | "enroute"
   | "onsite"
-  | "complete";
+  | "complete"
+  | "cancelled";
 
 /** Where the *sale* is. Separate from status, and cycled by the office. */
 export type PipelineStage =
@@ -56,6 +57,10 @@ export const STATUS_RANK: Record<JobStatus, number> = {
   enroute: 3,
   onsite: 4,
   complete: 5,
+  // Off the ladder rather than above it: a cancelled job never reached any of
+  // these states. `-1` keeps "has it got at least as far as X" false for every
+  // X, which is the only honest answer.
+  cancelled: -1,
 };
 
 export const NEXT_STATUS: Record<JobStatus, JobStatus> = {
@@ -65,6 +70,10 @@ export const NEXT_STATUS: Record<JobStatus, JobStatus> = {
   enroute: "onsite",
   onsite: "complete",
   complete: "complete",
+  // Terminal. `advanceStatus` is a no-op on a cancelled job — the board's
+  // action button is gone by then, but a stale form post must not resurrect
+  // a job the office called off.
+  cancelled: "cancelled",
 };
 
 export const STATUS_LABEL: Record<JobStatus, string> = {
@@ -74,6 +83,7 @@ export const STATUS_LABEL: Record<JobStatus, string> = {
   enroute: "En route",
   onsite: "Loading",
   complete: "Complete",
+  cancelled: "Cancelled",
 };
 
 export type InventoryLine = { name: string; handling: string; done: boolean };
@@ -123,6 +133,17 @@ export type Job = {
   /** Minutes behind the arrival window, when dispatch has flagged it. */
   late: number | null;
   cardLast4: string | null;
+  /**
+   * The saved card, when the customer completed the setup link in their
+   * booking confirmation. Both ids present means the office can charge the
+   * final bill — or a late-cancellation fee — without them present.
+   */
+  stripeCustomerId: string | null;
+  stripePaymentMethodId: string | null;
+  cardOnFileAt: number | null;
+  /** When the job was called off, and what was charged for it, in cents. */
+  cancelledAt: number | null;
+  cancellationFeeCents: number | null;
   items: InventoryLine[];
   tasks: CustomerTask[];
   messages: Message[];
@@ -320,6 +341,85 @@ export function advanceStage(job: Job): Job {
   return {
     ...job,
     stage,
-    status: stage === "Booked" && job.status === "lead" ? "unassigned" : job.status,
+    status:
+      stage === "Booked" && job.status === "lead" ? "unassigned" : job.status,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Cancellation
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * When the crew is due, as an instant. A job with no arrival window yet — a
+ * lead, or an unscheduled booking — is treated as due at 8am Denver time,
+ * which is the earliest window dispatch ever sets. Erring early means the
+ * window closes early, so nobody is charged a late fee for a slot that was
+ * never promised to them.
+ */
+export function arrivalInstant(job: Job): number {
+  return denverInstant(job.date, windowStartHour(job.window) ?? 8);
+}
+
+export type Cancellation = {
+  /** Inside the notice window — the fee applies. */
+  late: boolean;
+  /** What to charge, in cents. Zero outside the window. */
+  feeCents: number;
+};
+
+/**
+ * What cancelling this job right now costs.
+ *
+ * Pure, and the single definition of the policy: the dispatch board reads it
+ * to label its button, the confirmation email reads it to state the terms,
+ * and the cancel action reads it to decide what to charge. `now` is a
+ * parameter so all three can be tested against the same clock, and defaulted
+ * so that a Server Component rendering the label does not read the clock
+ * itself — `react-hooks/purity` rejects that, rightly.
+ */
+export function cancellationFor(
+  job: Job,
+  now: number = Date.now(),
+): Cancellation {
+  const deadline =
+    arrivalInstant(job) - CONFIG.cancellation.windowHours * 3_600_000;
+  const late = now >= deadline;
+  return {
+    late,
+    feeCents: late ? Math.round(CONFIG.cancellation.feeDollars * 100) : 0,
+  };
+}
+
+/**
+ * Call the job off.
+ *
+ * Terminal, and idempotent: a job already cancelled or already completed is
+ * returned untouched, so a double-submitted form cannot charge a second fee
+ * or retire a job the crew has finished. `feeCents` is what was actually
+ * charged, which the caller knows and this function does not — a fee the
+ * customer's card declined is not a fee, and recording it as one would put a
+ * number on the board that nobody is collecting.
+ */
+export function cancelJob(job: Job, now: number, feeCents: number): Job {
+  if (job.status === "cancelled" || job.status === "complete") return job;
+  return {
+    ...job,
+    status: "cancelled",
+    crew: null,
+    clockIn: null,
+    cancelledAt: now,
+    cancellationFeeCents: feeCents,
+    messages: [
+      ...job.messages,
+      {
+        who: "Flatirons",
+        text: feeCents
+          ? `Your move has been cancelled. A ${money(feeCents / 100)} late-cancellation fee has been charged to the card on file.`
+          : "Your move has been cancelled. Nothing has been charged.",
+        mine: false,
+        at: now,
+      },
+    ],
   };
 }

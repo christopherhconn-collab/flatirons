@@ -14,7 +14,7 @@ import {
 const HOUR = 3_600_000;
 const NOW = Date.parse("2026-08-17T18:00:00Z");
 
-function job(overrides: Partial<Job>): Job {
+function job(overrides: Partial<Job> = {}): Job {
   return {
     id: "FM-0000",
     customer: "Test, T.",
@@ -174,5 +174,34 @@ describe("billedToday and assignedToday", () => {
       { crew: "Crew A", customer: "Doyle, D.", status: "onsite" },
       { crew: "Crew B", customer: null, status: null },
     ]);
+  });
+});
+
+describe("a cancelled job", () => {
+  const TODAY = "2026-08-22";
+  const crews = [
+    { name: "Crew A", roster: "", size: 3 },
+    { name: "Crew B", roster: "", size: 3 },
+  ] as Crew[];
+
+  it("releases its day on the capacity strip", () => {
+    const booked = job({ date: TODAY, status: "scheduled", crew: "Crew A" });
+    const called = { ...booked, status: "cancelled" } as Job;
+    expect(weekCapacity([booked], crews, TODAY)[0].booked).toBe(1);
+    expect(weekCapacity([called], crews, TODAY)[0].booked).toBe(0);
+  });
+
+  it("is not the office's next action", () => {
+    const lead = job({ stage: "New", status: "cancelled" });
+    expect(nextAction([lead]).kind).toBe("clear");
+  });
+
+  it("does not count as a booking won", () => {
+    const month = new Date(job().createdAt).toISOString().slice(0, 7);
+    const won = job({ stage: "Booked" });
+    expect(officeStats([won], month).booked).toBe(1);
+    expect(
+      officeStats([{ ...won, status: "cancelled" } as Job], month).booked,
+    ).toBe(0);
   });
 });

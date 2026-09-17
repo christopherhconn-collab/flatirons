@@ -19,7 +19,14 @@ import {
 } from "@/lib/jobs";
 import { authEnabled, requireMoveAccess } from "@/lib/auth";
 import { stripeEnabled } from "@/lib/stripe";
-import { payInvoice, sendMessage, submitReview, toggleTask } from "./actions";
+import { CONFIG } from "@/lib/pricing";
+import {
+  payInvoice,
+  saveCard,
+  sendMessage,
+  submitReview,
+  toggleTask,
+} from "./actions";
 
 export const metadata: Metadata = {
   title: "Your move — Flatirons Movers",
@@ -49,6 +56,8 @@ export default async function MovePage(props: PageProps<"/move/[id]">) {
   // Back from Stripe but the webhook hasn't landed yet. The page already
   // re-polls while live; the banner explains the seconds in between.
   const paymentPending = params.paid === "pending" && !job.paid;
+  // Same race for the setup session: Stripe has the card, our webhook may not.
+  const cardPending = params.card === "pending" && !job.cardOnFileAt;
 
   const live = isLive(job);
   const loaded = loadedCount(job);
@@ -271,6 +280,76 @@ export default async function MovePage(props: PageProps<"/move/[id]">) {
                 ))}
               </div>
             </>
+          )}
+
+          {/* ── Card on file ────────────────────────────────────────────── */}
+          {stripeEnabled() && !complete && job.status !== "cancelled" && (
+            <section className="mb-[22px]">
+              <h2
+                id="card"
+                className="text-ink-quiet mb-3 scroll-mt-4 text-[10.5px] leading-none font-medium tracking-[0.2em] uppercase"
+              >
+                Card on file
+              </h2>
+              <div className="border-line bg-paper border p-[15px]">
+                {job.cardOnFileAt ? (
+                  <>
+                    <p className="text-ink text-[14px] leading-[1.5]">
+                      {job.cardLast4
+                        ? `Card ending •••• ${job.cardLast4} is on file.`
+                        : "A card is on file."}{" "}
+                      Nothing has been charged.
+                    </p>
+                    <p className="text-ink-muted mt-1.5 text-[12.5px] leading-[1.5]">
+                      We bill the final total after your move, once the hours
+                      are known. You&rsquo;ll get a receipt from Stripe.
+                    </p>
+                    <form action={saveCard} className="mt-3">
+                      <input type="hidden" name="id" value={job.id} />
+                      <button
+                        type="submit"
+                        className="text-ink interactive w-full border border-[rgb(22_40_63/0.3)] py-3 text-[12.5px] leading-none font-semibold tracking-[0.1em] uppercase"
+                      >
+                        Use a different card
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    {cardPending && (
+                      <p
+                        role="status"
+                        className="border-line-strong bg-olive-tint text-ink mb-3 border p-3 text-[12.5px] leading-[1.5]"
+                      >
+                        Card received by Stripe — confirming with the office.
+                        This usually takes a few seconds.
+                      </p>
+                    )}
+                    <p className="text-ink text-[14px] leading-[1.5]">
+                      Save a card now and there&rsquo;s nothing to settle on
+                      the day. We charge the final total after the move, not
+                      before — your card is stored by Stripe and never touches
+                      our systems.
+                    </p>
+                    <p className="text-ink-muted mt-1.5 text-[12.5px] leading-[1.5]">
+                      Cancelling within {CONFIG.cancellation.windowHours} hours
+                      of your arrival window is ${CONFIG.cancellation.feeDollars};
+                      before that it&rsquo;s free.
+                    </p>
+                    <form action={saveCard} className="mt-3">
+                      <input type="hidden" name="id" value={job.id} />
+                      <button
+                        type="submit"
+                        disabled={cardPending}
+                        className="bg-ink text-paper border-ink interactive w-full border py-3.5 text-[13px] leading-none font-semibold tracking-[0.1em] uppercase"
+                      >
+                        Add a card
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            </section>
           )}
 
           {/* ── Messages ────────────────────────────────────────────────── */}

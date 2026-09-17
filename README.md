@@ -16,10 +16,10 @@ the staged build order.
 | 3 | Database and schema | Done — Postgres behind Prisma, with migrations and a seed script |
 | 4 | Marketing pages | Done — desktop as designed; mobile is a fallback, not a design |
 | 5 | The estimator | Done |
-| 6 | Booking | Done — confirmation SMS via Twilio when configured; still no Resend, Places or Distance Matrix |
+| 6 | Booking | Done — confirmation by SMS (Twilio) and email (Resend) when configured; still no Places or Distance Matrix |
 | 7 | Deploy | Done — Vercel + Supabase, see DEPLOY.md |
 | 8 | Customer portal | Done — magic-link auth for customers, GitHub for staff; enforced when the Supabase env is set |
-| 9 | Payments | Done — Stripe Checkout + webhook when configured; no card detail ever stored |
+| 9 | Payments | Done — Stripe Checkout + webhook when configured; card on file at booking, charged off-session at close-out or as a late-cancellation fee; no card detail ever stored |
 | 10–11 | Dispatch board, office dashboard | Done in-house — kanban, crew assignment, status machine, pipeline, capacity, next-action; no external dispatch platform; review-request SMS automated via Twilio + daily cron when configured; map distances still approximations (needs Distance Matrix) |
 
 Routes:
@@ -208,14 +208,18 @@ dropped rather than stored.
 - **A managed database.** The schema, migrations and seed are real, and the
   app runs against any Postgres. Nothing provisions one for you — point
   `DATABASE_URL` at Supabase, Neon or a local server.
-- **Authentication.** `/move/[id]` is readable by anyone who knows a job
-  reference, exactly as in the prototype. Magic-link auth is step 8 and must
-  land before this is pointed at real customers; the guard belongs both in the
-  page and in every action in `src/app/move/[id]/actions.ts`.
-- **Stripe, Resend, Twilio, Google Places and Distance Matrix.** Booking writes
-  the job and routes to the portal. It does not send a confirmation, alert the
-  office, geocode an address or authorise a card, and it does not pretend to.
-  The portal's pay button flips a `paid` flag; it moves no money.
+- **Authentication, unconfigured.** With no Supabase env, `/move/[id]` is
+  readable by anyone who knows a job reference, exactly as in the prototype.
+  Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` and the
+  guard turns on — in the page *and* in every action, since Server Functions
+  are reachable by direct POST.
+- **Google Places and Distance Matrix.** Addresses are free text and map
+  distances are approximations. Nothing geocodes.
+- **Stripe, Resend and Twilio, unconfigured.** Each is behind its own env
+  switch (`stripeEnabled`, `emailEnabled`, `smsEnabled`). Unset, booking
+  writes the job and routes to the portal and nothing else happens: no
+  confirmation, no card, and the pay button is the prototype's bookkeeping
+  flip that moves no money. Set, see "Money" below.
 - **The crew app and the dispatch board.** The handoff is explicit that these
   are specifications for a purchased platform, to be built in-house only under
   Stage 4's conditions. The status machine they drive *is* implemented, in
@@ -224,6 +228,44 @@ dropped rather than stored.
 - **Photography.** Every photo position in the prototype is a placeholder and
   the handoff says not to ship them. Nothing here has an image slot.
 - **A designed mobile layout.** See below.
+
+## Money
+
+Three things can charge a customer, and all three go through Stripe — no card
+number reaches any code in this repository.
+
+**At booking**, the confirmation (email and SMS) links to `/move/<id>#card`,
+which mints a *setup*-mode Checkout Session. It takes no money; it stores a
+card against a Stripe Customer. The link points at our page rather than at
+Stripe because a Checkout Session expires in 24 hours and a move can be booked
+six weeks out.
+
+**After the move**, dispatch's invoice rail shows "Charge •••• 4242" for any
+completed, unpaid job with a card on file. That is an off-session
+PaymentIntent for the invoice total, and `chargeSavedCard` marks the job paid
+from the intent's own result — there is no Checkout Session, so no webhook
+fires. The customer can still pay themselves from the portal, which does go
+through Checkout and the webhook.
+
+**On cancellation**, `cancellationFor()` is the single definition of the
+policy: inside `CONFIG.cancellation.windowHours` of the arrival window it
+costs `CONFIG.cancellation.feeDollars`, and before that it is free. The
+dispatch card's cancel button shows which applies before it is pressed, the
+confirmation email states the terms, and the cancel action charges it. The day
+is released either way — a fee that could not be collected comes back as an
+outcome for the office to chase, and `cancellationFeeCents` records only what
+actually cleared.
+
+> The fee and the window are **placeholders**. Flatirons is a PUC-regulated
+> household-goods carrier (PUC 00412), so a cancellation charge has to match
+> the tariff filed with the Colorado PUC. Reconcile both numbers against that
+> filing before the first fee is charged; they live in one place,
+> `CONFIG.cancellation` in `src/lib/pricing.ts`.
+
+The webhook (`/api/stripe/webhook`) handles both Checkout modes off the one
+`checkout.session.completed` event, branching on `session.mode` — `payment`
+marks the job paid, `setup` writes the Customer and PaymentMethod ids. Both
+are idempotent, because Stripe retries.
 
 ## Tuning the engine
 

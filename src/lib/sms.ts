@@ -24,12 +24,24 @@
 import type { Job } from "./jobs";
 import { referralCode } from "./jobs";
 
+/**
+ * The three Twilio values, trimmed.
+ *
+ * The trim is not cosmetic — see the same note in `stripe.ts`. The SID and
+ * token are base64'd into an `Authorization` header, and a trailing newline
+ * picked up while pasting into a hosting dashboard makes Node reject the
+ * request outright with `ERR_INVALID_CHAR`, which surfaces nowhere near the
+ * cause.
+ */
+function twilio(): { sid: string; token: string; from: string } | null {
+  const sid = process.env.TWILIO_ACCOUNT_SID?.trim();
+  const token = process.env.TWILIO_AUTH_TOKEN?.trim();
+  const from = process.env.TWILIO_FROM?.trim();
+  return sid && token && from ? { sid, token, from } : null;
+}
+
 export function smsEnabled(): boolean {
-  return Boolean(
-    process.env.TWILIO_ACCOUNT_SID &&
-      process.env.TWILIO_AUTH_TOKEN &&
-      process.env.TWILIO_FROM,
-  );
+  return twilio() !== null;
 }
 
 /**
@@ -51,8 +63,8 @@ export function toE164(raw: string): string | null {
 export function bookingConfirmationText(job: Job, origin: string): string {
   return (
     `Flatirons Movers: you're booked — ${job.id}, ${job.date}, ` +
-    `arrival ${job.window}. Track your move and manage your checklist at ` +
-    `${origin}/move/${job.id}. No deposit; pay after the move.`
+    `arrival ${job.window}. Track your move and put a card on file at ` +
+    `${origin}/move/${job.id}. No deposit; we bill after the move.`
   );
 }
 
@@ -72,27 +84,25 @@ export function reviewRequestText(job: Job, origin: string): string {
  * person mid-booking.
  */
 export async function sendSms(to: string, body: string): Promise<boolean> {
-  if (!smsEnabled()) return false;
+  const config = twilio();
+  if (!config) return false;
   const phone = toE164(to);
   if (!phone) return false;
 
-  const sid = process.env.TWILIO_ACCOUNT_SID!;
   try {
     const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
+      `https://api.twilio.com/2010-04-01/Accounts/${config.sid}/Messages.json`,
       {
         method: "POST",
         headers: {
           Authorization:
             "Basic " +
-            Buffer.from(`${sid}:${process.env.TWILIO_AUTH_TOKEN}`).toString(
-              "base64",
-            ),
+            Buffer.from(`${config.sid}:${config.token}`).toString("base64"),
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           To: phone,
-          From: process.env.TWILIO_FROM!,
+          From: config.from,
           Body: body,
         }),
       },

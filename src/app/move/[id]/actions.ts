@@ -22,7 +22,12 @@ import { place } from "@/lib/format";
 import { invoiceOf } from "@/lib/jobs";
 import { siteOrigin } from "@/lib/site-url";
 import { addReview, updateJob } from "@/lib/store";
-import { checkoutParamsFor, stripe, stripeEnabled } from "@/lib/stripe";
+import {
+  checkoutParamsFor,
+  setupParamsFor,
+  stripe,
+  stripeEnabled,
+} from "@/lib/stripe";
 
 function refresh(id: string) {
   revalidatePath(`/move/${id}`);
@@ -104,6 +109,33 @@ export async function payInvoice(formData: FormData): Promise<void> {
         },
   );
   refresh(id);
+}
+
+/**
+ * Put a card on file.
+ *
+ * A setup-mode Checkout Session: no amount, no charge, just a card stored
+ * against a Stripe Customer so the office can bill the real total once the
+ * hours are known. The webhook writes it back, for the same reason it owns
+ * `paid` — a return URL is a thing a browser can type.
+ *
+ * Unavailable without Stripe configured. There is no prototype equivalent:
+ * pretending a card is on file when none is would be a lie the office would
+ * discover at close-out.
+ */
+export async function saveCard(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!id || !stripeEnabled()) return;
+  const job = await requireMoveAccess(id);
+
+  // Nothing to save against a job that is over or called off.
+  if (job.status === "complete" || job.status === "cancelled") return;
+
+  const session = await stripe().checkout.sessions.create(
+    setupParamsFor(job, siteOrigin()),
+  );
+  if (!session.url) throw new Error("Stripe returned a session with no URL");
+  redirect(session.url);
 }
 
 /**
