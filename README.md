@@ -256,6 +256,13 @@ is released either way — a fee that could not be collected comes back as an
 outcome for the office to chase, and `cancellationFeeCents` records only what
 actually cleared.
 
+Five surfaces publish those two numbers — `/terms`, `/pricing`, the move
+portal, the confirmation email and the dispatch cancel button — and all five
+read them from `CONFIG.cancellation`. None may restate a literal;
+`pricing.test.ts` fails if one does. That test exists because `/terms` and the
+booking email once shipped with cancellation fees that differed by a factor of
+five.
+
 > The fee and the window are **placeholders**. Flatirons is a PUC-regulated
 > household-goods carrier (PUC 00412), so a cancellation charge has to match
 > the tariff filed with the Colorado PUC. Reconcile both numbers against that

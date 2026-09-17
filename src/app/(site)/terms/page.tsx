@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ADDRESS, PHONE, PHONE_HREF, SHELL } from "@/lib/site";
+import { money } from "@/lib/format";
 import { CONFIG } from "@/lib/pricing";
 
 export const metadata: Metadata = {
@@ -26,12 +27,21 @@ const SECTIONS = [
   {
     heading: "Booking, deposits and cancellation",
     body: (
-      <p>
-        No deposit and no card are required to hold a date. You may cancel or
-        reschedule up to 48 hours before your arrival window at no charge.
-        Cancelling inside that window, or a crew turned away on arrival, may
-        be billed at the minimum.
-      </p>
+      <>
+        <p>
+          No deposit is required to hold a date. You may save a card when you
+          book so there is nothing to settle on the day — nothing is charged
+          to it until after your move.
+        </p>
+        <p>
+          You may cancel or reschedule up to{" "}
+          {CONFIG.cancellation.windowHours} hours before your arrival window at
+          no charge. Cancelling inside that window is a flat{" "}
+          {money(CONFIG.cancellation.feeDollars)}, charged to the card on file
+          if there is one and invoiced if there is not. A crew turned away on
+          arrival may be billed at the {CONFIG.minHours}-hour minimum instead.
+        </p>
+      </>
     ),
   },
   {
@@ -50,10 +60,12 @@ const SECTIONS = [
     heading: "Payment",
     body: (
       <p>
-        Payment is due when the job is marked complete, through the invoice
-        in your move portal. Card payments are processed by Stripe — we never
-        see or store your full card number. A staff member may instead record
-        a payment taken by check or card over the phone.
+        Payment is due when the job is marked complete. You can settle it
+        yourself from the invoice in your move portal, or we charge the card
+        you saved at booking — for the hours actually worked, never the
+        estimate. Card payments are processed by Stripe; we never see or store
+        your full card number. A staff member may instead record a payment
+        taken by check or card over the phone.
       </p>
     ),
   },
