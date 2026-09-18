@@ -23,6 +23,7 @@ import { type Job, priceRange } from "./jobs";
 import { CONFIG } from "./pricing";
 import { quoteFacts } from "./quotes";
 import { ADDRESS, PHONE } from "./site";
+import { CANONICAL_ORIGIN } from "./site-url";
 
 /**
  * The API key, trimmed — see the note in `stripe.ts`. A key pasted into a
@@ -34,16 +35,25 @@ function apiKey(): string | undefined {
 }
 
 /**
- * The From address. Must be on a domain verified with Resend, which is why it
- * is configurable rather than hard-coded — the fallback is a sensible guess
- * at Flatirons' own domain and will bounce until that domain is verified.
+ * The From address. Must be on a domain verified in Resend → Domains, or
+ * every send is rejected — which is why it is configurable rather than
+ * hard-coded.
+ *
+ * The fallback is derived from `CANONICAL_ORIGIN` rather than written out,
+ * because it was written out once and it was wrong: `flatironsmovers.com`,
+ * with an r, against a company that owns `flatironsmoves.com`. Nobody would
+ * have noticed from the code — the send simply returns false and the customer
+ * hears nothing. Deriving it means the day the domain changes, this changes
+ * with it, and `email.test.ts` fails if the two ever come apart again.
  */
-function fromAddress(): string {
+export function fromAddress(): string {
   return (
-    process.env.RESEND_FROM?.trim() ||
-    "Flatirons Movers <bookings@flatironsmovers.com>"
+    process.env.RESEND_FROM?.trim() || `Flatirons Movers <bookings@${MAIL_DOMAIN}>`
   );
 }
+
+/** The bare domain — `www.` is for browsers, not mailboxes. */
+const MAIL_DOMAIN = new URL(CANONICAL_ORIGIN).hostname.replace(/^www\./, "");
 
 export function emailEnabled(): boolean {
   return Boolean(apiKey());
