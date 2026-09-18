@@ -32,11 +32,53 @@ import type { Invoice, Job } from "./jobs";
  * key is never meaningful, so take it off before it reaches a header.
  */
 function secretKey(): string | undefined {
-  return process.env.STRIPE_SECRET_KEY?.trim() || undefined;
+  const key = process.env.STRIPE_SECRET_KEY?.trim();
+  return key && isServerKey(key) ? key : undefined;
+}
+
+/**
+ * Whether this is a key the Stripe API will accept from a server.
+ *
+ * `sk_` is a secret key and `rk_` a restricted one; both work. `pk_` is the
+ * publishable key, which is designed to be safe in a browser and which Stripe
+ * refuses server-side with `secret_key_required`.
+ *
+ * Checked because the two sit side by side in the Stripe dashboard and the
+ * publishable one is the one that is safe to copy — so it is the one that
+ * gets copied. Without this the mistake is invisible in the worst way:
+ * `stripeEnabled()` reads any non-empty string as configured, the portal
+ * renders "Add a card", and the customer gets a 500 on click. An unusable key
+ * is not a configured integration, so it reads here as no key at all, and the
+ * page degrades to what it does with Stripe switched off.
+ *
+ * Deliberately a prefix check and not a regex over the whole key: Stripe has
+ * changed key formats before, and rejecting a valid key for failing a shape
+ * we guessed would be a worse bug than the one this prevents.
+ */
+function isServerKey(key: string): boolean {
+  return key.startsWith("sk_") || key.startsWith("rk_");
 }
 
 export function stripeEnabled(): boolean {
   return Boolean(secretKey());
+}
+
+/**
+ * Why Stripe is off, for the deploy checklist and the staff pages.
+ *
+ * Distinguishes "no key" from "the wrong key", because the two need different
+ * things done about them and neither is visible from the outside.
+ */
+export function stripeConfigProblem(): string | null {
+  const raw = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!raw) return "STRIPE_SECRET_KEY is not set.";
+  if (!isServerKey(raw)) {
+    return (
+      "STRIPE_SECRET_KEY holds a publishable key. Stripe refuses server-side " +
+      "calls with it — use the secret key (sk_…) from the same mode."
+    );
+  }
+  return null;
 }
 
 let client: Stripe | undefined;

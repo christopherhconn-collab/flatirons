@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { Job } from "./jobs";
 import { invoiceOf } from "./jobs";
@@ -7,6 +7,8 @@ import {
   checkoutParamsFor,
   offSessionParamsFor,
   setupParamsFor,
+  stripeConfigProblem,
+  stripeEnabled,
   toCents,
 } from "./stripe";
 
@@ -144,5 +146,51 @@ describe("chargeCardOnFile", () => {
     } as Job;
     expect((await chargeCardOnFile(withCard, 0, "x")).ok).toBe(false);
     expect((await chargeCardOnFile(withCard, -100, "x")).ok).toBe(false);
+  });
+});
+
+describe("the key gate", () => {
+  const original = process.env.STRIPE_SECRET_KEY;
+  afterEach(() => {
+    if (original === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = original;
+  });
+
+  it("accepts a secret key", () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_abc123";
+    expect(stripeEnabled()).toBe(true);
+    expect(stripeConfigProblem()).toBeNull();
+  });
+
+  it("accepts a restricted key", () => {
+    // Narrower than a secret key and perfectly usable server-side; an office
+    // that scopes its key down must not find the feature switched off.
+    process.env.STRIPE_SECRET_KEY = "rk_live_abc123";
+    expect(stripeEnabled()).toBe(true);
+    expect(stripeConfigProblem()).toBeNull();
+  });
+
+  it("refuses a publishable key", () => {
+    // This happened in production. The two keys sit side by side in Stripe's
+    // dashboard and the publishable one is the one that is safe to copy, so
+    // it is the one that gets copied. Stripe answers `secret_key_required`,
+    // which the customer sees as a 500 on "Add a card".
+    //
+    // Reading it as "not configured" is the point: the portal then renders no
+    // card section at all, rather than a button that cannot work.
+    process.env.STRIPE_SECRET_KEY = "pk_live_abc123";
+    expect(stripeEnabled()).toBe(false);
+    expect(stripeConfigProblem()).toContain("publishable");
+  });
+
+  it("says which of the two problems it is", () => {
+    delete process.env.STRIPE_SECRET_KEY;
+    expect(stripeEnabled()).toBe(false);
+    expect(stripeConfigProblem()).toContain("not set");
+  });
+
+  it("tolerates the newline a dashboard paste leaves behind", () => {
+    process.env.STRIPE_SECRET_KEY = "  sk_test_abc123\n";
+    expect(stripeEnabled()).toBe(true);
   });
 });

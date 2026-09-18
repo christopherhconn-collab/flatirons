@@ -16,7 +16,7 @@ import {
   dispatchStats,
 } from "@/lib/staff";
 import { listCrews, listJobs } from "@/lib/store";
-import { stripeEnabled } from "@/lib/stripe";
+import { stripeConfigProblem, stripeEnabled } from "@/lib/stripe";
 import {
   advanceJobStatus,
   assignJobCrew,
@@ -216,6 +216,11 @@ export default async function DispatchPage(props: PageProps<"/dispatch">) {
   const stats = dispatchStats(jobs, today);
   const busy = busyCrews(jobs);
   const anyLive = jobs.some(isLive);
+  // Null when Stripe is off altogether, which is a choice; a string only when
+  // the key is set and unusable, which is a mistake.
+  const stripeMisconfigured = process.env.STRIPE_SECRET_KEY?.trim()
+    ? stripeConfigProblem()
+    : null;
 
   const columns: { title: string; jobs: Job[] }[] = [
     { title: "Unassigned", jobs: jobs.filter((j) => j.status === "unassigned") },
@@ -236,6 +241,21 @@ export default async function DispatchPage(props: PageProps<"/dispatch">) {
   return (
     <div className="bg-ink-deep min-h-dvh px-6 py-5 max-md:px-4">
       {anyLive && <LiveRefresh />}
+
+      {/* A key that cannot work is worse than no key: every money button on
+          this board is dead and nothing says so until someone presses one.
+          Shown only for a key that is present and wrong — an unset key is the
+          ordinary state in development and must not nag. */}
+      {stripeMisconfigured && (
+        <p
+          role="alert"
+          className="border-olive-pale mb-4 border bg-[rgb(223_231_210/0.12)] p-3 text-[12.5px] leading-[1.5] text-[#f7f6f2]"
+        >
+          <strong className="font-semibold">Card payments are off.</strong>{" "}
+          {stripeMisconfigured} Until it is fixed, take payment another way and
+          record it here — no card can be saved or charged.
+        </p>
+      )}
 
       {notice && (
         <p
