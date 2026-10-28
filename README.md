@@ -40,6 +40,7 @@ Routes:
 | `/office` | Staff: the lead pipeline — search, stage chips, capacity strip, next action |
 | `/office/new` | Staff: enter a move by hand — send a quote, or book it outright |
 | `/natives` | Colorado Plant Select Natives — the plant guide, served as the home page of `natives.flatironsmoves.com` |
+| `/irrigation` | Irrigation audits & retrofits, with the 4343 Holly audit computed from its raw catch-cup readings — the home page of `irrigation.flatironsmoves.com` |
 | `/tokens` | Design-token reference, for checking against the prototype |
 
 ## Local setup
