@@ -2,106 +2,179 @@ import type { Metadata } from "next";
 
 import { LogoLockup } from "@/components/logo";
 import {
-  CONTROLLERS,
   CUP_DIAMETER_IN,
   DU_TARGET,
-  HOLLY_RESULTS,
+  IRRIGATION_FAQ,
   IRRIGATION_ORIGIN,
+  IRRIGATION_PROCESS,
   IRRIGATION_RATES,
+  IRRIGATION_SERVICES,
   RUNTIME_MIN,
-  type Verdict,
-  type ZoneResult,
+  SEASONS,
+  seasonOf,
 } from "@/lib/irrigation";
 import { PHONE, PHONE_HREF, SHELL } from "@/lib/site";
 import { CANONICAL_ORIGIN } from "@/lib/site-url";
 
+import { HollyCaseStudy } from "./holly-case-study";
+
 /**
- * Flatirons Services — irrigation audits and retrofits, with the 4343 Holly
- * audit as the worked example.
+ * Flatirons Services — the irrigation marketing page: services, the measuring
+ * method, the 4343 Holly audit as proof, the seasonal calendar, process,
+ * rates and FAQ.
  *
  * Served at the root of its own subdomain (the host rewrite is in
- * `next.config.ts`), so like `/natives` it carries its own light chrome and
- * every link back to the main site is absolute.
- *
- * Every figure in the case study is computed in `lib/irrigation.ts` from the
- * raw catch-cup readings; nothing here is typed in from the report.
+ * `next.config.ts`), so like `/natives` it carries its own chrome, its nav is
+ * in-page anchors, and every link back to the main site is absolute.
  */
 
 export const metadata: Metadata = {
-  title: "Irrigation audits & retrofits — Flatirons Services",
+  title: "Irrigation services — audits, repairs, retrofits & blowouts | Flatirons Services",
   description:
-    "Catch-cup precipitation-rate and distribution-uniformity audits for Denver and Front Range sprinkler systems, and the Hunter PRS-40 / MP Rotator retrofits that fix what they find.",
+    "Sprinkler audits, repairs, Hunter MP Rotator retrofits, backflow and controller work, spring start-ups and fall blowouts across Denver and the Front Range — measured with catch cups, quoted line by line.",
   alternates: { canonical: IRRIGATION_ORIGIN },
 };
 
-const pct = (du: number) => `${(du * 100).toFixed(1)}%`;
+// The seasonal call-out follows the calendar; a daily rebuild keeps it current.
+export const revalidate = 86400;
+
+const NAV = [
+  { href: "#services", label: "Services" },
+  { href: "#holly", label: "Case study" },
+  { href: "#seasons", label: "Seasons" },
+  { href: "#rates", label: "Rates" },
+  { href: "#faq", label: "FAQ" },
+] as const;
+
+const CREDENTIALS = [
+  "Certified Landscape Professional",
+  "Licensed general contractor",
+  "Self-performed — no subcontractors",
+  "Raw readings with every audit",
+] as const;
+
+const kicker = "text-olive mb-4 text-[11px] leading-none font-medium tracking-[0.22em] uppercase";
 
 export default function IrrigationPage() {
-  const asFound = HOLLY_RESULTS.filter((r) => r.status === "as-found");
-  const passing = asFound.filter((r) => r.verdict === "Pass").length;
-  const cupCount = HOLLY_RESULTS.reduce((sum, r) => sum + r.cups.length, 0);
-  const find = (controller: string, zone: number, status: ZoneResult["status"]) =>
-    HOLLY_RESULTS.find((r) => r.controller === controller && r.zone === zone && r.status === status)!;
-  const porticoBefore = find("CB2", 2, "as-found");
-  const porticoAfter = find("CB2", 2, "retrofitted");
-  const cb1Retrofit = find("CB1", 1, "retrofitted");
-  const worstRemaining = find("CB2", 3, "as-found");
+  const season = SEASONS.find((s) => s.id === seasonOf(new Date()))!;
 
   return (
     <>
-      <header className="border-line border-b">
-        <div className={`${SHELL} flex flex-wrap items-center justify-between gap-4 py-[18px]`}>
-          <a href={IRRIGATION_ORIGIN} className="flex-none" aria-label="Flatirons Services irrigation, home">
+      <header className="border-line bg-bg/95 sticky top-0 z-10 border-b backdrop-blur">
+        <div className={`${SHELL} flex items-center justify-between gap-4 py-[14px]`}>
+          <a href="#top" className="flex-none" aria-label="Flatirons Services irrigation, top of page">
             <LogoLockup markWidth={40} wordSize={19} subSize={9.5} sub="Services" />
           </a>
-          <div className="flex items-center gap-5">
-            <a
-              href={CANONICAL_ORIGIN}
-              className="text-ink-muted hover:text-ink text-[12px] leading-none font-medium tracking-[0.1em] uppercase max-sm:hidden"
-            >
-              flatironsmoves.com →
-            </a>
-            <a href={PHONE_HREF} className="bg-ink text-paper text-btn-sm interactive px-4 py-3 uppercase">
-              Call {PHONE}
-            </a>
-          </div>
+          <nav aria-label="Sections" className="flex items-center gap-6 max-lg:hidden">
+            {NAV.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-ink-muted hover:text-ink text-[12px] leading-none font-medium tracking-[0.1em] uppercase"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <a href={PHONE_HREF} className="bg-ink text-paper text-btn-sm interactive px-4 py-3 whitespace-nowrap uppercase">
+            Call {PHONE}
+          </a>
         </div>
       </header>
 
-      <main className="flex-1">
+      <main id="top" className="flex-1">
         <section className="topo border-line border-b">
-          <div className={`${SHELL} pt-[46px] pb-10`}>
-            <p className="text-olive mb-4 text-[11px] leading-none font-medium tracking-[0.22em] uppercase">
-              Irrigation audits & retrofits · Denver / Front Range
-            </p>
-            <h1 className="text-h1-sm mb-4 max-md:text-[42px]">
-              Even water,
-              <br />
-              not more water.
-            </h1>
-            <p className="text-body-lg text-ink-lede max-w-[760px]">
-              Most brown spots aren’t a watering-time problem. They’re a
-              uniformity problem — mismatched heads on one valve, nozzles fogging
-              at the wrong pressure — and the usual fix, running the clock
-              longer, drowns the rest of the lawn to rescue the dry patch. We
-              measure every zone with catch cups, show you exactly where the
-              water lands, and fix the hardware that’s causing it.
-            </p>
-            <div className="mt-7 flex flex-wrap items-center gap-4">
-              <a href={PHONE_HREF} className="bg-olive text-paper text-btn interactive px-6 py-4 uppercase">
-                Book an audit
-              </a>
-              <a href="#holly" className="text-olive-dark text-[13px] leading-none font-semibold tracking-[0.1em] uppercase">
-                See a real audit ↓
-              </a>
+          <div className={`${SHELL} grid grid-cols-[1fr_340px] items-end gap-10 pt-[54px] pb-12 max-lg:grid-cols-1`}>
+            <div>
+              <p className={kicker}>Irrigation services · Denver / Front Range</p>
+              <h1 className="text-h1 mb-5 max-lg:text-[60px] max-md:text-[42px]">
+                Even water,
+                <br />
+                not more water.
+              </h1>
+              <p className="text-body-lg text-ink-lede max-w-[680px]">
+                Audits, repairs, retrofits and seasonal service for sprinkler
+                systems that should be doing better. We measure every zone with
+                catch cups, show you exactly where the water lands, and fix the
+                hardware that’s causing it — then measure again.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <a href={PHONE_HREF} className="bg-olive text-paper text-btn interactive px-6 py-4 uppercase">
+                  Call {PHONE}
+                </a>
+                <a href="#services" className="text-olive-dark text-[13px] leading-none font-semibold tracking-[0.1em] uppercase">
+                  What we do ↓
+                </a>
+              </div>
             </div>
+
+            <aside className="blueprint bg-ink text-paper p-6" aria-labelledby="season-h">
+              <p className="text-olive-pale mb-3 text-[10.5px] leading-none font-medium tracking-[0.2em] uppercase">
+                Now · {season.label} · {season.months}
+              </p>
+              <h2 id="season-h" className="text-card-title mb-3">
+                {season.cta}
+              </h2>
+              <p className="text-cream-body mb-5 text-[14px] leading-[1.6]">{season.work}</p>
+              <a href={PHONE_HREF} className="text-olive-pale text-[12px] leading-none font-semibold tracking-[0.1em] uppercase">
+                Call {PHONE} →
+              </a>
+            </aside>
+          </div>
+
+          <div className="border-line bg-paper border-t">
+            <ul className={`${SHELL} grid grid-cols-4 max-md:grid-cols-2`}>
+              {CREDENTIALS.map((item) => (
+                <li
+                  key={item}
+                  className="text-ink-body flex items-center gap-2.5 py-4 pr-4 text-[13px] leading-[1.35] font-medium"
+                >
+                  <span className="bg-olive h-1.5 w-1.5 flex-none" aria-hidden="true" />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        <section className={`${SHELL} pt-12`} aria-labelledby="method-h">
-          <h2 id="method-h" className="text-h2 mb-5">
-            How we measure
+        <section id="services" className={`${SHELL} scroll-mt-20 pt-14`} aria-labelledby="services-h">
+          <p className="text-kicker text-olive-dark mb-3 uppercase">Services</p>
+          <h2 id="services-h" className="text-h2 mb-6">
+            Everything from the backflow to the last head
           </h2>
+          <ul className="grid grid-cols-4 gap-5 max-lg:grid-cols-2 max-sm:grid-cols-1">
+            {IRRIGATION_SERVICES.map((service, i) => (
+              <li key={service.id} className="bg-paper border-line flex flex-col border px-5 pt-5 pb-4">
+                <p className="text-kicker-sm text-olive-dark mb-2 uppercase">{String(i + 1).padStart(2, "0")}</p>
+                <h3 className="text-card-title-sm mb-2">{service.title}</h3>
+                <p className="text-body-sm text-ink-body mb-4">{service.body}</p>
+                <p className="border-line mt-auto border-t pt-3 text-[13px] font-semibold">{service.price}</p>
+              </li>
+            ))}
+            <li className="blueprint bg-olive-wash flex flex-col justify-between p-5">
+              <h3 className="text-card-title-sm mb-2">Not sure which?</h3>
+              <p className="text-body-sm mb-4 text-[rgb(22_40_63/0.72)]">
+                Describe what you’re seeing and we’ll tell you whether it needs a
+                repair, a test or a retrofit.
+              </p>
+              <a href={PHONE_HREF} className="bg-ink text-paper text-btn-sm interactive self-start px-4 py-3 uppercase">
+                Call {PHONE}
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <section className={`${SHELL} pt-14`} aria-labelledby="method-h">
+          <p className="text-kicker text-olive-dark mb-3 uppercase">The method</p>
+          <h2 id="method-h" className="text-h2 mb-3">
+            Measured, not eyeballed
+          </h2>
+          <p className="text-body-lg text-ink-lede mb-6 max-w-[760px]">
+            Most brown spots aren’t a run-time problem. They’re a uniformity
+            problem — mismatched heads on one valve, nozzles fogging at the
+            wrong pressure — and running the clock longer drowns the rest of
+            the lawn to rescue the dry patch.
+          </p>
           <div className="gridlines border-line grid-cols-3 border max-md:grid-cols-1">
             <Step kicker="01 · Catch cups" title="Every head, on a grid">
               Calibrated {CUP_DIAMETER_IN}″ cups set around each head, then a
@@ -121,126 +194,54 @@ export default function IrrigationPage() {
           </div>
         </section>
 
-        <section id="holly" className={`${SHELL} scroll-mt-4 pt-14`} aria-labelledby="holly-h">
-          <p className="text-kicker text-olive-dark mb-3 uppercase">Case study · August 2026</p>
-          <h2 id="holly-h" className="text-h2 mb-4">
-            4343 Holly
+        <HollyCaseStudy />
+
+        <section id="seasons" className={`${SHELL} scroll-mt-20 pt-14`} aria-labelledby="seasons-h">
+          <p className="text-kicker text-olive-dark mb-3 uppercase">The year</p>
+          <h2 id="seasons-h" className="text-h2 mb-6">
+            A system looked after all year
           </h2>
-          <p className="text-body-lg text-ink-lede mb-8 max-w-[760px]">
-            A large residential property with roughly 86 zones across several
-            controllers. Phase 1 started at two of them: a walk-through, then a
-            catch-cup audit of every working zone we could reach. Here’s what{" "}
-            {cupCount} cups said.
-          </p>
-
-          <div className="border-line bg-paper mb-8 grid grid-cols-4 border max-md:grid-cols-2">
-            <Stat value={String(cupCount)} label="Catch-cup readings" />
-            <Stat value={`${passing} of ${asFound.length}`} label="As-found zones passing" />
-            <Stat value={pct(porticoBefore.du)} label="Worst zone, as found" />
-            <Stat value={pct(cb1Retrofit.du)} label="Best zone — already retrofitted" />
-          </div>
-
-          <h3 className="text-card-title-sm mb-3">Zone by zone</h3>
-          <p className="text-meta text-ink-muted mb-3">
-            {CONTROLLERS.map((c) => `${c.id}: ${c.location.toLowerCase()}, ${c.zonesFunctional} of ${c.zonesTotal} zones working`).join(" · ")}
-          </p>
-          <div className="border-line bg-paper overflow-x-auto border">
-            <table className="text-dense w-full min-w-[640px] border-collapse">
-              <thead className="bg-surface">
-                <tr className="text-th text-ink-muted uppercase">
-                  <th className="px-4 py-3 text-left font-medium">Zone</th>
-                  <th className="px-4 py-3 text-left font-medium">Heads</th>
-                  <th className="px-4 py-3 text-right font-medium">Cups</th>
-                  <th className="px-4 py-3 text-right font-medium">PR in/hr</th>
-                  <th className="w-[34%] px-4 py-3 text-left font-medium">Uniformity (DU)</th>
-                  <th className="px-4 py-3 text-left font-medium">Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {HOLLY_RESULTS.map((r) => (
-                  <tr key={`${r.controller}-${r.zone}-${r.status}`} className="border-t border-[rgb(22_40_63/0.1)]">
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="font-semibold">
-                        {r.controller} · Zone {r.zone}
-                      </span>
-                      {r.status === "retrofitted" && (
-                        <span className="bg-olive-wash text-olive-dark ml-2 px-1.5 py-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
-                          Retrofitted
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">{r.heads.length}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">{r.cups.length}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">{r.prInHr.toFixed(2)}</td>
-                    <td className="px-4 py-3">
-                      <DuBar du={r.du} />
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <VerdictChip verdict={r.verdict} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-meta text-ink-muted mt-3">
-            The marker on each bar is the {DU_TARGET * 100}% pass line. PR is
-            the zone’s mean catch over a {RUNTIME_MIN}-minute run.
-          </p>
-
-          <div className="mt-12 grid grid-cols-[1fr_1fr] gap-[34px] max-lg:grid-cols-1">
-            <div>
-              <h3 className="text-card-title-sm mb-2">The driveway zone, before and after</h3>
-              <p className="text-body-sm text-ink-body mb-5">
-                {porticoBefore.note} Most cups caught next to nothing while a
-                few by the sprays flooded. Every bar below is one cup, grouped
-                by head.
-              </p>
-              <CupStrip result={porticoBefore} caption={`As found — DU ${pct(porticoBefore.du)}, ${porticoBefore.prInHr.toFixed(2)} in/hr`} />
-              <CupStrip result={porticoAfter} caption={`Retrofitted — DU ${pct(porticoAfter.du)}, ${porticoAfter.prInHr.toFixed(2)} in/hr`} />
-              <p className="text-body-sm text-ink-body mt-4">
-                {porticoAfter.note} Uniformity nearly tripled. It’s still short
-                of {DU_TARGET * 100}%, so the zone is booked for a coverage
-                recheck around the relocated heads, with the high cups
-                re-read.
-              </p>
-            </div>
-
-            <div className="blueprint bg-surface p-6">
-              <h3 className="text-card-title-sm mb-4">What the audit found</h3>
-              <ul className="text-body-sm grid gap-4">
-                <li>
-                  <strong className="font-semibold">Poor uniformity was a hardware problem, not a design one.</strong>{" "}
-                  Mixed body series, mixed nozzles and heads off level on a
-                  shared valve — so no run time could ever water the zone
-                  evenly.
+          <ol className="gridlines border-line grid-cols-4 border max-lg:grid-cols-2 max-sm:grid-cols-1">
+            {SEASONS.map((s) => {
+              const current = s.id === season.id;
+              return (
+                <li key={s.id} className={`border-0 p-6 ${current ? "bg-ink text-paper" : "bg-paper"}`}>
+                  <p
+                    className={`mb-3 text-[10.5px] leading-none font-medium tracking-[0.2em] uppercase ${
+                      current ? "text-olive-pale" : "text-olive"
+                    }`}
+                  >
+                    {s.months}
+                    {current && " · Now"}
+                  </p>
+                  <h3 className="text-card-title-sm mb-2">{s.label}</h3>
+                  <p className={`text-body-sm ${current ? "text-cream-body" : "text-ink-body"}`}>{s.work}</p>
                 </li>
-                <li>
-                  <strong className="font-semibold">The standard retrofit works.</strong>{" "}
-                  The one zone already on Hunter PRS-40 bodies and MP3000
-                  nozzles measured {pct(cb1Retrofit.du)} — the best on the
-                  property, at {cb1Retrofit.prInHr.toFixed(2)} in/hr.
-                </li>
-                <li>
-                  <strong className="font-semibold">Fix the worst first.</strong>{" "}
-                  Retrofit priority runs CB2 Zone 3 ({pct(worstRemaining.du)}),
-                  then CB1 Zone 4, then CB2 Zones 4 and 6 — each priced per head
-                  from the head-by-head readings.
-                </li>
-                <li>
-                  <strong className="font-semibold">Still to come.</strong>{" "}
-                  Four CB1 valve boxes to locate, four more CB2 zones to test,
-                  the remaining controllers, and Phase 2 diagnostics on the
-                  stations that don’t run at all.
-                </li>
-              </ul>
-            </div>
-          </div>
+              );
+            })}
+          </ol>
         </section>
 
-        <section className={`${SHELL} pt-14`} aria-labelledby="rates-h">
-          <h2 id="rates-h" className="text-h2 mb-5">
-            Services & rates
+        <section className={`${SHELL} pt-14`} aria-labelledby="process-h">
+          <p className="text-kicker text-olive-dark mb-3 uppercase">How a job runs</p>
+          <h2 id="process-h" className="text-h2 mb-6">
+            From the first call to the re-test
+          </h2>
+          <ol className="grid grid-cols-5 gap-5 max-lg:grid-cols-1">
+            {IRRIGATION_PROCESS.map((step, i) => (
+              <li key={step.title} className="border-olive border-t-2 pt-4 max-lg:grid max-lg:grid-cols-[48px_1fr] max-lg:gap-x-3">
+                <span className="display text-stat-sm text-olive max-lg:row-span-2">{i + 1}</span>
+                <h3 className="text-card-title-sm mt-2 mb-1.5 max-lg:mt-0">{step.title}</h3>
+                <p className="text-body-sm text-ink-body">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section id="rates" className={`${SHELL} scroll-mt-20 pt-14`} aria-labelledby="rates-h">
+          <p className="text-kicker text-olive-dark mb-3 uppercase">Rates</p>
+          <h2 id="rates-h" className="text-h2 mb-6">
+            Priced by the zone and the head
           </h2>
           <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-1">
             {IRRIGATION_RATES.map((service) => (
@@ -267,9 +268,33 @@ export default function IrrigationPage() {
             ))}
           </div>
           <p className="text-meta text-ink-muted mt-3">
-            Quotes are per zone for audits and per head for retrofits. 50%
-            deposit on acceptance, balance on completion.
+            Repairs, backflow and valve work, controller upgrades and seasonal
+            visits are quoted per job, itemised by parts and labour. 50% deposit
+            on acceptance, balance on completion.
           </p>
+        </section>
+
+        <section id="faq" className={`${SHELL} scroll-mt-20 pt-14`} aria-labelledby="faq-h">
+          <p className="text-kicker text-olive-dark mb-3 uppercase">FAQ</p>
+          <h2 id="faq-h" className="text-h2 mb-6">
+            Questions we get
+          </h2>
+          <div className="border-line bg-paper max-w-[880px] border">
+            {IRRIGATION_FAQ.map((item, i) => (
+              <details
+                key={item.q}
+                className={`group px-5 ${i < IRRIGATION_FAQ.length - 1 ? "border-b border-[rgb(22_40_63/0.1)]" : ""}`}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15.5px] font-semibold [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span className="text-olive text-[20px] leading-none transition-transform group-open:rotate-45" aria-hidden="true">
+                    +
+                  </span>
+                </summary>
+                <p className="text-body-sm text-ink-body max-w-[70ch] pb-5">{item.a}</p>
+              </details>
+            ))}
+          </div>
         </section>
 
         <section className={`${SHELL} pt-14 pb-14`}>
@@ -277,8 +302,8 @@ export default function IrrigationPage() {
             <div className="max-w-[60ch]">
               <h2 className="text-h2-sm mb-2">Find out where your water goes</h2>
               <p className="text-body-sm text-[rgb(22_40_63/0.72)]">
-                Chris Conn — Certified Landscape Professional and licensed
-                general contractor — runs every audit himself. You get the raw
+                Flatirons Services is run by Chris Conn — Certified Landscape
+                Professional and licensed general contractor. You get the raw
                 readings, the analysis and a head-by-head plan.
               </p>
             </div>
@@ -293,7 +318,7 @@ export default function IrrigationPage() {
         <div
           className={`${SHELL} text-cream-muted flex flex-wrap items-center justify-between gap-4 py-6 text-[11.5px] leading-none`}
         >
-          <span>Irrigation audits & retrofits · Flatirons Services</span>
+          <span>Irrigation services · Flatirons Services · Denver / Front Range</span>
           <a href={CANONICAL_ORIGIN} className="hover:text-olive-pale">
             Moving in the Denver metro? flatironsmoves.com
           </a>
@@ -312,70 +337,5 @@ function Step({ kicker, title, children }: { kicker: string; title: string; chil
       <h3 className="text-card-title-sm mb-2.5">{title}</h3>
       <p className="text-body-sm text-ink-body">{children}</p>
     </div>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="border-line border-r px-5 py-5 last:border-r-0 max-md:border-b max-md:nth-[2n]:border-r-0">
-      <div className="display text-stat-sm mb-2">{value}</div>
-      <div className="text-label text-ink-muted uppercase">{label}</div>
-    </div>
-  );
-}
-
-function DuBar({ du }: { du: number }) {
-  const pass = du >= DU_TARGET;
-  return (
-    <div className="flex items-center gap-3">
-      <div className="bg-surface relative h-2.5 flex-1" aria-hidden="true">
-        <div className={`h-full ${pass ? "bg-olive" : "bg-ink"}`} style={{ width: `${Math.min(du, 1) * 100}%` }} />
-        <div className="bg-olive-dark absolute -top-1 -bottom-1 w-0.5" style={{ left: `${DU_TARGET * 100}%` }} />
-      </div>
-      <span className="w-[46px] text-right font-semibold tabular-nums">{pct(du)}</span>
-    </div>
-  );
-}
-
-const VERDICT_STYLE: Record<Verdict, string> = {
-  Pass: "bg-olive text-paper",
-  "Marginal fail": "bg-olive-wash text-olive-dark",
-  Fail: "bg-surface text-ink",
-  "Severe fail": "bg-ink text-paper",
-};
-
-function VerdictChip({ verdict }: { verdict: Verdict }) {
-  return (
-    <span className={`${VERDICT_STYLE[verdict]} px-2 py-1 text-[10.5px] font-semibold tracking-[0.12em] uppercase`}>
-      {verdict}
-    </span>
-  );
-}
-
-/** One bar per catch cup, grouped by head — the shape of a zone's coverage. */
-function CupStrip({ result, caption }: { result: ZoneResult; caption: string }) {
-  const max = 50;
-  return (
-    <figure className="mb-5">
-      <div
-        className="border-line bg-paper flex h-[96px] items-end gap-3 border px-3 pt-3"
-        role="img"
-        aria-label={`${caption}. Cup readings in mL: ${result.cups.join(", ")}.`}
-      >
-        {result.heads.map((cups, h) => (
-          <div key={h} className="flex h-full flex-1 items-end gap-[3px]">
-            {cups.map((ml, c) => (
-              <div
-                key={c}
-                className="bg-olive flex-1"
-                style={{ height: `${Math.max(2, (Math.min(ml, max) / max) * 100)}%` }}
-                title={`Head ${h + 1}, cup ${c + 1}: ${ml} mL`}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-      <figcaption className="text-meta text-ink-muted mt-2">{caption}</figcaption>
-    </figure>
   );
 }

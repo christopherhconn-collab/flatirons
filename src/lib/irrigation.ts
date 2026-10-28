@@ -228,3 +228,136 @@ export const IRRIGATION_RATES = [
     ],
   },
 ] as const;
+
+/**
+ * What the irrigation side sells. Grounded in the work already quoted and
+ * invoiced: the Huber audit and retrofit rates above, the backflow and
+ * master-valve quote (FS-2026-005), the seasonal visits in the Estate Care
+ * build-out, and line and head repairs. A price appears only where one has
+ * been set; everything else is quoted on site.
+ */
+export const IRRIGATION_SERVICES = [
+  {
+    id: "audit",
+    title: "Audits & calibration",
+    body: "Catch-cup testing on every zone, precipitation rate and uniformity worked out per head, and a controller schedule set from the numbers instead of a guess.",
+    price: "$30 / zone tested",
+  },
+  {
+    id: "retrofit",
+    title: "Head retrofits",
+    body: "Hunter PRS-40 pressure-regulated bodies with MP Rotator nozzles. One body, one nozzle family, every head at 40 PSI — no fogging, no mismatched throw.",
+    price: "$55 / head",
+  },
+  {
+    id: "repair",
+    title: "Repairs",
+    body: "Broken lines, cracked fittings, buried or tilted heads, and the damage other trades leave behind. Fixed, flushed and run before we leave.",
+    price: "Quoted on site",
+  },
+  {
+    id: "diagnostics",
+    title: "Dead zones & wiring",
+    body: "Zones that won’t come on: continuity on every station, then a ground-fault locator on the field wire until the break is found and repaired.",
+    price: "$175 / hr tracing",
+  },
+  {
+    id: "backflow",
+    title: "Backflow & master valves",
+    body: "Pressure vacuum breaker replacement, copper supply runs, and master valve swaps — wired to your controller and pressure-tested. Certification test available.",
+    price: "Itemised quote",
+  },
+  {
+    id: "controller",
+    title: "Controllers",
+    body: "Reprogramming from measured run times, and controller upgrades sized to the property — residential and commercial, with sensors that actually serve each zone.",
+    price: "$75 reprogramming",
+  },
+  {
+    id: "seasonal",
+    title: "Start-ups & blowouts",
+    body: "Spring start-up, a mid-season check, and a fall blowout that clears every zone before the first hard freeze.",
+    price: "Quoted per system",
+  },
+] as const;
+
+export type Season = "spring" | "summer" | "fall" | "winter";
+
+export const SEASONS: readonly { id: Season; label: string; months: string; work: string; cta: string }[] = [
+  {
+    id: "spring",
+    label: "Spring",
+    months: "Mar – May",
+    work: "Start-up: charge the system slowly, check the backflow, run every zone and fix what the winter broke.",
+    cta: "Book a spring start-up",
+  },
+  {
+    id: "summer",
+    label: "Summer",
+    months: "Jun – Aug",
+    work: "Audit season. Zones are running and the lawn shows the pattern — the right time to measure and retrofit.",
+    cta: "Book a summer audit",
+  },
+  {
+    id: "fall",
+    label: "Fall",
+    months: "Sep – Nov",
+    work: "Blowout before the first hard freeze. Backflow and valve work goes first, so new parts winterise with the rest.",
+    cta: "Book a fall blowout",
+  },
+  {
+    id: "winter",
+    label: "Winter",
+    months: "Dec – Feb",
+    work: "Plan the spring: retrofit quotes, controller upgrades, and a place on the start-up list before it fills.",
+    cta: "Plan next season",
+  },
+];
+
+/** The Denver irrigation calendar, by month. */
+export function seasonOf(date: Date): Season {
+  const month = date.getMonth();
+  if (month >= 2 && month <= 4) return "spring";
+  if (month >= 5 && month <= 7) return "summer";
+  if (month >= 8 && month <= 10) return "fall";
+  return "winter";
+}
+
+export const IRRIGATION_PROCESS = [
+  { title: "Call", body: "Tell us what you’re seeing — brown spots, a zone that won’t run, a water bill that jumped." },
+  { title: "Walk the system", body: "Controller, backflow, valve boxes and every zone, with the problems marked as we go." },
+  { title: "Measure", body: "Catch cups where uniformity is the question; continuity and wire tracing where a zone is dead." },
+  { title: "Quote", body: "An itemised quote, valid 30 days. Anything found beyond it is quoted before any work — nothing you haven’t approved." },
+  { title: "Fix & re-test", body: "The work, then the same test again, so the result is a number and not a promise." },
+] as const;
+
+export const IRRIGATION_FAQ = [
+  {
+    q: "Why not just run the sprinklers longer?",
+    a: "Because a dry spot is usually a uniformity problem. Running longer to rescue the driest quarter of a zone overwaters the rest of it — and on clay soil, a lot of that runs off. Fix the coverage and the run time can come down.",
+  },
+  {
+    q: "What does a DU of 70% mean?",
+    a: "Distribution uniformity compares the driest quarter of the catch cups to the zone average. At 70% or better the zone waters evenly enough to schedule properly; below it, the schedule is being set by the dry spots.",
+  },
+  {
+    q: "Why Hunter PRS-40 bodies and MP Rotators?",
+    a: "Most poor uniformity we measure is mixed hardware: different body series, different nozzles, heads off level, all on one valve. A pressure-regulated body holds every nozzle at 40 PSI, and MP Rotators put water down slowly enough for compacted Front Range soil to take it.",
+  },
+  {
+    q: "Will you do work I haven’t approved?",
+    a: "No. Every job starts from a written, itemised quote. If testing turns up a valve, head or wiring fault outside it, we report it and quote it separately before touching it.",
+  },
+  {
+    q: "Do you subcontract the work?",
+    a: "No. The audit, the report and the repairs are done by the same licensed contractor who quotes them.",
+  },
+  {
+    q: "Does a new backflow preventer need testing?",
+    a: "Many water providers require a certification test on any new pressure vacuum breaker. We can test it after install, and we schedule backflow work before the fall blowout so the new parts are winterised properly.",
+  },
+  {
+    q: "How is a job billed?",
+    a: "Audits by the zone, retrofits by the head, everything else by itemised quote. 50% deposit on acceptance, balance on completion.",
+  },
+] as const;

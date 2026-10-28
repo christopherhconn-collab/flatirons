@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { HOLLY_RESULTS, duLowQuarter, verdict } from "./irrigation";
+import { HOLLY_RESULTS, duLowQuarter, seasonOf, verdict } from "./irrigation";
 
 /**
  * The audit's own computed results (`zone_results.csv`, which matches the
@@ -50,5 +50,15 @@ describe("verdict", () => {
     expect(verdict(0.69)).toBe("Marginal fail");
     expect(verdict(0.5)).toBe("Fail");
     expect(verdict(0.44)).toBe("Severe fail");
+  });
+});
+
+describe("seasonOf", () => {
+  it("follows the Denver irrigation calendar", () => {
+    expect(seasonOf(new Date(2026, 2, 1))).toBe("spring");
+    expect(seasonOf(new Date(2026, 5, 15))).toBe("summer");
+    expect(seasonOf(new Date(2026, 9, 28))).toBe("fall");
+    expect(seasonOf(new Date(2026, 11, 31))).toBe("winter");
+    expect(seasonOf(new Date(2027, 1, 28))).toBe("winter");
   });
 });
