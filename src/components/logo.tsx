@@ -69,7 +69,6 @@ export function LogoLockup({
   gap = 11,
   tone = "light",
   rule = false,
-  sub = "Movers",
   className,
 }: {
   markWidth?: number;
@@ -79,8 +78,6 @@ export function LogoLockup({
   tone?: Tone;
   /** The hairline that ties FLATIRONS to MOVERS. Drop it below ~17px type. */
   rule?: boolean;
-  /** The line under FLATIRONS — the trade the page belongs to. */
-  sub?: string;
   className?: string;
 }) {
   const onDark = tone === "dark";
@@ -125,11 +122,11 @@ export function LogoLockup({
               color: subColor,
             }}
           >
-            {sub}
+            Movers
           </span>
         </span>
       </span>
-      <span className="sr-only">Flatirons {sub}</span>
+      <span className="sr-only">Flatirons Movers</span>
     </span>
   );
 }
