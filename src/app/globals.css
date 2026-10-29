@@ -351,3 +351,111 @@
     filter: brightness(1.04);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Flatirons Services — the landscaping side (irrigation, the natives guide)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   A deliberately different room from the movers site: the Services teal
+   (#1F4E5F, the accent on every Services quote and report) on a warm sand
+   ground, a serif display face in sentence case instead of condensed caps,
+   and soft corners instead of square ones.
+
+   It works by re-pointing the movers tokens inside `.services-theme` (set by
+   `src/app/(services)/layout.tsx`). Every utility reads `var(--color-*)`,
+   `var(--font-*)` and `var(--radius-*)`, so `text-ink` or `bg-olive` simply
+   resolve to the Services palette under this wrapper and nowhere else. The
+   token names keep their movers meaning ("olive" = the accent); only the
+   values change. */
+
+@layer base {
+  .services-theme {
+    --color-ink: #173a42; /* text, dark surfaces */
+    --color-ink-deep: #0f2a31;
+    --color-ink-deepest: #0a1f24;
+
+    --color-olive: #1f4e5f; /* the Services teal — primary buttons, accents */
+    --color-olive-dark: #183f4c; /* teal text on light tints */
+    --color-olive-pale: #9ccbc8; /* accent text on dark */
+    --color-olive-mist: #dcece8; /* light text on teal */
+    --color-olive-wash: #e3ede6; /* soft sage panel */
+    --color-olive-tint: #edf3ee;
+
+    --color-paper: #fffdf8; /* card surface */
+    --color-bg: #f5f0e6; /* sand ground */
+    --color-surface: #ece4d4; /* table headers, secondary panels */
+    --color-desk: #e6ddca;
+
+    --color-line: rgb(23 58 66 / 0.13);
+    --color-line-strong: rgb(23 58 66 / 0.22);
+    --color-line-seg: rgb(23 58 66 / 0.2);
+    --color-grid: rgb(23 58 66 / 0.12);
+
+    --color-ink-lede: rgb(23 58 66 / 0.78);
+    --color-ink-body: rgb(23 58 66 / 0.7);
+    --color-ink-muted: rgb(23 58 66 / 0.6);
+    --color-ink-quiet: rgb(23 58 66 / 0.55);
+    --color-ink-disabled: rgb(23 58 66 / 0.45);
+
+    --color-cream-body: rgb(255 253 248 / 0.84);
+    --color-cream-muted: rgb(255 253 248 / 0.64);
+    --color-cream-quiet: rgb(255 253 248 / 0.56);
+
+    /* Warm counterweight to the teal — used for "needs work" in the audit. */
+    --color-clay: #b4643c;
+    --color-clay-wash: #f6e4d8;
+
+    --font-condensed: var(--font-fraunces), "Fraunces", Georgia, serif;
+    --font-body: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+    --font-sans: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+    --radius-3xl: 32px;
+
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+
+  /* Serif, sentence case, a touch tighter — the movers caps stay over there. */
+  .services-theme :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-condensed);
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: -0.015em;
+    line-height: 1.08;
+  }
+
+  .services-theme ::selection {
+    background: rgb(31 78 95 / 0.22);
+  }
+
+  .services-theme :focus-visible {
+    outline-color: var(--color-olive);
+  }
+}
+
+@layer components {
+  /* `.display` is a components-layer rule, so its Services twin lives here
+     too — a base-layer override would lose to it. */
+  .services-theme .display {
+    font-family: var(--font-condensed);
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: -0.015em;
+  }
+
+  /* The Services ground: a soft wash of teal and sage in place of the
+     movers' square topographic grid. */
+  .services-wash {
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgb(156 203 200 / 0.28), transparent 60%),
+      radial-gradient(90% 70% at 0% 100%, rgb(227 237 230 / 0.9), transparent 70%),
+      var(--color-bg);
+  }
+}

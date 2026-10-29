@@ -27,9 +27,9 @@ export function HollyCaseStudy() {
   const worstRemaining = find("CB2", 3, "as-found");
 
   return (
-    <section id="holly" className={`${SHELL} scroll-mt-20 pt-14`} aria-labelledby="holly-h">
-      <p className="text-kicker text-olive-dark mb-3 uppercase">Case study · August 2026</p>
-      <h2 id="holly-h" className="text-h2 mb-4">
+    <section id="holly" className={`${SHELL} scroll-mt-20 pt-20`} aria-labelledby="holly-h">
+      <p className="text-olive mb-3 text-[12px] font-semibold tracking-[0.18em] uppercase">Case study · August 2026</p>
+      <h2 id="holly-h" className="text-h2 mb-4 text-[44px] max-md:text-[34px]">
         4343 Holly
       </h2>
       <p className="text-body-lg text-ink-lede mb-8 max-w-[760px]">
@@ -39,21 +39,21 @@ export function HollyCaseStudy() {
         {cupCount} cups said.
       </p>
 
-      <div className="border-line bg-paper mb-8 grid grid-cols-4 border max-md:grid-cols-2">
+      <div className="mb-10 grid grid-cols-4 gap-4 max-md:grid-cols-2">
         <Stat value={String(cupCount)} label="Catch-cup readings" />
         <Stat value={`${passing} of ${asFound.length}`} label="As-found zones passing" />
         <Stat value={pct(porticoBefore.du)} label="Worst zone, as found" />
         <Stat value={pct(cb1Retrofit.du)} label="Best zone — already retrofitted" />
       </div>
 
-      <h3 className="text-card-title-sm mb-3">Zone by zone</h3>
+      <h3 className="mb-2 text-[26px]">Zone by zone</h3>
       <p className="text-meta text-ink-muted mb-3">
         {CONTROLLERS.map((c) => `${c.id}: ${c.location.toLowerCase()}, ${c.zonesFunctional} of ${c.zonesTotal} zones working`).join(" · ")}
       </p>
-      <div className="border-line bg-paper overflow-x-auto border">
+      <div className="border-line bg-paper overflow-x-auto rounded-2xl border">
         <table className="text-dense w-full min-w-[640px] border-collapse">
           <thead className="bg-surface">
-            <tr className="text-th text-ink-muted uppercase">
+            <tr className="text-ink-muted text-[12px] tracking-[0.08em] uppercase">
               <th className="px-4 py-3 text-left font-medium">Zone</th>
               <th className="px-4 py-3 text-left font-medium">Heads</th>
               <th className="px-4 py-3 text-right font-medium">Cups</th>
@@ -64,13 +64,13 @@ export function HollyCaseStudy() {
           </thead>
           <tbody>
             {HOLLY_RESULTS.map((r) => (
-              <tr key={`${r.controller}-${r.zone}-${r.status}`} className="border-t border-[rgb(22_40_63/0.1)]">
+              <tr key={`${r.controller}-${r.zone}-${r.status}`} className="border-line border-t">
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className="font-semibold">
                     {r.controller} · Zone {r.zone}
                   </span>
                   {r.status === "retrofitted" && (
-                    <span className="bg-olive-wash text-olive-dark ml-2 px-1.5 py-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
+                    <span className="bg-olive-wash text-olive-dark ml-2 rounded-full px-2 py-0.5 text-[11.5px] font-semibold">
                       Retrofitted
                     </span>
                   )}
@@ -94,9 +94,9 @@ export function HollyCaseStudy() {
         the zone’s mean catch over a {RUNTIME_MIN}-minute run.
       </p>
 
-      <div className="mt-12 grid grid-cols-[1fr_1fr] gap-[34px] max-lg:grid-cols-1">
+      <div className="mt-14 grid grid-cols-[1fr_1fr] gap-8 max-lg:grid-cols-1">
         <div>
-          <h3 className="text-card-title-sm mb-2">The driveway zone, before and after</h3>
+          <h3 className="mb-2 text-[26px]">The driveway zone, before and after</h3>
           <p className="text-body-sm text-ink-body mb-5">
             {porticoBefore.note} Most cups caught next to nothing while a
             few by the sprays flooded. Every bar below is one cup, grouped
@@ -112,8 +112,8 @@ export function HollyCaseStudy() {
           </p>
         </div>
 
-        <div className="blueprint bg-surface p-6">
-          <h3 className="text-card-title-sm mb-4">What the audit found</h3>
+        <div className="bg-olive-wash rounded-2xl p-7">
+          <h3 className="mb-4 text-[26px]">What the audit found</h3>
           <ul className="text-body-sm grid gap-4">
             <li>
               <strong className="font-semibold">Poor uniformity was a hardware problem, not a design one.</strong>{" "}
@@ -148,9 +148,9 @@ export function HollyCaseStudy() {
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="border-line border-r px-5 py-5 last:border-r-0 max-md:border-b max-md:nth-[2n]:border-r-0">
-      <div className="display text-stat-sm mb-2">{value}</div>
-      <div className="text-label text-ink-muted uppercase">{label}</div>
+    <div className="bg-paper border-line rounded-2xl border px-5 py-5">
+      <div className="display text-olive mb-1.5 text-[40px] leading-none">{value}</div>
+      <div className="text-ink-muted text-[13px] font-medium">{label}</div>
     </div>
   );
 }
@@ -159,8 +159,8 @@ function DuBar({ du }: { du: number }) {
   const pass = du >= DU_TARGET;
   return (
     <div className="flex items-center gap-3">
-      <div className="bg-surface relative h-2.5 flex-1" aria-hidden="true">
-        <div className={`h-full ${pass ? "bg-olive" : "bg-ink"}`} style={{ width: `${Math.min(du, 1) * 100}%` }} />
+      <div className="bg-surface relative h-2.5 flex-1 rounded-full" aria-hidden="true">
+        <div className={`h-full rounded-full ${pass ? "bg-olive" : "bg-(--color-clay)"}`} style={{ width: `${Math.min(du, 1) * 100}%` }} />
         <div className="bg-olive-dark absolute -top-1 -bottom-1 w-0.5" style={{ left: `${DU_TARGET * 100}%` }} />
       </div>
       <span className="w-[46px] text-right font-semibold tabular-nums">{pct(du)}</span>
@@ -170,14 +170,14 @@ function DuBar({ du }: { du: number }) {
 
 const VERDICT_STYLE: Record<Verdict, string> = {
   Pass: "bg-olive text-paper",
-  "Marginal fail": "bg-olive-wash text-olive-dark",
-  Fail: "bg-surface text-ink",
-  "Severe fail": "bg-ink text-paper",
+  "Marginal fail": "bg-surface text-ink",
+  Fail: "bg-(--color-clay-wash) text-(--color-clay)",
+  "Severe fail": "bg-(--color-clay) text-paper",
 };
 
 function VerdictChip({ verdict }: { verdict: Verdict }) {
   return (
-    <span className={`${VERDICT_STYLE[verdict]} px-2 py-1 text-[10.5px] font-semibold tracking-[0.12em] uppercase`}>
+    <span className={`${VERDICT_STYLE[verdict]} rounded-full px-2.5 py-1 text-[12px] font-semibold`}>
       {verdict}
     </span>
   );
@@ -189,7 +189,7 @@ function CupStrip({ result, caption }: { result: ZoneResult; caption: string }) 
   return (
     <figure className="mb-5">
       <div
-        className="border-line bg-paper flex h-[96px] items-end gap-3 border px-3 pt-3"
+        className="border-line bg-paper flex h-[104px] items-end gap-3 rounded-2xl border px-4 pt-4"
         role="img"
         aria-label={`${caption}. Cup readings in mL: ${result.cups.join(", ")}.`}
       >
@@ -198,7 +198,7 @@ function CupStrip({ result, caption }: { result: ZoneResult; caption: string }) 
             {cups.map((ml, c) => (
               <div
                 key={c}
-                className="bg-olive flex-1"
+                className="bg-olive flex-1 rounded-t-[3px]"
                 style={{ height: `${Math.max(2, (Math.min(ml, max) / max) * 100)}%` }}
                 title={`Head ${h + 1}, cup ${c + 1}: ${ml} mL`}
               />

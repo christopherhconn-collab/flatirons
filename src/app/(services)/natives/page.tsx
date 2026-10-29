@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { LogoLockup } from "@/components/logo";
 import { fetchNativePhotos, type NativePhoto } from "@/lib/native-photos";
 import {
   CATEGORIES,
@@ -11,21 +10,23 @@ import {
   type Native,
   wikiUrl,
 } from "@/lib/natives";
+import { IRRIGATION_ORIGIN } from "@/lib/irrigation";
 import { SHELL } from "@/lib/site";
-import { CANONICAL_ORIGIN } from "@/lib/site-url";
+
+import { ServicesFooter, ServicesHeader } from "../services-chrome";
 
 /**
  * Colorado Plant Select Natives — drought-tolerant Front Range plants, from
  * `denver-native-drought-plants.xlsx`.
  *
  * Served at the root of its own subdomain (the host rewrite is in
- * `next.config.ts`), so it carries its own light chrome rather than the
- * marketing nav: relative links from here would land on the subdomain, not
- * on the main site. Every link back is absolute.
+ * `next.config.ts`), in the Flatirons Services look from `../layout.tsx` —
+ * it belongs to the landscaping side, not the movers. Relative links from
+ * here would land on the subdomain, so every link off the page is absolute.
  */
 
 export const metadata: Metadata = {
-  title: "Colorado Plant Select Natives — Flatirons Movers",
+  title: "Colorado Plant Select Natives — Flatirons Services",
   description:
     "27 drought-tolerant Colorado native wildflowers, grasses, shrubs and trees for Denver and Front Range yards, with photos, bloom times and growing notes.",
   alternates: { canonical: NATIVES_ORIGIN },
@@ -36,40 +37,32 @@ export default async function NativesPage() {
 
   return (
     <>
-      <header className="border-line border-b">
-        <div className={`${SHELL} flex flex-wrap items-center justify-between gap-4 py-[18px]`}>
-          <a href={CANONICAL_ORIGIN} className="flex-none" aria-label="Flatirons Movers, home">
-            <LogoLockup markWidth={40} wordSize={19} subSize={9.5} />
-          </a>
-          <a
-            href={CANONICAL_ORIGIN}
-            className="text-ink-muted hover:text-ink text-[12px] leading-none font-medium tracking-[0.1em] uppercase"
-          >
-            flatironsmoves.com →
-          </a>
-        </div>
-      </header>
+      <ServicesHeader home={NATIVES_ORIGIN} label="Colorado Plant Select Natives, top of page">
+        <a href={IRRIGATION_ORIGIN} className="text-ink-body hover:text-ink text-[14.5px] font-medium">
+          Irrigation services →
+        </a>
+      </ServicesHeader>
 
-      <main className="flex-1">
-        <section className="topo border-line border-b">
-          <div className={`${SHELL} pt-[46px] pb-10`}>
-            <p className="text-olive mb-4 text-[11px] leading-none font-medium tracking-[0.22em] uppercase">
-              Drought-tolerant natives · Denver / Front Range
+      <main className="services-wash flex-1">
+        <section>
+          <div className={`${SHELL} pt-14 pb-6`}>
+            <p className="text-olive mb-4 text-[12px] font-semibold tracking-[0.18em] uppercase">
+              Drought-tolerant natives · Denver & the Front Range
             </p>
             <h1 className="text-h1-sm mb-4 max-md:text-[42px]">
-              Colorado Plant Select Natives
+              Colorado Plant Select <em className="text-olive font-normal">natives</em>
             </h1>
             <p className="text-body-lg text-ink-lede max-w-[760px]">{NATIVES_INTRO}</p>
 
             <nav
               aria-label="Plant categories"
-              className="mt-7 flex flex-wrap gap-2 text-[12px] leading-none font-medium tracking-[0.1em] uppercase"
+              className="mt-7 flex flex-wrap gap-2 text-[14px] leading-none font-medium"
             >
               {CATEGORIES.map((category) => (
                 <a
                   key={category.id}
                   href={`#${category.id}`}
-                  className="border-line-strong bg-paper interactive hover:border-olive border px-3.5 py-2.5"
+                  className="border-line-strong bg-paper interactive hover:border-olive rounded-full border px-4 py-2.5"
                 >
                   {category.plural}{" "}
                   <span className="text-ink-quiet">
@@ -77,7 +70,7 @@ export default async function NativesPage() {
                   </span>
                 </a>
               ))}
-              <span className="bg-olive-wash text-olive-dark flex items-center gap-2 px-3.5 py-2.5">
+              <span className="bg-olive-wash text-olive-dark flex items-center gap-2 rounded-full px-4 py-2.5">
                 <PlantSelectMark /> Plant Select pick
               </span>
             </nav>
@@ -88,13 +81,13 @@ export default async function NativesPage() {
           <section
             key={category.id}
             id={category.id}
-            className={`${SHELL} scroll-mt-4 pt-12`}
+            className={`${SHELL} scroll-mt-20 pt-12`}
             aria-labelledby={`${category.id}-h`}
           >
-            <h2 id={`${category.id}-h`} className="text-h2 mb-5">
+            <h2 id={`${category.id}-h`} className="text-h2 mb-5 text-[38px]">
               {category.plural}
             </h2>
-            <ul className="grid grid-cols-3 gap-5 max-lg:grid-cols-2 max-sm:grid-cols-1">
+            <ul className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
               {NATIVES.filter((plant) => plant.category === category.id).map((plant) => (
                 <PlantCard key={plant.wiki} plant={plant} photo={photos.get(plant.wiki)} />
               ))}
@@ -103,12 +96,12 @@ export default async function NativesPage() {
         ))}
 
         <section className={`${SHELL} pt-12 pb-14`}>
-          <div className="bg-surface border-line border px-6 py-5">
-            <p className="text-kicker text-olive-dark mb-3 uppercase">Sources to verify / buy</p>
+          <div className="bg-olive-wash rounded-2xl px-7 py-6">
+            <p className="text-olive-dark mb-3 text-[12px] font-semibold tracking-[0.16em] uppercase">Sources to verify / buy</p>
             <ul className="text-body-sm flex flex-wrap gap-x-6 gap-y-2">
               {NATIVES_SOURCES.map((source) => (
                 <li key={source.label}>
-                  <a href={source.href} className="text-ink underline decoration-[rgb(22_40_63/0.3)] underline-offset-4 hover:decoration-current">
+                  <a href={source.href} className="text-ink decoration-line-strong underline underline-offset-4 hover:decoration-current">
                     {source.label}
                   </a>
                 </li>
@@ -122,23 +115,14 @@ export default async function NativesPage() {
         </section>
       </main>
 
-      <footer className="bg-ink mt-auto">
-        <div
-          className={`${SHELL} text-cream-muted flex flex-wrap items-center justify-between gap-4 py-6 text-[11.5px] leading-none`}
-        >
-          <span>Colorado Plant Select Natives · a Flatirons Movers guide</span>
-          <a href={CANONICAL_ORIGIN} className="hover:text-olive-pale">
-            Moving in the Denver metro? flatironsmoves.com
-          </a>
-        </div>
-      </footer>
+      <ServicesFooter tagline="Colorado Plant Select Natives · a Flatirons Services guide" />
     </>
   );
 }
 
 function PlantCard({ plant, photo }: { plant: Native; photo?: NativePhoto }) {
   return (
-    <li className="bg-paper border-line flex flex-col border">
+    <li className="bg-paper border-line flex flex-col overflow-hidden rounded-2xl border">
       <div className="bg-surface relative aspect-[4/3] overflow-hidden">
         {photo ? (
           <a href={photo.credit} title="Photo credit and licence">
@@ -157,39 +141,39 @@ function PlantCard({ plant, photo }: { plant: Native; photo?: NativePhoto }) {
         ) : (
           <a
             href={wikiUrl(plant.wiki)}
-            className="text-ink-muted hover:text-ink flex h-full items-center justify-center text-[12px] font-medium tracking-[0.1em] uppercase"
+            className="text-ink-muted hover:text-ink flex h-full items-center justify-center text-[14px] font-medium"
           >
             View photo →
           </a>
         )}
         {plant.plantSelect && (
-          <span className="bg-olive absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 text-[10.5px] leading-none font-semibold tracking-[0.12em] text-[#f7f6f2] uppercase">
+          <span className="bg-olive text-paper absolute top-3 left-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] leading-none font-semibold">
             <PlantSelectMark /> Plant Select
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col px-5 pt-4 pb-5">
-        <p className="text-kicker-sm text-olive-dark mb-2 uppercase">
+        <p className="text-olive mb-2 text-[11.5px] font-semibold tracking-[0.14em] uppercase">
           {CATEGORIES.find((category) => category.id === plant.category)?.label}
         </p>
-        <h3 className="text-card-title-sm">{plant.common}</h3>
+        <h3 className="text-[24px]">{plant.common}</h3>
         <p className="text-ink-body mb-4 text-[14px] italic">{plant.botanical}</p>
 
         <dl className="text-body-sm grid gap-3">
           <div>
-            <dt className="text-label text-ink-muted mb-1 uppercase">Look / bloom</dt>
+            <dt className="text-ink-muted mb-1 text-[12px] font-semibold">Look / bloom</dt>
             <dd>{plant.look}</dd>
           </div>
           <div>
-            <dt className="text-label text-ink-muted mb-1 uppercase">Notes</dt>
+            <dt className="text-ink-muted mb-1 text-[12px] font-semibold">Notes</dt>
             <dd>{plant.notes}</dd>
           </div>
         </dl>
 
         <a
           href={wikiUrl(plant.wiki)}
-          className="text-olive-dark hover:text-ink mt-auto pt-4 text-[12px] leading-none font-semibold tracking-[0.1em] uppercase"
+          className="text-olive-dark hover:text-ink mt-auto pt-4 text-[14px] leading-none font-semibold"
         >
           More on Wikipedia →
         </a>
